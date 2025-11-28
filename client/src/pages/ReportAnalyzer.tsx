@@ -120,543 +120,402 @@ export default function ReportAnalyzer() {
         } catch (e) {
             console.error("Failed to fetch remedies", e);
         }
-    };
-    const handleDownloadPDF = async () => {
-        const element = document.getElementById('report-content');
-        if (!element) return;
+        alert("Failed to generate PDF. Please try again.");
+        const existingClone = document.querySelector('[style*="-9999px"]');
+        if (existingClone) existingClone.remove();
+    }
+};
 
-        try {
-            // 1. Create Clone Container (Off-screen)
-            const cloneContainer = document.createElement('div');
-            cloneContainer.style.position = 'absolute';
-            cloneContainer.style.left = '-9999px';
-            cloneContainer.style.top = '0';
-            cloneContainer.style.width = '1024px'; // Fixed Desktop Width
-            cloneContainer.style.backgroundColor = '#ffffff';
-            cloneContainer.style.fontFamily = 'Arial, sans-serif'; // Force safe font
-            document.body.appendChild(cloneContainer);
+const reset = () => {
+    setFile(null);
+    setResult(null);
+    setRemedies([]);
+    setShowRemedies(false);
+    setReportTitle('');
+    setReportDate('');
+};
 
-            // 2. Deep Clone
-            const clone = element.cloneNode(true) as HTMLElement;
-            cloneContainer.appendChild(clone);
+const handleShareLocation = () => {
+    if (!navigator.geolocation) {
+        alert("Geolocation is not supported by your browser.");
+        return;
+    }
 
-            // 3. Helper: Safe Color Converter (Canvas-based)
-            const ctx = document.createElement('canvas').getContext('2d');
-            const safeColor = (color: string) => {
-                if (!ctx || !color || color === 'transparent' || color === 'inherit' || color === 'none') return color;
-                // If it contains unsupported formats, force conversion via Canvas
-                if (color.includes('oklch') || color.includes('oklab') || color.includes('lab(') || color.includes('lch(')) {
-                    ctx.fillStyle = color;
-                    return ctx.fillStyle; // Returns hex or rgb
-                }
-                return color;
+    navigator.geolocation.getCurrentPosition(
+        async (position) => {
+            const { latitude, longitude } = position.coords;
+            const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+            const shareData = {
+                title: 'My Medical Emergency Location',
+                text: `I need help! Here is my current location:`,
+                url: mapLink
             };
 
-            // 4. Recursive Style Inliner & Sanitizer
-            const processElement = (el: HTMLElement, sourceEl: HTMLElement) => {
-                if (!el || !sourceEl) return;
-
-                const computed = window.getComputedStyle(sourceEl);
-
-                // --- A. Inline Critical Layout Styles ---
-                el.style.display = computed.display;
-                el.style.position = computed.position === 'fixed' ? 'absolute' : computed.position;
-                el.style.boxSizing = computed.boxSizing;
-                el.style.margin = computed.margin;
-                el.style.padding = computed.padding;
-                el.style.width = computed.width;
-                el.style.height = computed.height;
-                el.style.flexDirection = computed.flexDirection;
-                el.style.flexWrap = computed.flexWrap;
-                el.style.justifyContent = computed.justifyContent;
-                el.style.alignItems = computed.alignItems;
-                el.style.gap = computed.gap;
-                el.style.gridTemplateColumns = computed.gridTemplateColumns;
-                el.style.gridTemplateRows = computed.gridTemplateRows;
-
-                // --- B. Inline Typography ---
-                el.style.fontFamily = 'Arial, sans-serif'; // Force safe font to avoid loading web fonts
-                el.style.fontSize = computed.fontSize;
-                el.style.fontWeight = computed.fontWeight;
-                el.style.lineHeight = computed.lineHeight;
-                el.style.textAlign = computed.textAlign;
-                el.style.letterSpacing = computed.letterSpacing;
-                el.style.color = safeColor(computed.color);
-
-                // --- C. Inline Decor (Backgrounds, Borders) ---
-                el.style.backgroundColor = safeColor(computed.backgroundColor);
-                el.style.borderColor = safeColor(computed.borderColor);
-                el.style.borderWidth = computed.borderWidth;
-                el.style.borderStyle = computed.borderStyle;
-                el.style.borderRadius = computed.borderRadius;
-
-                // --- D. SVG / Chart Handling ---
-                if (el.tagName.toLowerCase() === 'svg' || el instanceof SVGElement) {
-                    el.style.fill = safeColor(computed.fill);
-                    el.style.stroke = safeColor(computed.stroke);
-                    // Force explicit dimensions for Recharts
-                    const width = sourceEl.getAttribute('width') || computed.width;
-                    const height = sourceEl.getAttribute('height') || computed.height;
-                    if (width && width !== 'auto') el.setAttribute('width', parseFloat(width).toString());
-                    if (height && height !== 'auto') el.setAttribute('height', parseFloat(height).toString());
+            try {
+                if (navigator.share) {
+                    await navigator.share(shareData);
+                } else {
+                    await navigator.clipboard.writeText(mapLink);
+                    alert("Location link copied to clipboard: " + mapLink);
                 }
-
-                // Fix Recharts Container: If it's a div acting as a chart container, force pixels
-                if (el.classList.contains('recharts-responsive-container') || (el.style.width === '100%' && el.style.height === '100%')) {
-                    el.style.width = sourceEl.clientWidth + 'px';
-                    el.style.height = sourceEl.clientHeight + 'px';
-                }
-
-                // --- E. Remove Classes & IDs to prevent external CSS interference ---
-                el.removeAttribute('class');
-                // Keep ID only if needed, but safer to remove to avoid duplicates
-                el.removeAttribute('id');
-
-                // --- F. Recurse ---
-                const children = Array.from(el.children) as HTMLElement[];
-                const sourceChildren = Array.from(sourceEl.children) as HTMLElement[];
-                for (let i = 0; i < children.length; i++) {
-                    processElement(children[i], sourceChildren[i]);
-                }
-            };
-
-            processElement(clone, element);
-
-            // 5. Capture with html2canvas (Strict Config)
-            const canvas = await html2canvas(clone, {
-                scale: 2,
-                backgroundColor: '#ffffff',
-                useCORS: true,
-                logging: false,
-                allowTaint: true,
-                // CRITICAL: Ignore external stylesheets to prevent oklch parsing
-                ignoreElements: (el) => el.tagName === 'STYLE' || el.tagName === 'LINK' || el.tagName === 'SCRIPT',
-            });
-
-            // 6. Generate PDF
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-
-            while (heightLeft > 0) {
-                position -= pdfHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfHeight;
+            } catch (err) {
+                console.error("Error sharing location:", err);
             }
-
-            pdf.save(`Medical_Report_${result?.patient_details.name || 'Patient'}.pdf`);
-
-            // Cleanup
-            document.body.removeChild(cloneContainer);
-
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert("Failed to generate PDF. Please try again.");
-            const existingClone = document.querySelector('[style*="-9999px"]');
-            if (existingClone) existingClone.remove();
+        },
+        (error) => {
+            console.error("Error getting location:", error);
+            alert("Unable to retrieve your location. Please enable location services.");
         }
-    };
+    );
+};
 
-    const reset = () => {
-        setFile(null);
-        setResult(null);
-        setRemedies([]);
-        setShowRemedies(false);
-        setReportTitle('');
-        setReportDate('');
-    };
+return (
+    <div className="max-w-5xl mx-auto relative">
+        <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
 
-    const handleShareLocation = () => {
-        if (!navigator.geolocation) {
-            alert("Geolocation is not supported by your browser.");
-            return;
-        }
-
-        navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const { latitude, longitude } = position.coords;
-                const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
-                const shareData = {
-                    title: 'My Medical Emergency Location',
-                    text: `I need help! Here is my current location:`,
-                    url: mapLink
-                };
-
-                try {
-                    if (navigator.share) {
-                        await navigator.share(shareData);
-                    } else {
-                        await navigator.clipboard.writeText(mapLink);
-                        alert("Location link copied to clipboard: " + mapLink);
-                    }
-                } catch (err) {
-                    console.error("Error sharing location:", err);
-                }
-            },
-            (error) => {
-                console.error("Error getting location:", error);
-                alert("Unable to retrieve your location. Please enable location services.");
-            }
-        );
-    };
-
-    return (
-        <div className="max-w-5xl mx-auto relative">
-            <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
-
-            {/* Processing Modal Overlay */}
-            <AnimatePresence>
-                {isProcessing && (
-                    <motion.div
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+        {/* Processing Modal Overlay */}
+        <AnimatePresence>
+            {isProcessing && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
+                >
+                    <div className="relative">
+                        <div className="w-24 h-24 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin"></div>
+                        <div className="absolute inset-0 flex items-center justify-center">
+                            <FileText className="w-8 h-8 text-teal-500 animate-pulse" />
+                        </div>
+                    </div>
+                    <motion.h2
+                        key={processStep}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        className="mt-8 text-2xl font-serif text-slate-100"
                     >
-                        <div className="relative">
-                            <div className="w-24 h-24 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin"></div>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                                <FileText className="w-8 h-8 text-teal-500 animate-pulse" />
-                            </div>
-                        </div>
-                        <motion.h2
-                            key={processStep}
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="mt-8 text-2xl font-serif text-slate-100"
-                        >
-                            {processStep}
-                        </motion.h2>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                        {processStep}
+                    </motion.h2>
+                </motion.div>
+            )}
+        </AnimatePresence>
 
-            {/* Critical Alert Banner (After Analysis) */}
-            <AnimatePresence>
-                {result?.is_critical && (
-                    <motion.div
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: 'auto', opacity: 1 }}
-                        className="bg-red-500 text-white rounded-xl p-6 mb-8 shadow-[0_0_30px_-5px_rgba(239,68,68,0.6)] flex flex-col md:flex-row items-center justify-between gap-6"
-                    >
-                        <div className="flex items-center gap-4">
-                            <div className="p-4 bg-white/20 rounded-full animate-pulse">
-                                <AlertTriangle className="w-10 h-10" />
-                            </div>
-                            <div>
-                                <h2 className="text-3xl font-bold uppercase tracking-wider mb-1">CALL 911 IMMEDIATELY</h2>
-                                <p className="text-red-100 text-lg">Critical anomalies detected in this report.</p>
-                            </div>
+        {/* Critical Alert Banner (After Analysis) */}
+        <AnimatePresence>
+            {result?.is_critical && (
+                <motion.div
+                    initial={{ height: 0, opacity: 0 }}
+                    animate={{ height: 'auto', opacity: 1 }}
+                    className="bg-red-500 text-white rounded-xl p-6 mb-8 shadow-[0_0_30px_-5px_rgba(239,68,68,0.6)] flex flex-col md:flex-row items-center justify-between gap-6"
+                >
+                    <div className="flex items-center gap-4">
+                        <div className="p-4 bg-white/20 rounded-full animate-pulse">
+                            <AlertTriangle className="w-10 h-10" />
                         </div>
-
-                        {/* Operator Script */}
-                        <div className="bg-black/20 p-4 rounded-lg border border-white/10 max-w-md w-full">
-                            <h4 className="text-xs font-bold uppercase tracking-widest text-red-200 mb-2">What to tell the operator:</h4>
-                            <p className="text-sm font-mono text-white leading-relaxed">
-                                "I have a medical emergency. Patient {result.patient_details.name}, Age {result.patient_details.age}.
-                                Critical vitals detected. Requesting immediate ambulance."
-                            </p>
+                        <div>
+                            <h2 className="text-3xl font-bold uppercase tracking-wider mb-1">CALL 911 IMMEDIATELY</h2>
+                            <p className="text-red-100 text-lg">Critical anomalies detected in this report.</p>
                         </div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {!result ? (
-                // --- Upload State ---
-                <div className="max-w-2xl mx-auto">
-                    <div className="text-center mb-10">
-                        <h1 className="text-4xl font-serif text-slate-100 mb-3">Upload Medical Report</h1>
-                        <p className="text-slate-400">Upload blood tests, ECGs, X-rays, or clinical documents for AI analysis.</p>
                     </div>
 
-                    <div className="glass-panel p-8 rounded-3xl border border-white/5 shadow-2xl">
-                        {/* Form Inputs */}
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Report Title</label>
-                                <div className="relative">
-                                    <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                    <input
-                                        type="text"
-                                        value={reportTitle}
-                                        onChange={(e) => setReportTitle(e.target.value)}
-                                        placeholder="e.g. Breathing Problem"
-                                        className="w-full bg-surface-highlight/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-colors"
-                                    />
-                                </div>
-                            </div>
-                            <div className="space-y-2">
-                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Report Date</label>
-                                <div className="relative">
-                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                                    <input
-                                        type="date"
-                                        value={reportDate}
-                                        onChange={(e) => setReportDate(e.target.value)}
-                                        className="w-full bg-surface-highlight/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-colors [color-scheme:dark]"
-                                    />
-                                </div>
+                    {/* Operator Script */}
+                    <div className="bg-black/20 p-4 rounded-lg border border-white/10 max-w-md w-full">
+                        <h4 className="text-xs font-bold uppercase tracking-widest text-red-200 mb-2">What to tell the operator:</h4>
+                        <p className="text-sm font-mono text-white leading-relaxed">
+                            "I have a medical emergency. Patient {result.patient_details.name}, Age {result.patient_details.age}.
+                            Critical vitals detected. Requesting immediate ambulance."
+                        </p>
+                    </div>
+                </motion.div>
+            )}
+        </AnimatePresence>
+
+        {!result ? (
+            // --- Upload State ---
+            <div className="max-w-2xl mx-auto">
+                <div className="text-center mb-10">
+                    <h1 className="text-4xl font-serif text-slate-100 mb-3">Upload Medical Report</h1>
+                    <p className="text-slate-400">Upload blood tests, ECGs, X-rays, or clinical documents for AI analysis.</p>
+                </div>
+
+                <div className="glass-panel p-8 rounded-3xl border border-white/5 shadow-2xl">
+                    {/* Form Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Report Title</label>
+                            <div className="relative">
+                                <FileText className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    type="text"
+                                    value={reportTitle}
+                                    onChange={(e) => setReportTitle(e.target.value)}
+                                    placeholder="e.g. Breathing Problem"
+                                    className="w-full bg-surface-highlight/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-colors"
+                                />
                             </div>
                         </div>
+                        <div className="space-y-2">
+                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Report Date</label>
+                            <div className="relative">
+                                <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                <input
+                                    type="date"
+                                    value={reportDate}
+                                    onChange={(e) => setReportDate(e.target.value)}
+                                    className="w-full bg-surface-highlight/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-colors [color-scheme:dark]"
+                                />
+                            </div>
+                        </div>
+                    </div>
 
-                        {/* Upload Zone */}
-                        <input
-                            type="file"
-                            className="hidden"
-                            id="report-upload"
-                            onChange={handleFileUpload}
-                            accept=".pdf,.jpg,.png,.txt"
-                        />
-                        <label
-                            htmlFor="report-upload"
-                            className={`block border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 group
+                    {/* Upload Zone */}
+                    <input
+                        type="file"
+                        className="hidden"
+                        id="report-upload"
+                        onChange={handleFileUpload}
+                        accept=".pdf,.jpg,.png,.txt"
+                    />
+                    <label
+                        htmlFor="report-upload"
+                        className={`block border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 group
                                 ${file ? 'border-teal-500/50 bg-teal-500/5' : 'border-white/10 hover:border-teal-500/30 hover:bg-surface-highlight/30'}
                             `}
-                        >
-                            {file ? (
-                                <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
-                                    <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mb-4 text-teal-400">
-                                        <Check className="w-8 h-8" />
-                                    </div>
-                                    <h3 className="text-lg font-bold text-teal-100 mb-1">{file.name}</h3>
-                                    <p className="text-teal-500/60 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                    >
+                        {file ? (
+                            <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
+                                <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mb-4 text-teal-400">
+                                    <Check className="w-8 h-8" />
                                 </div>
-                            ) : (
-                                <>
-                                    <div className="w-16 h-16 bg-surface-highlight rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                                        <Upload className="w-8 h-8 text-teal-400" />
-                                    </div>
-                                    <h3 className="text-xl font-serif text-slate-100 mb-2">Click to upload file</h3>
-                                    <p className="text-slate-500 text-sm">PDF, JPEG, PNG, TXT (Max 10MB)</p>
-                                </>
-                            )}
-                        </label>
-                        {/* Action Button */}
-                        <button
-                            onClick={handleAnalyze}
-                            disabled={!file}
-                            className={`mt-8 w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+                                <h3 className="text-lg font-bold text-teal-100 mb-1">{file.name}</h3>
+                                <p className="text-teal-500/60 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="w-16 h-16 bg-surface-highlight rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
+                                    <Upload className="w-8 h-8 text-teal-400" />
+                                </div>
+                                <h3 className="text-xl font-serif text-slate-100 mb-2">Click to upload file</h3>
+                                <p className="text-slate-500 text-sm">PDF, JPEG, PNG, TXT (Max 10MB)</p>
+                            </>
+                        )}
+                    </label>
+                    {/* Action Button */}
+                    <button
+                        onClick={handleAnalyze}
+                        disabled={!file}
+                        className={`mt-8 w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
                                 ${file
-                                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 scale-100'
-                                    : 'bg-slate-800 text-slate-500 cursor-not-allowed grayscale'
-                                }
+                                ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 scale-100'
+                                : 'bg-slate-800 text-slate-500 cursor-not-allowed grayscale'
+                            }
                             `}
-                        >
-                            Analyze Report
-                        </button>
-                    </div>
+                    >
+                        Analyze Report
+                    </button>
                 </div>
-            ) : (
-                // --- Result Dashboard ---
-                <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700" id="report-content">
+            </div>
+        ) : (
+            // --- Result Dashboard ---
+            <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700" id="report-content">
 
-                    {/* Emergency Quick Actions (Only if Critical) */}
-                    {result.is_critical && (
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <a href="tel:911" className="bg-red-600 hover:bg-red-500 text-white p-6 rounded-2xl flex flex-col items-center text-center transition-all shadow-lg shadow-red-600/20 group">
-                                <Phone className="w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold uppercase tracking-wider mb-1">Call 911</h3>
-                                <p className="text-red-200 text-xs">Emergency Services</p>
-                            </a>
+                {/* Emergency Quick Actions (Only if Critical) */}
+                {result.is_critical && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <a href="tel:911" className="bg-red-600 hover:bg-red-500 text-white p-6 rounded-2xl flex flex-col items-center text-center transition-all shadow-lg shadow-red-600/20 group">
+                            <Phone className="w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-bold uppercase tracking-wider mb-1">Call 911</h3>
+                            <p className="text-red-200 text-xs">Emergency Services</p>
+                        </a>
 
-                            <button
-                                onClick={handleShareLocation}
-                                className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200"
-                            >
-                                <Share2 className="w-8 h-8 text-blue-400 mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold uppercase tracking-wider mb-1">Share Location</h3>
-                                <p className="text-slate-500 text-xs">Send to Contacts</p>
-                            </button>
+                        <button
+                            onClick={handleShareLocation}
+                            className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200"
+                        >
+                            <Share2 className="w-8 h-8 text-blue-400 mb-4 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-bold uppercase tracking-wider mb-1">Share Location</h3>
+                            <p className="text-slate-500 text-xs">Send to Contacts</p>
+                        </button>
 
-                            <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" rel="noopener noreferrer" className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200">
-                                <MapPin className="w-8 h-8 text-teal-400 mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold uppercase tracking-wider mb-1">Book Appointment</h3>
-                                <p className="text-slate-500 text-xs">Find Nearby Hospitals</p>
-                            </a>
-                        </div>
-                    )}
+                        <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" rel="noopener noreferrer" className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200">
+                            <MapPin className="w-8 h-8 text-teal-400 mb-4 group-hover:scale-110 transition-transform" />
+                            <h3 className="font-bold uppercase tracking-wider mb-1">Book Appointment</h3>
+                            <p className="text-slate-500 text-xs">Find Nearby Hospitals</p>
+                        </a>
+                    </div>
+                )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column: Patient & Vitals */}
-                        <div className="space-y-6">
-                            {/* Patient Info */}
-                            <div className="glass-card p-6 rounded-2xl border-l-4 border-l-teal-500">
-                                <h3 className="text-lg font-serif text-slate-100 mb-4">Patient Information</h3>
-                                <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between border-b border-white/5 pb-2">
-                                        <span className="text-slate-500">Name</span>
-                                        <span className="text-slate-200 font-medium">{result.patient_details.name}</span>
-                                    </div>
-                                    <div className="flex justify-between border-b border-white/5 pb-2">
-                                        <span className="text-slate-500">Age / Gender</span>
-                                        <span className="text-slate-200">{result.patient_details.age} / {result.patient_details.gender}</span>
-                                    </div>
-                                    <div className="flex justify-between pt-1">
-                                        <span className="text-slate-500">History</span>
-                                        <span className="text-slate-200">{result.patient_details.history || 'None recorded'}</span>
-                                    </div>
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {/* Left Column: Patient & Vitals */}
+                    <div className="space-y-6">
+                        {/* Patient Info */}
+                        <div className="glass-card p-6 rounded-2xl border-l-4 border-l-teal-500">
+                            <h3 className="text-lg font-serif text-slate-100 mb-4">Patient Information</h3>
+                            <div className="space-y-3 text-sm">
+                                <div className="flex justify-between border-b border-white/5 pb-2">
+                                    <span className="text-slate-500">Name</span>
+                                    <span className="text-slate-200 font-medium">{result.patient_details.name}</span>
+                                </div>
+                                <div className="flex justify-between border-b border-white/5 pb-2">
+                                    <span className="text-slate-500">Age / Gender</span>
+                                    <span className="text-slate-200">{result.patient_details.age} / {result.patient_details.gender}</span>
+                                </div>
+                                <div className="flex justify-between pt-1">
+                                    <span className="text-slate-500">History</span>
+                                    <span className="text-slate-200">{result.patient_details.history || 'None recorded'}</span>
                                 </div>
                             </div>
+                        </div>
 
-                            {/* Vitals Grid */}
-                            <div className="glass-card p-6 rounded-2xl">
-                                <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
-                                <div className="grid grid-cols-2 gap-4">
-                                    {Object.entries(result.vitals).map(([key, value]) => {
-                                        // Simple logic to determine color (mock logic, ideally backend provides this)
-                                        const isCriticalVital = result.is_critical && (key === 'temp' || key === 'bp' || key === 'hr');
+                        {/* Vitals Grid */}
+                        <div className="glass-card p-6 rounded-2xl">
+                            <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
+                            <div className="grid grid-cols-2 gap-4">
+                                {Object.entries(result.vitals).map(([key, value]) => {
+                                    // Simple logic to determine color (mock logic, ideally backend provides this)
+                                    const isCriticalVital = result.is_critical && (key === 'temp' || key === 'bp' || key === 'hr');
 
-                                        return (
-                                            <div key={key} className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all
+                                    return (
+                                        <div key={key} className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all
                                             ${isCriticalVital
-                                                    ? 'bg-red-500/10 border-red-500/30 shadow-[0_0_15px_-5px_rgba(239,68,68,0.3)]'
-                                                    : 'bg-emerald-500/5 border-emerald-500/20'
-                                                }
+                                                ? 'bg-red-500/10 border-red-500/30 shadow-[0_0_15px_-5px_rgba(239,68,68,0.3)]'
+                                                : 'bg-emerald-500/5 border-emerald-500/20'
+                                            }
                                         `}>
-                                                <div className={`text-xs uppercase font-bold mb-2 ${isCriticalVital ? 'text-red-400' : 'text-emerald-400'}`}>
-                                                    {key}
-                                                </div>
-                                                <div className={`text-xl font-bold ${isCriticalVital ? 'text-red-100' : 'text-slate-200'}`}>
-                                                    {value}
-                                                </div>
+                                            <div className={`text-xs uppercase font-bold mb-2 ${isCriticalVital ? 'text-red-400' : 'text-emerald-400'}`}>
+                                                {key}
                                             </div>
-                                        );
-                                    })}
+                                            <div className={`text-xl font-bold ${isCriticalVital ? 'text-red-100' : 'text-slate-200'}`}>
+                                                {value}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column: Summary & Remedies */}
+                    <div className="lg:col-span-2 space-y-6">
+                        {/* AI Summary */}
+                        <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
+                            <div className="absolute top-0 right-0 p-4 opacity-5">
+                                <FileText className="w-40 h-40 text-teal-500" />
+                            </div>
+
+                            <div className="flex items-center gap-3 mb-6">
+                                <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${result.is_critical ? 'bg-red-500 text-white border-red-400' : 'bg-teal-500 text-white border-teal-400'
+                                    }`}>
+                                    {result.is_critical ? 'High Risk / Emergency' : 'Standard Report Analysis'}
                                 </div>
+                            </div>
+
+                            <h3 className="text-2xl font-serif text-slate-100 mb-4">AI Assessment</h3>
+                            <p className="text-slate-300 leading-relaxed text-lg font-light mb-6">
+                                {result.summary}
+                            </p>
+
+                            <div className="bg-surface-highlight/30 rounded-xl p-6 border border-white/5">
+                                <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Immediate Recommendations</h4>
+                                <ul className="space-y-2">
+                                    {result.is_critical ? (
+                                        <>
+                                            <li className="flex items-start gap-3 text-red-200"><AlertTriangle className="w-5 h-5 shrink-0" /> Seek immediate emergency care.</li>
+                                            <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Monitor vitals continuously.</li>
+                                            <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Keep patient calm and still.</li>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Follow up with primary care physician.</li>
+                                            <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Continue prescribed medications if any.</li>
+                                        </>
+                                    )}
+                                </ul>
                             </div>
                         </div>
 
-                        {/* Right Column: Summary & Remedies */}
-                        <div className="lg:col-span-2 space-y-6">
-                            {/* AI Summary */}
-                            <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-4 opacity-5">
-                                    <FileText className="w-40 h-40 text-teal-500" />
-                                </div>
-
-                                <div className="flex items-center gap-3 mb-6">
-                                    <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${result.is_critical ? 'bg-red-500 text-white border-red-400' : 'bg-teal-500 text-white border-teal-400'
-                                        }`}>
-                                        {result.is_critical ? 'High Risk / Emergency' : 'Standard Report Analysis'}
-                                    </div>
-                                </div>
-
-                                <h3 className="text-2xl font-serif text-slate-100 mb-4">AI Assessment</h3>
-                                <p className="text-slate-300 leading-relaxed text-lg font-light mb-6">
-                                    {result.summary}
-                                </p>
-
-                                <div className="bg-surface-highlight/30 rounded-xl p-6 border border-white/5">
-                                    <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Immediate Recommendations</h4>
-                                    <ul className="space-y-2">
-                                        {result.is_critical ? (
-                                            <>
-                                                <li className="flex items-start gap-3 text-red-200"><AlertTriangle className="w-5 h-5 shrink-0" /> Seek immediate emergency care.</li>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Monitor vitals continuously.</li>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Keep patient calm and still.</li>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Follow up with primary care physician.</li>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Continue prescribed medications if any.</li>
-                                            </>
-                                        )}
-                                    </ul>
-                                </div>
-                            </div>
-
-                            {/* Remedies Section */}
-                            <div className="glass-card p-6 rounded-2xl">
-                                <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-lg font-serif text-slate-100">Natural & Home Remedies</h3>
-                                    {!showRemedies && (
-                                        <button
-                                            onClick={fetchRemedies}
-                                            className="text-sm text-teal-400 hover:text-teal-300 font-bold uppercase tracking-wider flex items-center gap-2"
-                                        >
-                                            Suggest Remedies <CheckCircle className="w-4 h-4" />
-                                        </button>
-                                    )}
-                                </div>
-
-                                {showRemedies && (
-                                    <motion.div
-                                        initial={{ opacity: 0, height: 0 }}
-                                        animate={{ opacity: 1, height: 'auto' }}
-                                        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                        {/* Remedies Section */}
+                        <div className="glass-card p-6 rounded-2xl">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-lg font-serif text-slate-100">Natural & Home Remedies</h3>
+                                {!showRemedies && (
+                                    <button
+                                        onClick={fetchRemedies}
+                                        className="text-sm text-teal-400 hover:text-teal-300 font-bold uppercase tracking-wider flex items-center gap-2"
                                     >
-                                        {remedies.length > 0 ? remedies.map((remedy, i) => (
-                                            <div key={i} className="flex items-start gap-3 p-4 bg-teal-500/5 border border-teal-500/10 rounded-xl">
-                                                <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                                                    <span className="text-xs font-bold text-teal-400">{i + 1}</span>
-                                                </div>
-                                                <p className="text-slate-300 text-sm">{remedy}</p>
-                                            </div>
-                                        )) : (
-                                            <div className="col-span-2 flex items-center justify-center py-8 text-slate-500 gap-2">
-                                                <Loader2 className="w-5 h-5 animate-spin" /> Generating suggestions...
-                                            </div>
-                                        )}
-                                    </motion.div>
+                                        Suggest Remedies <CheckCircle className="w-4 h-4" />
+                                    </button>
                                 )}
                             </div>
 
-                            {/* Security & Authenticity Section */}
-                            <div className="glass-card p-6 rounded-2xl border border-teal-500/20 bg-teal-900/5">
-                                <div className="flex items-center gap-3 mb-4">
-                                    <Shield className="w-6 h-6 text-teal-400" />
-                                    <h3 className="text-lg font-serif text-slate-100">AI Blockchain Security Verification</h3>
-                                </div>
-                                <div className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                                        <span className="text-slate-500">Status</span>
-                                        <span className="text-teal-400 font-bold flex items-center gap-2">
-                                            <CheckCircle className="w-4 h-4" /> Verified Secure
-                                        </span>
-                                    </div>
-                                    <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
-                                        <span className="text-slate-500">Encryption</span>
-                                        <span className="text-slate-300 font-mono">AES-256-GCM</span>
-                                    </div>
-                                    <div className="flex flex-col gap-1 text-sm pt-1">
-                                        <span className="text-slate-500">Blockchain Hash</span>
-                                        <span className="text-xs font-mono text-slate-400 break-all bg-black/20 p-2 rounded border border-white/5">
-                                            0x{Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
+                            {showRemedies && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0 }}
+                                    animate={{ opacity: 1, height: 'auto' }}
+                                    className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                >
+                                    {remedies.length > 0 ? remedies.map((remedy, i) => (
+                                        <div key={i} className="flex items-start gap-3 p-4 bg-teal-500/5 border border-teal-500/10 rounded-xl">
+                                            <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                <span className="text-xs font-bold text-teal-400">{i + 1}</span>
+                                            </div>
+                                            <p className="text-slate-300 text-sm">{remedy}</p>
+                                        </div>
+                                    )) : (
+                                        <div className="col-span-2 flex items-center justify-center py-8 text-slate-500 gap-2">
+                                            <Loader2 className="w-5 h-5 animate-spin" /> Generating suggestions...
+                                        </div>
+                                    )}
+                                </motion.div>
+                            )}
+                        </div>
 
-                            {/* Export Actions */}
-                            <div className="flex justify-end pt-4" data-html2canvas-ignore>
-                                <button
-                                    onClick={reset}
-                                    className="mr-6 text-slate-500 hover:text-slate-300 transition-colors text-sm font-bold uppercase tracking-wider"
-                                >
-                                    Analyze Another Report
-                                </button>
-                                <button
-                                    onClick={handleDownloadPDF}
-                                    className="bg-white text-slate-900 hover:bg-slate-200 px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg transition-colors"
-                                >
-                                    <Download className="w-4 h-4" /> Print / Save as PDF
-                                </button>
+                        {/* Security & Authenticity Section */}
+                        <div className="glass-card p-6 rounded-2xl border border-teal-500/20 bg-teal-900/5">
+                            <div className="flex items-center gap-3 mb-4">
+                                <Shield className="w-6 h-6 text-teal-400" />
+                                <h3 className="text-lg font-serif text-slate-100">AI Blockchain Security Verification</h3>
                             </div>
+                            <div className="space-y-3">
+                                <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <span className="text-slate-500">Status</span>
+                                    <span className="text-teal-400 font-bold flex items-center gap-2">
+                                        <CheckCircle className="w-4 h-4" /> Verified Secure
+                                    </span>
+                                </div>
+                                <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <span className="text-slate-500">Encryption</span>
+                                    <span className="text-slate-300 font-mono">AES-256-GCM</span>
+                                </div>
+                                <div className="flex flex-col gap-1 text-sm pt-1">
+                                    <span className="text-slate-500">Blockchain Hash</span>
+                                    <span className="text-xs font-mono text-slate-400 break-all bg-black/20 p-2 rounded border border-white/5">
+                                        0x{Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Export Actions */}
+                        <div className="flex justify-end pt-4" data-html2canvas-ignore>
+                            <button
+                                onClick={reset}
+                                className="mr-6 text-slate-500 hover:text-slate-300 transition-colors text-sm font-bold uppercase tracking-wider"
+                            >
+                                Analyze Another Report
+                            </button>
+                            <button
+                                onClick={handleDownloadPDF}
+                                className="bg-white text-slate-900 hover:bg-slate-200 px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg transition-colors"
+                            >
+                                <Download className="w-4 h-4" /> Print / Save as PDF
+                            </button>
                         </div>
                     </div>
                 </div>
-            )}
-        </div>
-    );
+            </div>
+        )}
+    </div>
+);
 }
