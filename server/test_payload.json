@@ -1,0 +1,12 @@
+{
+    "symptoms": "I have a severe headache and nausea",
+    "vitals": {
+        "temp": "99",
+        "hr": "80"
+    },
+    "userProfile": {
+        "age": 30,
+        "gender": "Male",
+        "history": "None"
+    }
+}
