@@ -67,7 +67,7 @@ export default function ReportAnalyzer() {
         formData.append('report', file);
 
         try {
-            const response = await fetch('http://localhost:3000/api/analyze-report', {
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/analyze-report`, {
                 method: 'POST',
                 body: formData
             });
@@ -110,7 +110,7 @@ export default function ReportAnalyzer() {
         if (remedies.length > 0) return; // Already fetched
 
         try {
-            const remRes = await fetch('http://localhost:3000/api/suggest-remedies', {
+            const remRes = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/suggest-remedies`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ diagnosis: result.summary })
