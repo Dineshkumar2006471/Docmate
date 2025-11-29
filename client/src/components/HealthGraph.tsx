@@ -4,22 +4,11 @@ import {
     BarChart, Bar, Cell
 } from 'recharts';
 import { motion } from 'framer-motion';
-import { Activity, Heart, Zap, Thermometer, ArrowUpRight, MoreHorizontal, User, MessageSquare, Droplets } from 'lucide-react';
+import { Activity, Heart, Zap, Thermometer, ArrowUpRight, MoreHorizontal, User, MessageSquare, Droplets, FileText } from 'lucide-react';
 import clsx from 'clsx';
 import { auth } from '../lib/firebase';
 import { Link } from 'react-router-dom';
 import { useHealthData } from '../hooks/useHealthData';
-
-// --- Mock Data for Sleep (still static as it's nightly) ---
-const sleepData = [
-    { day: 'Mon', hours: 7.2, quality: 85 },
-    { day: 'Tue', hours: 6.5, quality: 70 },
-    { day: 'Wed', hours: 8.0, quality: 92 },
-    { day: 'Thu', hours: 7.5, quality: 88 },
-    { day: 'Fri', hours: 5.5, quality: 60 },
-    { day: 'Sat', hours: 9.0, quality: 95 },
-    { day: 'Sun', hours: 8.2, quality: 90 },
-];
 
 // --- Components ---
 
@@ -57,10 +46,15 @@ const CustomTooltip = ({ active, payload, label }: any) => {
             <div className="bg-surface border border-white/10 p-3 shadow-xl backdrop-blur-md">
                 <p className="text-slate-400 text-xs mb-1 font-sans uppercase tracking-wider">{label}</p>
                 <p className="text-teal-300 font-serif text-xl">
-                    {payload[0].value} <span className="text-xs font-sans text-slate-500">BPM</span>
+                    {payload[0].value} <span className="text-xs font-sans text-slate-500">
+                        {payload[0].name === 'severity' ? 'Score' : 'BPM'}
+                    </span>
                 </p>
                 {payload[0].payload.activity && (
                     <p className="text-slate-500 text-xs mt-1 italic">{payload[0].payload.activity}</p>
+                )}
+                {payload[0].payload.title && (
+                    <p className="text-slate-500 text-xs mt-1 italic">{payload[0].payload.title}</p>
                 )}
             </div>
         );
@@ -71,11 +65,53 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 export default function HealthGraph() {
     const [user, setUser] = useState<any>(null);
     const { vitals, heartRateHistory } = useHealthData();
+    const [reportHistory, setReportHistory] = useState<any[]>([]);
+    const [latestInsight, setLatestInsight] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((u) => {
             setUser(u);
         });
+
+        // Load Report History
+        const loadReports = () => {
+            try {
+                const existing = localStorage.getItem('docmate_reports');
+                if (existing) {
+                    const reports = JSON.parse(existing);
+                    // Process reports for graph
+                    // We want to show Severity Score over time
+                    // If severity_score is missing, map from risk_level
+                    const processed = reports.map((r: any) => {
+                        let score = r.severity_score;
+                        if (!score) {
+                            if (r.risk_level === 'Emergency') score = 9;
+                            else if (r.risk_level === 'Doctor Visit') score = 6;
+                            else score = 2;
+                        }
+                        return {
+                            date: r.date,
+                            severity: score,
+                            title: r.title,
+                            risk: r.risk_level
+                        };
+                    }).reverse(); // Show oldest to newest
+
+                    // Take last 7 reports for the graph
+                    setReportHistory(processed.slice(-7));
+
+                    // Set latest insight
+                    if (reports.length > 0) {
+                        setLatestInsight(reports[0].summary);
+                    }
+                }
+            } catch (e) {
+                console.error("Failed to load reports", e);
+            }
+        };
+
+        loadReports();
+
         return () => unsubscribe();
     }, []);
 
@@ -207,34 +243,42 @@ export default function HealthGraph() {
                     </Card>
                 </div>
 
-                {/* Sleep Analysis Bar Chart */}
+                {/* Report Analysis History Chart */}
                 <Card className="col-span-1 md:col-span-6 min-h-[300px] min-w-0" delay={0.4}>
                     <div className="flex items-center gap-3 mb-6">
-                        <Zap className="w-5 h-5 text-purple-400" />
-                        <h3 className="text-lg font-serif text-slate-100">Sleep Quality Index</h3>
+                        <FileText className="w-5 h-5 text-purple-400" />
+                        <h3 className="text-lg font-serif text-slate-100">Report Severity Trends</h3>
                     </div>
-                    <div className="h-[200px] w-full min-w-0">
-                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={150}>
-                            <BarChart data={sleepData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.1} vertical={false} />
-                                <XAxis
-                                    dataKey="day"
-                                    axisLine={false}
-                                    tickLine={false}
-                                    tick={{ fill: '#64748b', fontSize: 12 }}
-                                />
-                                <Tooltip
-                                    cursor={{ fill: 'rgba(255,255,255,0.05)' }}
-                                    contentStyle={{ backgroundColor: '#0a1414', borderColor: '#334155', color: '#f1f5f9' }}
-                                />
-                                <Bar dataKey="quality" radius={[4, 4, 0, 0]}>
-                                    {sleepData.map((entry, index) => (
-                                        <Cell key={`cell-${index}`} fill={entry.quality > 80 ? '#14b8a6' : '#94a3b8'} fillOpacity={entry.quality > 80 ? 0.8 : 0.3} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
-                    </div>
+                    {reportHistory.length > 0 ? (
+                        <div className="h-[200px] w-full min-w-0">
+                            <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={150}>
+                                <BarChart data={reportHistory}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.1} vertical={false} />
+                                    <XAxis
+                                        dataKey="date"
+                                        axisLine={false}
+                                        tickLine={false}
+                                        tick={{ fill: '#64748b', fontSize: 12 }}
+                                    />
+                                    <Tooltip
+                                        cursor={{ fill: 'rgba(255,255,255,0.05)' }}
+                                        content={<CustomTooltip />}
+                                    />
+                                    <Bar dataKey="severity" radius={[4, 4, 0, 0]}>
+                                        {reportHistory.map((entry, index) => (
+                                            <Cell key={`cell-${index}`} fill={entry.severity > 7 ? '#ef4444' : entry.severity > 4 ? '#f97316' : '#14b8a6'} fillOpacity={0.8} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
+                    ) : (
+                        <div className="h-[200px] flex flex-col items-center justify-center text-slate-500">
+                            <FileText className="w-8 h-8 mb-2 opacity-50" />
+                            <p>No reports analyzed yet.</p>
+                            <Link to="/report-analyzer" className="text-teal-400 text-sm mt-2 hover:underline">Upload a report</Link>
+                        </div>
+                    )}
                 </Card>
 
                 {/* AI Insight Card */}
@@ -244,15 +288,15 @@ export default function HealthGraph() {
                             <span className="inline-block px-2 py-1 bg-teal-500/10 border border-teal-500/20 rounded text-[10px] uppercase tracking-widest text-teal-300 mb-4">
                                 AI Analysis
                             </span>
-                            <h3 className="text-2xl font-serif text-slate-100 mb-3">Pattern Detected</h3>
-                            <p className="text-slate-400 leading-relaxed font-light">
-                                "We've noticed a correlation between your <span className="text-slate-200 font-medium">late-night work sessions</span> and elevated morning heart rate. Consider shifting focus time to 10:00 AM."
+                            <h3 className="text-2xl font-serif text-slate-100 mb-3">Latest Insight</h3>
+                            <p className="text-slate-400 leading-relaxed font-light line-clamp-3">
+                                {latestInsight || "We've noticed a correlation between your late-night work sessions and elevated morning heart rate. Consider shifting focus time to 10:00 AM."}
                             </p>
                         </div>
                         <div className="mt-6 pt-6 border-t border-white/5 flex gap-4">
-                            <button className="text-sm text-teal-300 hover:text-teal-200 transition-colors uppercase tracking-wider font-medium">
-                                View Details
-                            </button>
+                            <Link to="/report-analyzer" className="text-sm text-teal-300 hover:text-teal-200 transition-colors uppercase tracking-wider font-medium">
+                                View Reports
+                            </Link>
                             <button className="text-sm text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-wider font-medium">
                                 Dismiss
                             </button>

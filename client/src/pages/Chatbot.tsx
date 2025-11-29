@@ -265,6 +265,10 @@ export default function Chatbot() {
 
             const data = await response.json();
 
+            if (!response.ok) {
+                throw new Error(data.error || data.details || "Failed to get response from AI");
+            }
+
             const aiResponse: Message = {
                 id: (Date.now() + 1).toString(),
                 text: data.response || "I'm sorry, I couldn't process that.",
@@ -278,11 +282,11 @@ export default function Chatbot() {
             // Auto-read if user wants? For now, let's just let them click to play for text.
             // playAudio(aiResponse.text, data.language_code, aiResponse.id);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Chat Failed", error);
             const errorMsg: Message = {
                 id: (Date.now() + 1).toString(),
-                text: "Sorry, I'm having trouble connecting to the server.",
+                text: error.message || "Sorry, I'm having trouble connecting to the server.",
                 sender: 'ai',
                 timestamp: new Date()
             };

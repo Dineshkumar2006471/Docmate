@@ -2,16 +2,34 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, AlertTriangle, Phone, MapPin, CheckCircle, Download, Calendar, Share2, Loader2, Check, Shield } from 'lucide-react';
 
-import html2canvas from 'html2canvas';
-import jsPDF from 'jspdf';
-
 // --- Types ---
 interface ReportAnalysis {
-    is_critical: boolean;
-    patient_details: { name: string; age: string; gender: string; history?: string };
-    vitals: { temp: string; hr: string; bp: string; spo2: string };
-    summary: string;
-    anomalies: string[];
+    patient_info: {
+        name: string;
+        age: number;
+        gender: string;
+        blood_type: string;
+    };
+    triage_status: {
+        level: "Emergency" | "Doctor Visit" | "Low Risk";
+        severity_score: number;
+        color_code: "Red" | "Orange" | "Green";
+        alert_message: string;
+    };
+    vital_signs: Array<{
+        label: string;
+        value: string;
+        status: "Critical" | "Warning" | "Normal";
+    }>;
+    ai_analysis: {
+        warning_signs: string[];
+        possible_conditions: Array<{
+            condition: string;
+            probability: string;
+            description: string;
+        }>;
+        recommendations: string;
+    };
 }
 
 export default function ReportAnalyzer() {
@@ -40,7 +58,6 @@ export default function ReportAnalyzer() {
             "Uploading file...",
             "Extracting text from report...",
             "Analyzing medical data with AI...",
-            "Verifying blockchain signature...",
             "Saving analysis..."
         ];
         let currentStep = 0;
@@ -66,7 +83,7 @@ export default function ReportAnalyzer() {
         const formData = new FormData();
         formData.append('report', file);
 
-        const isValid = (d: any) => d && d.patient_details && d.vitals && typeof d.summary === 'string' && typeof d.is_critical === 'boolean';
+        const isValid = (d: any) => d && d.patient_info && d.triage_status && d.vital_signs && d.ai_analysis;
 
         try {
             const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/analyze-report`, {
@@ -100,8 +117,9 @@ export default function ReportAnalyzer() {
             id: Date.now().toString(),
             title: title || "Untitled Report",
             date: date || new Date().toISOString().split('T')[0],
-            risk_level: data.is_critical ? 'Critical' : 'Low', // Simplified mapping
-            summary: data.summary,
+            risk_level: data.triage_status.level,
+            severity_score: data.triage_status.severity_score,
+            summary: data.ai_analysis.recommendations,
             type: 'Lab Report'
         };
 
@@ -117,203 +135,35 @@ export default function ReportAnalyzer() {
         if (remedies.length > 0) return; // Already fetched
 
         try {
+            // Get the most probable condition or the first one found
+            const diagnosis = result.ai_analysis.possible_conditions[0]?.condition || "General Health Check";
+
+            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/suggest-remedies`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ diagnosis })
+            });
+
+            const data = await response.json();
+
+            if (data.remedies && Array.isArray(data.remedies)) {
+                setRemedies(data.remedies);
+            } else {
+                throw new Error("Invalid remedies format");
+            }
         } catch (e) {
             console.error("Failed to fetch remedies", e);
+            setRemedies([
+                "Ensure adequate hydration.",
+                "Maintain a balanced diet rich in nutrients.",
+                "Get sufficient rest and sleep.",
+                "Consult a healthcare provider for personalized advice."
+            ]);
         }
     };
 
-    const handleDownloadPDF = async () => {
-        const element = document.getElementById('report-content');
-        if (!element) return;
-
-        try {
-            setIsProcessing(true);
-            setProcessStep("Preparing PDF...");
-
-            // 1. Create a Sandbox Iframe
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'fixed';
-            iframe.style.left = '-9999px';
-            iframe.style.top = '0';
-            iframe.style.width = '1024px';
-            iframe.style.height = '100vh';
-            iframe.style.border = 'none';
-            iframe.style.zIndex = '-1';
-            document.body.appendChild(iframe);
-
-            // Wait for iframe to load
-            await new Promise(resolve => setTimeout(resolve, 100));
-            const iframeDoc = iframe.contentDocument || iframe.contentWindow?.document;
-            if (!iframeDoc) {
-                throw new Error("Could not create sandbox iframe");
-            }
-
-            // 2. Clear Iframe & Setup Base Styles
-            iframeDoc.open();
-            iframeDoc.write('<html><head><style>body { margin: 0; padding: 20px; background: white; font-family: Arial, sans-serif; }</style></head><body></body></html>');
-            iframeDoc.close();
-
-            // 3. Clone Content into Iframe
-            const clone = element.cloneNode(true) as HTMLElement;
-            iframeDoc.body.appendChild(clone);
-
-            // 4. Color Sanitizer Helper
-            const ctx = document.createElement('canvas').getContext('2d');
-            const toSafeRGB = (color: string) => {
-                if (!ctx || !color || color === 'transparent' || color === 'inherit' || color === 'none') return color;
-                ctx.fillStyle = color;
-                return ctx.fillStyle;
-            };
-
-            // 5. The "Tree Walker"
-            const processNode = (original: HTMLElement, cloned: HTMLElement) => {
-                if (!original || !cloned) return;
-
-                const computed = window.getComputedStyle(original);
-
-                // --- Layout & Box Model ---
-                cloned.style.display = computed.display;
-                cloned.style.boxSizing = computed.boxSizing;
-                cloned.style.position = computed.position === 'fixed' ? 'absolute' : computed.position;
-                cloned.style.margin = computed.margin;
-                cloned.style.padding = computed.padding;
-                cloned.style.float = computed.float;
-                cloned.style.clear = computed.clear;
-
-                // Dimensions
-                if (original.tagName === 'SVG' || original.classList.contains('recharts-wrapper') || computed.display === 'flex') {
-                    cloned.style.width = `${original.clientWidth}px`;
-                    cloned.style.height = `${original.clientHeight}px`;
-                } else {
-                    cloned.style.width = computed.width;
-                    cloned.style.height = computed.height;
-                }
-
-                // --- Typography ---
-                cloned.style.fontFamily = 'Arial, sans-serif';
-                cloned.style.fontSize = computed.fontSize;
-                cloned.style.fontWeight = computed.fontWeight;
-                cloned.style.fontStyle = computed.fontStyle;
-                cloned.style.lineHeight = computed.lineHeight;
-                cloned.style.textAlign = computed.textAlign;
-                cloned.style.textTransform = computed.textTransform;
-                cloned.style.letterSpacing = computed.letterSpacing;
-                cloned.style.whiteSpace = computed.whiteSpace;
-
-                // --- Flex / Grid ---
-                cloned.style.flexDirection = computed.flexDirection;
-                cloned.style.flexWrap = computed.flexWrap;
-                cloned.style.justifyContent = computed.justifyContent;
-                cloned.style.alignItems = computed.alignItems;
-                cloned.style.alignContent = computed.alignContent;
-                cloned.style.gap = computed.gap;
-                cloned.style.gridTemplateColumns = computed.gridTemplateColumns;
-                cloned.style.gridTemplateRows = computed.gridTemplateRows;
-
-                // --- COLOR SANITIZATION ---
-                cloned.style.color = toSafeRGB(computed.color);
-                cloned.style.backgroundColor = toSafeRGB(computed.backgroundColor);
-
-                // Borders
-                cloned.style.borderTopWidth = computed.borderTopWidth;
-                cloned.style.borderTopStyle = computed.borderTopStyle;
-                cloned.style.borderTopColor = toSafeRGB(computed.borderTopColor);
-
-                cloned.style.borderRightWidth = computed.borderRightWidth;
-                cloned.style.borderRightStyle = computed.borderRightStyle;
-                cloned.style.borderRightColor = toSafeRGB(computed.borderRightColor);
-
-                cloned.style.borderBottomWidth = computed.borderBottomWidth;
-                cloned.style.borderBottomStyle = computed.borderBottomStyle;
-                cloned.style.borderBottomColor = toSafeRGB(computed.borderBottomColor);
-
-                cloned.style.borderLeftWidth = computed.borderLeftWidth;
-                cloned.style.borderLeftStyle = computed.borderLeftStyle;
-                cloned.style.borderLeftColor = toSafeRGB(computed.borderLeftColor);
-
-                cloned.style.borderRadius = computed.borderRadius;
-
-                // SVG Specifics
-                if (original.tagName === 'svg' || original.tagName === 'path' || original.tagName === 'circle' || original.tagName === 'rect' || original.tagName === 'text' || original.tagName === 'g') {
-                    cloned.style.fill = toSafeRGB(computed.fill);
-                    cloned.style.stroke = toSafeRGB(computed.stroke);
-                    cloned.style.strokeWidth = computed.strokeWidth;
-                }
-
-                // Misc Colors
-                cloned.style.textDecorationColor = toSafeRGB(computed.textDecorationColor);
-                cloned.style.outlineColor = toSafeRGB(computed.outlineColor);
-
-                // Shadows
-                if (computed.boxShadow && (computed.boxShadow.includes('oklch') || computed.boxShadow.includes('oklab'))) {
-                    cloned.style.boxShadow = 'none';
-                } else {
-                    cloned.style.boxShadow = computed.boxShadow;
-                }
-
-                // --- Clean Attributes ---
-                cloned.removeAttribute('class');
-                cloned.removeAttribute('id');
-
-                // --- Recurse ---
-                const originalChildren = Array.from(original.children) as HTMLElement[];
-                const clonedChildren = Array.from(cloned.children) as HTMLElement[];
-
-                for (let i = 0; i < originalChildren.length; i++) {
-                    if (clonedChildren[i]) {
-                        processNode(originalChildren[i], clonedChildren[i]);
-                    }
-                }
-            };
-
-            processNode(element, clone);
-
-            // 6. Generate PDF from Iframe
-            const canvas = await html2canvas(iframeDoc.body, {
-                scale: 2,
-                backgroundColor: '#ffffff',
-                useCORS: true,
-                logging: false,
-                allowTaint: true,
-                windowWidth: 1024,
-                ignoreElements: (el) => el.tagName === 'SCRIPT' || el.tagName === 'STYLE' || el.tagName === 'LINK',
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = pdf.internal.pageSize.getHeight();
-            const imgWidth = pdfWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
-
-            let heightLeft = imgHeight;
-            let position = 0;
-
-            pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-            heightLeft -= pdfHeight;
-
-            while (heightLeft > 0) {
-                position -= pdfHeight;
-                pdf.addPage();
-                pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
-                heightLeft -= pdfHeight;
-            }
-
-            pdf.save(`Medical_Report_${result?.patient_details.name || 'Patient'}.pdf`);
-
-            // Cleanup
-            document.body.removeChild(iframe);
-            setIsProcessing(false);
-
-        } catch (error) {
-            console.error('Error generating PDF:', error);
-            alert("Failed to generate PDF. Please try again.");
-            setIsProcessing(false);
-            const iframes = document.querySelectorAll('iframe');
-            iframes.forEach(f => {
-                if (f.style.left === '-9999px') f.remove();
-            });
-        }
+    const handleDownloadPDF = () => {
+        window.print();
     };
 
     const reset = () => {
@@ -393,7 +243,7 @@ export default function ReportAnalyzer() {
 
             {/* Critical Alert Banner (After Analysis) */}
             <AnimatePresence>
-                {result?.is_critical && (
+                {result?.triage_status.level === 'Emergency' && (
                     <motion.div
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: 'auto', opacity: 1 }}
@@ -405,17 +255,8 @@ export default function ReportAnalyzer() {
                             </div>
                             <div>
                                 <h2 className="text-3xl font-bold uppercase tracking-wider mb-1">CALL 911 IMMEDIATELY</h2>
-                                <p className="text-red-100 text-lg">Critical anomalies detected in this report.</p>
+                                <p className="text-red-100 text-lg">{result.triage_status.alert_message}</p>
                             </div>
-                        </div>
-
-                        {/* Operator Script */}
-                        <div className="bg-black/20 p-4 rounded-lg border border-white/10 max-w-md w-full">
-                            <h4 className="text-xs font-bold uppercase tracking-widest text-red-200 mb-2">What to tell the operator:</h4>
-                            <p className="text-sm font-mono text-white leading-relaxed">
-                                "I have a medical emergency. Patient {result.patient_details.name}, Age {result.patient_details.age}.
-                                Critical vitals detected. Requesting immediate ambulance."
-                            </p>
                         </div>
                     </motion.div>
                 )}
@@ -492,18 +333,20 @@ export default function ReportAnalyzer() {
                             )}
                         </label>
                         {/* Action Button */}
-                        <button
-                            onClick={handleAnalyze}
-                            disabled={!file}
-                            className={`mt-8 w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
+                        <div className="flex justify-end mt-8">
+                            <button
+                                onClick={handleAnalyze}
+                                disabled={!file}
+                                className={`w-full py-4 px-8 rounded-xl font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-2
                                 ${file
-                                    ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 scale-100'
-                                    : 'bg-slate-800 text-slate-500 cursor-not-allowed grayscale'
-                                }
+                                        ? 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/20 scale-100'
+                                        : 'bg-slate-800 text-slate-500 cursor-not-allowed grayscale'
+                                    }
                             `}
-                        >
-                            Analyze Report
-                        </button>
+                            >
+                                Analyze Report
+                            </button>
+                        </div>
                     </div>
                 </div>
             ) : (
@@ -511,7 +354,7 @@ export default function ReportAnalyzer() {
                 <div className="space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-700" id="report-content">
 
                     {/* Emergency Quick Actions (Only if Critical) */}
-                    {result.is_critical && (
+                    {result.triage_status.level === 'Emergency' && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             <a href="tel:911" className="bg-red-600 hover:bg-red-500 text-white p-6 rounded-2xl flex flex-col items-center text-center transition-all shadow-lg shadow-red-600/20 group">
                                 <Phone className="w-8 h-8 mb-4 group-hover:scale-110 transition-transform" />
@@ -524,13 +367,14 @@ export default function ReportAnalyzer() {
                                 className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200"
                             >
                                 <Share2 className="w-8 h-8 text-blue-400 mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold uppercase tracking-wider mb-1">Share Location</h3>
+                                <h3 className="font-bold uppercase tracking-wider mb-1">Share My Location</h3>
                                 <p className="text-slate-500 text-xs">Send to Contacts</p>
                             </button>
 
-                            <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" rel="noopener noreferrer" className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200">
+                            <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" rel="noopener noreferrer" className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200"
+                            >
                                 <MapPin className="w-8 h-8 text-teal-400 mb-4 group-hover:scale-110 transition-transform" />
-                                <h3 className="font-bold uppercase tracking-wider mb-1">Book Appointment</h3>
+                                <h3 className="font-bold uppercase tracking-wider mb-1">Find Hospitals</h3>
                                 <p className="text-slate-500 text-xs">Find Nearby Hospitals</p>
                             </a>
                         </div>
@@ -545,15 +389,15 @@ export default function ReportAnalyzer() {
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between border-b border-white/5 pb-2">
                                         <span className="text-slate-500">Name</span>
-                                        <span className="text-slate-200 font-medium">{result.patient_details.name}</span>
+                                        <span className="text-slate-200 font-medium">{result.patient_info.name}</span>
                                     </div>
                                     <div className="flex justify-between border-b border-white/5 pb-2">
                                         <span className="text-slate-500">Age / Gender</span>
-                                        <span className="text-slate-200">{result.patient_details.age} / {result.patient_details.gender}</span>
+                                        <span className="text-slate-200">{result.patient_info.age} / {result.patient_info.gender}</span>
                                     </div>
                                     <div className="flex justify-between pt-1">
-                                        <span className="text-slate-500">History</span>
-                                        <span className="text-slate-200">{result.patient_details.history || 'None recorded'}</span>
+                                        <span className="text-slate-500">Blood Type</span>
+                                        <span className="text-slate-200">{result.patient_info.blood_type || 'Unknown'}</span>
                                     </div>
                                 </div>
                             </div>
@@ -562,22 +406,34 @@ export default function ReportAnalyzer() {
                             <div className="glass-card p-6 rounded-2xl">
                                 <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
                                 <div className="grid grid-cols-2 gap-4">
-                                    {Object.entries(result.vitals).map(([key, value]) => {
-                                        // Simple logic to determine color (mock logic, ideally backend provides this)
-                                        const isCriticalVital = result.is_critical && (key === 'temp' || key === 'bp' || key === 'hr');
+                                    {result.vital_signs.map((vital, index) => {
+                                        const isCriticalVital = vital.status === 'Critical';
+                                        const isWarningVital = vital.status === 'Warning';
+
+                                        let bgClass = 'bg-emerald-500/5 border-emerald-500/20';
+                                        let textClass = 'text-emerald-400';
+                                        let valueClass = 'text-slate-200';
+
+                                        if (isCriticalVital) {
+                                            bgClass = 'bg-red-500/10 border-red-500/30 shadow-[0_0_15px_-5px_rgba(239,68,68,0.3)]';
+                                            textClass = 'text-red-400';
+                                            valueClass = 'text-red-100';
+                                        } else if (isWarningVital) {
+                                            bgClass = 'bg-yellow-500/10 border-yellow-500/30';
+                                            textClass = 'text-yellow-400';
+                                            valueClass = 'text-yellow-100';
+                                        }
 
                                         return (
-                                            <div key={key} className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all
-                                            ${isCriticalVital
-                                                    ? 'bg-red-500/10 border-red-500/30 shadow-[0_0_15px_-5px_rgba(239,68,68,0.3)]'
-                                                    : 'bg-emerald-500/5 border-emerald-500/20'
-                                                }
-                                        `}>
-                                                <div className={`text-xs uppercase font-bold mb-2 ${isCriticalVital ? 'text-red-400' : 'text-emerald-400'}`}>
-                                                    {key}
+                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all ${bgClass}`}>
+                                                <div className={`text-xs uppercase font-bold mb-2 ${textClass}`}>
+                                                    {vital.label}
                                                 </div>
-                                                <div className={`text-xl font-bold ${isCriticalVital ? 'text-red-100' : 'text-slate-200'}`}>
-                                                    {value}
+                                                <div className={`text-xl font-bold ${valueClass}`}>
+                                                    {vital.value}
+                                                </div>
+                                                <div className={`text-[10px] uppercase tracking-widest mt-1 opacity-60 ${textClass}`}>
+                                                    {vital.status}
                                                 </div>
                                             </div>
                                         );
@@ -595,30 +451,32 @@ export default function ReportAnalyzer() {
                                 </div>
 
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${result.is_critical ? 'bg-red-500 text-white border-red-400' : 'bg-teal-500 text-white border-teal-400'
+                                    <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${result.triage_status.level === 'Emergency' ? 'bg-red-500 text-white border-red-400' : 'bg-teal-500 text-white border-teal-400'
                                         }`}>
-                                        {result.is_critical ? 'High Risk / Emergency' : 'Standard Report Analysis'}
+                                        {result.triage_status.level === 'Emergency' ? 'High Risk / Emergency' : result.triage_status.level}
                                     </div>
                                 </div>
 
                                 <h3 className="text-2xl font-serif text-slate-100 mb-4">AI Assessment</h3>
                                 <p className="text-slate-300 leading-relaxed text-lg font-light mb-6">
-                                    {result.summary}
+                                    {result.ai_analysis.recommendations}
                                 </p>
 
                                 <div className="bg-surface-highlight/30 rounded-xl p-6 border border-white/5">
                                     <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Immediate Recommendations</h4>
                                     <ul className="space-y-2">
-                                        {result.is_critical ? (
+                                        {result.triage_status.level === 'Emergency' ? (
                                             <>
-                                                <li className="flex items-start gap-3 text-red-200"><AlertTriangle className="w-5 h-5 shrink-0" /> Seek immediate emergency care.</li>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Monitor vitals continuously.</li>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Keep patient calm and still.</li>
+                                                <li className="flex items-start gap-3 text-red-200"><AlertTriangle className="w-5 h-5 shrink-0" /> {result.triage_status.alert_message}</li>
+                                                {result.ai_analysis.warning_signs.map((sign, i) => (
+                                                    <li key={i} className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> {sign}</li>
+                                                ))}
                                             </>
                                         ) : (
                                             <>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Follow up with primary care physician.</li>
-                                                <li className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> Continue prescribed medications if any.</li>
+                                                {result.ai_analysis.warning_signs.map((sign, i) => (
+                                                    <li key={i} className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> {sign}</li>
+                                                ))}
                                             </>
                                         )}
                                     </ul>
@@ -628,7 +486,7 @@ export default function ReportAnalyzer() {
                             {/* Remedies Section */}
                             <div className="glass-card p-6 rounded-2xl">
                                 <div className="flex items-center justify-between mb-6">
-                                    <h3 className="text-lg font-serif text-slate-100">Natural & Home Remedies</h3>
+                                    <h3 className="text-lg font-serif text-slate-100">Natural & Home Remedies (AI-Suggested)</h3>
                                     {!showRemedies && (
                                         <button
                                             onClick={fetchRemedies}
@@ -691,13 +549,13 @@ export default function ReportAnalyzer() {
                             <div className="flex justify-end pt-4" data-html2canvas-ignore>
                                 <button
                                     onClick={reset}
-                                    className="mr-6 text-slate-500 hover:text-slate-300 transition-colors text-sm font-bold uppercase tracking-wider"
+                                    className="mr-6 text-slate-500 hover:text-slate-300 transition-colors text-sm font-bold uppercase tracking-wider no-print"
                                 >
                                     Analyze Another Report
                                 </button>
                                 <button
                                     onClick={handleDownloadPDF}
-                                    className="bg-white text-slate-900 hover:bg-slate-200 px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg transition-colors"
+                                    className="bg-white text-slate-900 hover:bg-slate-200 px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg transition-colors no-print"
                                 >
                                     <Download className="w-4 h-4" /> Print / Save as PDF
                                 </button>

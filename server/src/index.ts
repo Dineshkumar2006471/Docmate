@@ -1,5 +1,12 @@
 import dotenv from 'dotenv';
-dotenv.config();
+import path from 'path';
+const envPath = path.resolve(__dirname, '../.env');
+console.log("Loading .env from:", envPath);
+dotenv.config({ path: envPath });
+
+console.log("Server Starting...");
+console.log("GEMINI_API_KEY Loaded:", process.env.GEMINI_API_KEY ? "YES (Length: " + process.env.GEMINI_API_KEY.length + ")" : "NO");
+
 
 import express from 'express';
 import cors from 'cors';

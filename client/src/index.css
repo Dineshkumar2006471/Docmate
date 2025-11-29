@@ -138,3 +138,101 @@
 .animate-blob {
   animation: blob 7s infinite;
 }
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+  }
+
+  #root {
+    width: 100%;
+    overflow: visible !important;
+  }
+
+  /* Reset layout for print */
+  .flex,
+  .h-screen,
+  .overflow-hidden {
+    display: block !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure the report content is visible and takes full width */
+  main {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Reset dark mode styles for print */
+  .glass-card,
+  .glass-panel {
+    background: white !important;
+    border: 1px solid #ccc !important;
+    color: black !important;
+    box-shadow: none !important;
+    backdrop-filter: none !important;
+  }
+
+  /* Typography overrides */
+  .text-slate-100,
+  .text-slate-200,
+  .text-slate-300,
+  .text-slate-400,
+  .text-slate-500 {
+    color: #333 !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #000 !important;
+  }
+
+  /* Critical Alerts */
+  .bg-red-500 {
+    background-color: #fee2e2 !important;
+    /* light red bg */
+    color: #991b1b !important;
+    /* dark red text */
+    border: 1px solid #ef4444 !important;
+  }
+
+  .text-red-100,
+  .text-red-200 {
+    color: #7f1d1d !important;
+  }
+
+  /* Teal Accents */
+  .text-teal-400,
+  .text-teal-500 {
+    color: #0f766e !important;
+  }
+
+  .bg-teal-500\/5,
+  .bg-teal-500\/10,
+  .bg-teal-500\/20 {
+    background-color: #f0fdfa !important;
+    border: 1px solid #ccfbf1 !important;
+  }
+
+  /* Hide background gradients/noise */
+  .hero-gradient,
+  .absolute {
+    display: none !important;
+  }
+
+  /* Re-enable absolute for specific elements if needed, but generally avoid in print */
+  /* Exception for layout elements that might be absolute */
+}

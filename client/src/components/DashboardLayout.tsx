@@ -44,7 +44,9 @@ export default function DashboardLayout() {
 
     return (
         <div className="flex h-screen bg-background overflow-hidden font-sans">
-            <Sidebar />
+            <div className="no-print">
+                <Sidebar />
+            </div>
             <div className="flex-1 flex flex-col min-w-0 relative">
                 {/* Background Noise/Gradient */}
                 <div className="absolute inset-0 pointer-events-none z-0">
@@ -52,7 +54,7 @@ export default function DashboardLayout() {
                 </div>
 
                 {/* Dynamic Header */}
-                <header className="h-20 border-b border-white/5 flex items-center px-8 z-10 bg-background/50 backdrop-blur-sm">
+                <header className="h-20 border-b border-white/5 flex items-center px-8 z-10 bg-background/50 backdrop-blur-sm no-print">
                     <h1 className="text-2xl font-serif text-slate-100">{currentTitle}</h1>
                 </header>
 

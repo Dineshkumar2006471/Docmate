@@ -28,6 +28,9 @@ export default function LoginPage() {
             }
             navigate('/dashboard');
         } catch (err: any) {
+            console.error("Authentication Error:", err);
+            console.error("Error Code:", err.code);
+            console.error("Error Message:", err.message);
             setError(err.message);
         }
     };

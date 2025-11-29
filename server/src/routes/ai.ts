@@ -14,7 +14,7 @@ const audioUpload = multer({ storage: multer.memoryStorage() });
 
 // Initialize Gemini Lazily
 const getGenAI = () => {
-    const key = process.env.GEMINI_API_KEY;
+    const key = process.env.GEMINI_API_KEY || "AIzaSyCcQb_gmdu_uM9AcJqLgl_ciyH_G3klEm8";
     if (!key) throw new Error("GEMINI_API_KEY is missing");
     return new GoogleGenerativeAI(key);
 };
@@ -59,29 +59,20 @@ router.post('/analyze-symptoms', async (req, res) => {
     try {
         const { symptoms, vitals, userProfile } = req.body;
 
-        if (!process.env.GEMINI_API_KEY) {
-            // Mock Response if no key
-            return res.json({
-                risk_level: "Moderate",
-                risk_score: 5,
-                possible_conditions: [
-                    { name: "Viral Gastroenteritis", probability: 45 },
-                    { name: "Food Poisoning", probability: 30 },
-                    { name: "Gastritis", probability: 15 }
-                ],
-                recommendation: "Hydrate and rest. If symptoms persist for >24h, see a doctor.",
-                warning_signs: ["Nausea", "Mild Dehydration"]
-            });
-        }
 
-        const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" });
+
+        const model = getGenAI().getGenerativeModel({
+            model: "gemini-2.5-flash-preview-09-2025",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
         const prompt = `
       Act as an expert medical AI. Analyze the following patient data:
       Profile: ${JSON.stringify(userProfile)}
       Symptoms: ${symptoms}
       Vitals: ${JSON.stringify(vitals)}
 
-      Return a JSON object ONLY (no markdown) with this structure:
+      Return a JSON object ONLY with this structure:
       {
         "risk_level": "Low" | "Moderate" | "High" | "Critical",
         "risk_score": number (1-10),
@@ -95,16 +86,8 @@ router.post('/analyze-symptoms', async (req, res) => {
         const response = await result.response;
         const text = response.text();
 
-        // Robust JSON Extraction
-        let jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        const firstOpen = jsonStr.indexOf('{');
-        const lastClose = jsonStr.lastIndexOf('}');
-        if (firstOpen !== -1 && lastClose !== -1) {
-            jsonStr = jsonStr.substring(firstOpen, lastClose + 1);
-        }
-
         try {
-            const parsedData = JSON.parse(jsonStr);
+            const parsedData = JSON.parse(text);
             res.json(parsedData);
         } catch (parseError) {
             console.error("JSON Parse Error:", parseError);
@@ -119,14 +102,6 @@ router.post('/analyze-symptoms', async (req, res) => {
 
 // --- Route: Analyze Report (OCR + Analysis) ---
 router.post('/analyze-report', upload.single('report'), async (req, res) => {
-    const fallback = {
-        patient_details: { name: "John Doe", age: "45", gender: "Male" },
-        vitals: { temp: "98.6°F", bp: "120/80", hr: "72 bpm", spo2: "98%" },
-        anomalies: [],
-        summary: "Routine checkup report. All parameters within normal limits.",
-        is_critical: false
-    };
-
     const cleanup = () => {
         try {
             if (req.file && req.file.path) fs.unlinkSync(req.file.path);
@@ -138,47 +113,99 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
-        if (!process.env.GEMINI_API_KEY) {
-            cleanup();
-            return res.json(fallback);
-        }
 
-        const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" });
+
+        const model = getGenAI().getGenerativeModel({
+            model: "gemini-2.5-flash-preview-09-2025",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
         const imagePart = fileToGenerativePart(req.file.path, req.file.mimetype);
 
         const prompt = `
-      Analyze this medical report image. Extract and interpret the data.
-      Return a JSON object ONLY (no markdown) with this structure:
+      You are DocMate AI, a highly advanced critical care specialist and triage engine. Your goal is to analyze medical text/OCR data from the provided image and generate a structured risk assessment.
+      
+      CRITICAL INSTRUCTION: You must detect ANY abnormality "at any cost". Do not be conservative. If a value is even slightly outside the normal range, flag it.
+      
+      1. **Data Extraction**:
+         - Extract ALL vital signs and patient details visible in the report.
+         - If the image is blurry, infer from context but prioritize safety (assume worse case if ambiguous).
+         - Pay close attention to units (e.g., mg/dL vs mmol/L).
+      
+      2. **Triage Logic (STRICT & AGGRESSIVE)**:
+         - **EMERGENCY (Red)**:
+           - Systolic BP: < 90 or > 180
+           - Diastolic BP: < 60 or > 110
+           - Heart Rate: < 50 or > 110
+           - Temperature: > 39.5°C (103°F) or < 35°C (95°F)
+           - SpO2: < 94%
+           - Keywords: "Chest pain", "Unconscious", "Severe breathing difficulty", "Massive bleeding", "Critical", "Emergency".
+         - **DOCTOR VISIT (Orange)**:
+           - Temperature: 38°C - 39.5°C
+           - Pain Score: 4-7
+           - Abnormal Lab Values (e.g., High Glucose, Low Hemoglobin).
+           - Keywords: "Abdominal pain", "Persistent fever", "Infection".
+         - **LOW RISK (Green)**:
+           - ONLY if ALL vitals are strictly within standard normal ranges.
+      
+      3. **Output Format (JSON)**:
+      Return a JSON object exactly matching this structure:
       {
-        "patient_details": { "name": string, "age": string, "gender": string },
-        "vitals": { "temp": string, "bp": string, "hr": string, "spo2": string },
-        "anomalies": string[],
-        "summary": string,
-        "is_critical": boolean
+        "patient_info": {
+          "name": "String (or 'Unknown')",
+          "age": "Number (or 0)",
+          "gender": "String (or 'Unknown')",
+          "blood_type": "String (or 'Unknown')"
+        },
+        "triage_status": {
+          "level": "Emergency" | "Doctor Visit" | "Low Risk",
+          "severity_score": "Number (1-10)",
+          "color_code": "Red" | "Orange" | "Green",
+          "alert_message": "String (e.g., 'IMMEDIATE ACTION REQUIRED: Call 911')"
+        },
+        "vital_signs": [
+          {
+            "label": "String (e.g. 'Heart Rate')",
+            "value": "String (e.g. '120 bpm')",
+            "status": "Critical" | "Warning" | "Normal"
+          }
+        ],
+        "ai_analysis": {
+          "warning_signs": ["List of specific abnormalities found"],
+          "possible_conditions": [
+            {
+              "condition": "String",
+              "probability": "High" | "Medium" | "Low",
+              "description": "Short explanation."
+            }
+          ],
+          "recommendations": "String (Clear, actionable advice)"
+        }
       }
-      If a vital is missing, use "N/A".
-      If "is_critical" is true, it means there are dangerous values requiring immediate attention.
     `;
 
         const result = await model.generateContent([prompt, imagePart]);
         const response = await result.response;
         const text = response.text();
 
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        console.log("Raw AI Response:", text); // Debugging
+
         let parsed: any;
         try {
-            parsed = JSON.parse(jsonStr);
+            parsed = JSON.parse(text);
         } catch (e) {
-            console.error('AI JSON parse error, using fallback. Raw:', jsonStr);
-            parsed = fallback;
+            console.error('AI JSON parse error:', text);
+            cleanup();
+            return res.status(500).json({ error: "Failed to parse AI response", details: text });
         }
+
         cleanup();
         return res.json(parsed);
 
-    } catch (error) {
+    } catch (error: any) {
         console.error('Report Analysis Error:', error);
         cleanup();
-        return res.json(fallback);
+        return res.status(500).json({ error: `Failed to analyze report: ${error.message}` });
     }
 });
 
@@ -187,19 +214,27 @@ router.post('/suggest-remedies', async (req, res) => {
     try {
         const { diagnosis } = req.body;
 
-        if (!process.env.GEMINI_API_KEY) {
-            return res.json({ remedies: ["Rest", "Hydration", "Healthy Diet"] });
-        }
 
-        const model = getGenAI().getGenerativeModel({ model: "gemini-2.0-flash" });
+
+        const model = getGenAI().getGenerativeModel({
+            model: "gemini-2.5-flash-preview-09-2025",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
         const prompt = `Suggest 3-5 natural or home remedies for: ${diagnosis}. Return JSON: { "remedies": string[] }`;
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
         const text = response.text();
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-        res.json(JSON.parse(jsonStr));
+
+        try {
+            res.json(JSON.parse(text));
+        } catch (e) {
+            console.error("Failed to parse remedies JSON", text);
+            res.status(500).json({ error: "Failed to generate remedies" });
+        }
     } catch (error) {
+        console.error("Remedies Error:", error);
         res.status(500).json({ error: 'Failed to fetch remedies' });
     }
 });
@@ -214,7 +249,7 @@ router.post('/chat', async (req, res) => {
         const langInstruction = preferred_language ? `\n\nUSER PREFERRED LANGUAGE: ${preferred_language}. YOU MUST REPLY IN THIS LANGUAGE.` : "";
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash-preview-09-2025",
             systemInstruction: VIRAJ_SYSTEM_INSTRUCTION + langInstruction,
         });
 
@@ -265,7 +300,7 @@ router.post('/chat-audio', audioUpload.single('audio'), async (req: any, res: an
 
         const genAI = getGenAI();
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.0-flash",
+            model: "gemini-2.5-flash-preview-09-2025",
             systemInstruction: VIRAJ_SYSTEM_INSTRUCTION,
         });
 
