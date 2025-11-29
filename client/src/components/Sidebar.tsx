@@ -148,7 +148,7 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
                     transition-all duration-300 ease-in-out
                     ${mobileOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
                     ${isCollapsed ? 'md:w-20' : 'md:w-72'}
-                    w-72
+                    w-72 h-full
                 `}
             >
                 {sidebarContent}

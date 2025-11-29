@@ -46,7 +46,7 @@ export default function DashboardLayout() {
 
     return (
         <div className="flex h-screen bg-background overflow-hidden font-sans">
-            <div className="no-print">
+            <div className="no-print h-full">
                 <Sidebar mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
             </div>
             <div className="flex-1 flex flex-col min-w-0 relative">
