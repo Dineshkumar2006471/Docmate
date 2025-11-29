@@ -29,10 +29,10 @@ function fileToGenerativePart(buffer: Buffer, mimeType: string) {
     };
 }
 
-// --- Viraj Persona Definition ---
-const VIRAJ_SYSTEM_INSTRUCTION = `
-Role: You are 'Viraj', an empathetic and calm AI health assistant designed for rural families.
-Tone: Warm, respectful, slow-paced, and caring. Speak like a knowledgeable elder brother or a kind doctor.
+// --- Aura Persona Definition ---
+const AURA_SYSTEM_INSTRUCTION = `
+Role: You are 'Aura', an empathetic and calm AI health assistant designed for rural families.
+Tone: Warm, respectful, slow-paced, and caring. Speak like a knowledgeable elder sister or a kind doctor.
 
 Language Protocol (STRICT):
 1. **CHECK "preferred_language"**: The user may explicitly specify a preferred language (e.g., 'te-IN' for Telugu, 'hi-IN' for Hindi).
@@ -226,7 +226,7 @@ router.post('/suggest-remedies', async (req, res) => {
     }
 });
 
-// --- Route: Text Chat (Viraj) ---
+// --- Route: Text Chat (Aura) ---
 router.post('/chat', async (req, res) => {
     try {
         const { message, history, preferred_language } = req.body;
@@ -237,7 +237,7 @@ router.post('/chat', async (req, res) => {
 
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash-preview-09-2025",
-            systemInstruction: VIRAJ_SYSTEM_INSTRUCTION + langInstruction,
+            systemInstruction: AURA_SYSTEM_INSTRUCTION + langInstruction,
         });
 
         // Sanitize history
@@ -250,8 +250,11 @@ router.post('/chat', async (req, res) => {
             sanitizedHistory.shift();
         }
 
+        // Optimize history: Keep only last 10 messages
+        const recentHistory = sanitizedHistory.slice(-10);
+
         const chat = model.startChat({
-            history: sanitizedHistory,
+            history: recentHistory,
             generationConfig: {
                 maxOutputTokens: 1000,
                 temperature: 0.7,
@@ -278,7 +281,7 @@ router.post('/chat', async (req, res) => {
     }
 });
 
-// --- Route: Audio Chat (Viraj) ---
+// --- Route: Audio Chat (Aura) ---
 router.post('/chat-audio', audioUpload.single('audio'), async (req: any, res: any) => {
     try {
         if (!req.file) {
@@ -288,7 +291,7 @@ router.post('/chat-audio', audioUpload.single('audio'), async (req: any, res: an
         const genAI = getGenAI();
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash-preview-09-2025",
-            systemInstruction: VIRAJ_SYSTEM_INSTRUCTION,
+            systemInstruction: AURA_SYSTEM_INSTRUCTION,
         });
 
         const audioBase64 = req.file.buffer.toString('base64');
@@ -304,7 +307,7 @@ router.post('/chat-audio', audioUpload.single('audio'), async (req: any, res: an
                                 data: audioBase64
                             }
                         },
-                        { text: "Listen to this audio. Identify the language. Respond to the user's query in the **EXACT SAME Language and Script** as Viraj. If the user speaks Hindi, reply in Hindi (Devanagari). If Telugu, reply in Telugu. Return JSON with 'response' and 'language_code'." }
+                        { text: "Listen to this audio. Identify the language. Respond to the user's query in the **EXACT SAME Language and Script** as Aura. If the user speaks Hindi, reply in Hindi (Devanagari). If Telugu, reply in Telugu. Return JSON with 'response' and 'language_code'." }
                     ]
                 }
             ],

@@ -36,77 +36,80 @@ export default function MyReports() {
     );
 
     return (
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-7xl mx-auto pb-20">
             <header className="mb-8 flex flex-col md:flex-row justify-between items-end gap-4">
                 <div>
-                    <h1 className="text-4xl font-serif text-slate-100 mb-2">My Reports</h1>
+                    <h1 className="text-3xl md:text-4xl font-serif text-slate-100 mb-2">My Reports</h1>
                     <p className="text-slate-400">History of your medical analyses and symptom checks.</p>
                 </div>
 
-                <div className="relative w-full md:w-64">
+                <div className="relative w-full md:w-72">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
                     <input
                         type="text"
                         placeholder="Search reports..."
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        className="w-full bg-surface-highlight/30 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm text-slate-200 focus:border-teal-500/50 outline-none"
+                        className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-200 focus:border-teal-500/50 outline-none transition-all focus:bg-surface-highlight/50"
                     />
                 </div>
             </header>
 
-            <div className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredReports.map((report, index) => (
                     <motion.div
                         key={report.id}
-                        initial={{ opacity: 0, y: 10 }}
+                        initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: index * 0.1 }}
-                        className="glass-card p-6 rounded-xl flex flex-col md:flex-row items-start md:items-center gap-6 group hover:border-teal-500/30 transition-colors cursor-pointer"
+                        transition={{ delay: index * 0.05 }}
+                        className="glass-card p-5 rounded-2xl flex flex-col gap-4 group hover:border-teal-500/30 transition-all hover:-translate-y-1 cursor-pointer relative overflow-hidden"
                     >
-                        {/* Icon & Date */}
-                        <div className="flex items-center gap-4 min-w-[150px]">
-                            <div className={`p-3 rounded-full ${report.type === 'Lab Report' ? 'bg-teal-500/10 text-teal-400' : 'bg-purple-500/10 text-purple-400'}`}>
+                        {/* Decorative Gradient */}
+                        <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${report.type === 'Lab Report' ? 'from-teal-500/10' : 'from-purple-500/10'} to-transparent rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110`} />
+
+                        <div className="flex justify-between items-start relative z-10">
+                            <div className={`p-3 rounded-xl ${report.type === 'Lab Report' ? 'bg-teal-500/10 text-teal-400' : 'bg-purple-500/10 text-purple-400'}`}>
                                 <FileText className="w-6 h-6" />
                             </div>
-                            <div>
-                                <div className="text-xs text-slate-500 uppercase tracking-wider mb-1">{report.type}</div>
-                                <div className="text-slate-200 font-medium flex items-center gap-2">
-                                    <Calendar className="w-3 h-3 text-slate-500" /> {report.date}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1">
-                            <h3 className="text-lg font-serif text-slate-100 mb-1 group-hover:text-teal-300 transition-colors">{report.title}</h3>
-                            <p className="text-slate-400 text-sm line-clamp-1">{report.summary}</p>
-                        </div>
-
-                        {/* Status & Action */}
-                        <div className="flex items-center gap-6 w-full md:w-auto justify-between md:justify-end">
-                            <div className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${report.risk_level === 'Critical' || report.risk_level === 'High'
-                                    ? 'bg-red-500/10 text-red-400 border-red-500/20'
-                                    : report.risk_level === 'Moderate'
-                                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                                        : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                            <div className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest border ${report.risk_level === 'Critical' || report.risk_level === 'High'
+                                ? 'bg-red-500/10 text-red-400 border-red-500/20'
+                                : report.risk_level === 'Moderate'
+                                    ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                                    : 'bg-teal-500/10 text-teal-400 border-teal-500/20'
                                 }`}>
                                 {report.risk_level}
                             </div>
+                        </div>
 
-                            <button className="p-2 hover:bg-white/5 rounded-full text-slate-500 hover:text-slate-200 transition-colors">
-                                <ChevronRight className="w-5 h-5" />
+                        <div className="relative z-10">
+                            <div className="text-xs text-slate-500 uppercase tracking-wider mb-1 flex items-center gap-2">
+                                {report.type} <span className="w-1 h-1 rounded-full bg-slate-600" /> {report.date}
+                            </div>
+                            <h3 className="text-lg font-serif text-slate-100 mb-2 group-hover:text-teal-300 transition-colors line-clamp-1">{report.title}</h3>
+                            <p className="text-slate-400 text-sm line-clamp-2 leading-relaxed">{report.summary}</p>
+                        </div>
+
+                        <div className="mt-auto pt-4 border-t border-white/5 flex justify-between items-center relative z-10">
+                            <button className="text-xs font-medium text-slate-400 hover:text-white transition-colors flex items-center gap-1">
+                                View Details
                             </button>
+                            <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-slate-400 group-hover:bg-teal-500 group-hover:text-white transition-all">
+                                <ChevronRight className="w-4 h-4" />
+                            </div>
                         </div>
                     </motion.div>
                 ))}
-
-                {filteredReports.length === 0 && (
-                    <div className="text-center py-12 text-slate-500">
-                        No reports found matching your search.
-                    </div>
-                )}
             </div>
+
+            {filteredReports.length === 0 && (
+                <div className="text-center py-20">
+                    <div className="w-16 h-16 bg-surface-highlight rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
+                        <Search className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-slate-300 font-serif text-lg mb-1">No reports found</h3>
+                    <p className="text-slate-500 text-sm">Try adjusting your search terms.</p>
+                </div>
+            )}
         </div>
     );
 }

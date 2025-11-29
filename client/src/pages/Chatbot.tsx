@@ -27,7 +27,7 @@ export default function Chatbot() {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
-            text: "Namaste! I'm Viraj, your health assistant. I can speak many languages. Press the mic to talk to me.",
+            text: "Namaste! I'm Aura, your health assistant. I can speak many languages. Press the mic to talk to me.",
             sender: 'ai',
             timestamp: new Date()
         }
@@ -297,7 +297,7 @@ export default function Chatbot() {
     };
 
     return (
-        <div className="flex flex-col h-[calc(100vh-140px)] max-w-4xl mx-auto relative overflow-hidden perspective-1000">
+        <div className="flex flex-col h-full max-w-4xl mx-auto relative overflow-hidden perspective-1000">
             {/* Background is now handled globally by Background3D, but we keep a local gradient for depth */}
             <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
 
@@ -398,7 +398,7 @@ export default function Chatbot() {
                             <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                             <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                         </div>
-                        <span className="text-teal-500/70 font-medium">Viraj is thinking...</span>
+                        <span className="text-teal-500/70 font-medium">Aura is thinking...</span>
                     </motion.div>
                 )}
                 <div ref={messagesEndRef} />
