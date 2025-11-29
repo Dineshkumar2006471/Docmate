@@ -1,4 +1,3 @@
-```javascript
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
@@ -34,7 +33,6 @@ export const handler = serverless(app);
 // Start Server (Local Development Only)
 if (require.main === module) {
     app.listen(PORT, () => {
-        console.log(`Server running on port ${ PORT } `);
+        console.log(`Server running on port ${PORT} `);
     });
 }
-```
