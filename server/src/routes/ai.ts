@@ -6,8 +6,8 @@ import path from 'path';
 
 const router = express.Router();
 
-// Configure Multer for file uploads (disk storage for reports)
-const upload = multer({ dest: 'uploads/' });
+// Configure Multer for file uploads (memory storage for serverless compatibility)
+const upload = multer({ storage: multer.memoryStorage() });
 
 // Configure Multer for audio uploads (memory storage for direct API sending)
 const audioUpload = multer({ storage: multer.memoryStorage() });
@@ -19,11 +19,11 @@ const getGenAI = () => {
     return new GoogleGenerativeAI(key);
 };
 
-// --- Helper: File to GenerativePart ---
-function fileToGenerativePart(path: string, mimeType: string) {
+// --- Helper: File to GenerativePart (Buffer version) ---
+function fileToGenerativePart(buffer: Buffer, mimeType: string) {
     return {
         inlineData: {
-            data: fs.readFileSync(path).toString("base64"),
+            data: buffer.toString("base64"),
             mimeType
         },
     };
@@ -58,7 +58,6 @@ IMPORTANT: You must ALWAYS return your response as a JSON object with the follow
 router.post('/analyze-symptoms', async (req, res) => {
     try {
         const { symptoms, vitals, userProfile } = req.body;
-
 
 
         const model = getGenAI().getGenerativeModel({
@@ -102,17 +101,8 @@ router.post('/analyze-symptoms', async (req, res) => {
 
 // --- Route: Analyze Report (OCR + Analysis) ---
 router.post('/analyze-report', upload.single('report'), async (req, res) => {
-    const cleanup = () => {
-        try {
-            if (req.file && req.file.path) fs.unlinkSync(req.file.path);
-        } catch (e) {
-            // ignore cleanup errors
-        }
-    };
-
     try {
         if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-
 
 
         const model = getGenAI().getGenerativeModel({
@@ -120,7 +110,7 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
             generationConfig: { responseMimeType: "application/json" }
         });
 
-        const imagePart = fileToGenerativePart(req.file.path, req.file.mimetype);
+        const imagePart = fileToGenerativePart(req.file.buffer, req.file.mimetype);
 
         const prompt = `
       You are DocMate AI, a highly advanced critical care specialist and triage engine. Your goal is to analyze medical text/OCR data from the provided image and generate a structured risk assessment.
@@ -195,16 +185,13 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
             parsed = JSON.parse(text);
         } catch (e) {
             console.error('AI JSON parse error:', text);
-            cleanup();
             return res.status(500).json({ error: "Failed to parse AI response", details: text });
         }
 
-        cleanup();
         return res.json(parsed);
 
     } catch (error: any) {
         console.error('Report Analysis Error:', error);
-        cleanup();
         return res.status(500).json({ error: `Failed to analyze report: ${error.message}` });
     }
 });
