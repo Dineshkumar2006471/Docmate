@@ -210,7 +210,7 @@ export default function ReportAnalyzer() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto relative min-w-0">
+        <div className="max-w-full mx-auto relative min-w-0">
             <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
 
             {/* Processing Modal Overlay */}
@@ -264,7 +264,7 @@ export default function ReportAnalyzer() {
 
             {!result ? (
                 // --- Upload State ---
-                <div className="max-w-2xl mx-auto">
+                <div className="max-w-full mx-auto">
                     <div className="text-center mb-10">
                         <h1 className="text-4xl font-serif text-slate-100 mb-3">Upload Medical Report</h1>
                         <p className="text-slate-400">Upload blood tests, ECGs, X-rays, or clinical documents for AI analysis.</p>
@@ -380,8 +380,8 @@ export default function ReportAnalyzer() {
                         </div>
                     )}
 
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                        {/* Left Column: Patient & Vitals */}
+                    <div className="grid grid-cols-1 gap-8">
+                        {/* Top Section: Patient & Vitals */}
                         <div className="space-y-6 min-w-0">
                             {/* Patient Info */}
                             <div className="glass-card p-6 rounded-2xl border-l-4 border-l-teal-500">
@@ -405,7 +405,7 @@ export default function ReportAnalyzer() {
                             {/* Vitals Grid */}
                             <div className="glass-card p-6 rounded-2xl">
                                 <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
-                                <div className="grid grid-cols-2 gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                                     {result.vital_signs.map((vital, index) => {
                                         const isCriticalVital = vital.status === 'Critical';
                                         const isWarningVital = vital.status === 'Warning';
@@ -442,8 +442,8 @@ export default function ReportAnalyzer() {
                             </div>
                         </div>
 
-                        {/* Right Column: Summary & Remedies */}
-                        <div className="lg:col-span-2 space-y-6 min-w-0">
+                        {/* Analysis Section: Summary & Remedies */}
+                        <div className="space-y-6 min-w-0">
                             {/* AI Summary */}
                             <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-4 opacity-5">

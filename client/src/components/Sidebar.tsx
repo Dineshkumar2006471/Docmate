@@ -11,16 +11,20 @@ import {
     ChevronRight,
     HeartPulse,
     Menu,
-    X
+    X,
+    Users,
+    Brain
 } from 'lucide-react';
 import { auth } from '../lib/firebase';
 import { signOut } from 'firebase/auth';
 
 const menuItems = [
-    { icon: Stethoscope, label: 'Symptom Check', path: '/symptom-check' },
-    { icon: FileText, label: 'Report Analyzer', path: '/report-analyzer' },
-    { icon: MessageSquare, label: 'AI Chatbot', path: '/chat' },
     { icon: User, label: 'My Profile', path: '/profile' },
+    { icon: Stethoscope, label: 'Symptom Check', path: '/symptom-check' },
+    { icon: Users, label: 'Find Doctor', path: '/find-doctor' },
+    { icon: FileText, label: 'Report Analyzer', path: '/report-analyzer' },
+    { icon: Brain, label: 'Health 360°', path: '/ai-insights' },
+    { icon: MessageSquare, label: 'AI Chatbot', path: '/chat' },
     { icon: Files, label: 'My Reports', path: '/my-reports' },
 ];
 

@@ -118,7 +118,7 @@ export default function SymptomChecker() {
     }, [result]);
 
     return (
-        <div className="max-w-5xl mx-auto space-y-8 relative pb-20">
+        <div className="max-w-full mx-auto space-y-8 relative pb-20">
             <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
 
             {/* Profile Integration Card */}

@@ -64,7 +64,7 @@ router.post('/analyze-symptoms', async (req, res) => {
 
 
         const model = getGenAI().getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-2.5-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -109,7 +109,7 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
 
 
         const model = getGenAI().getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-2.5-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -207,7 +207,7 @@ router.post('/suggest-remedies', async (req, res) => {
 
 
         const model = getGenAI().getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-2.5-flash",
             generationConfig: { responseMimeType: "application/json" }
         });
 
@@ -239,7 +239,7 @@ router.post('/chat', async (req, res) => {
         const langInstruction = preferred_language ? `\n\nUSER PREFERRED LANGUAGE: ${preferred_language}. YOU MUST REPLY IN THIS LANGUAGE.` : "";
 
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-2.5-flash",
             systemInstruction: AURA_SYSTEM_INSTRUCTION + langInstruction,
         });
 
@@ -293,7 +293,7 @@ router.post('/chat-audio', audioUpload.single('audio'), async (req: any, res: an
 
         const genAI = getGenAI();
         const model = genAI.getGenerativeModel({
-            model: "gemini-2.5-flash-preview-09-2025",
+            model: "gemini-2.5-flash",
             systemInstruction: AURA_SYSTEM_INSTRUCTION,
         });
 

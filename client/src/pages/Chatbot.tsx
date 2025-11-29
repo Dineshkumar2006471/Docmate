@@ -297,7 +297,7 @@ export default function Chatbot() {
     };
 
     return (
-        <div className="flex flex-col h-full max-w-4xl mx-auto relative overflow-hidden perspective-1000">
+        <div className="flex flex-col h-full max-w-full mx-auto relative overflow-hidden perspective-1000">
             {/* Background is now handled globally by Background3D, but we keep a local gradient for depth */}
             <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
 

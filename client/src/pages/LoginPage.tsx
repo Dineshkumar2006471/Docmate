@@ -26,7 +26,7 @@ export default function LoginPage() {
                     displayName: `${firstName} ${lastName}`.trim()
                 });
             }
-            navigate('/dashboard');
+            navigate('/profile');
         } catch (err: any) {
             console.error("Authentication Error:", err);
             console.error("Error Code:", err.code);

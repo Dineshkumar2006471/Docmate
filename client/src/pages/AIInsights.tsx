@@ -1,0 +1,585 @@
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Activity,
+    TrendingUp,
+    AlertTriangle,
+    Calendar,
+    CheckCircle,
+    User,
+    ArrowRight,
+    Brain,
+    Shield,
+    ChevronRight,
+    X,
+    Loader2
+} from 'lucide-react';
+import { useUserProfile } from '../context/UserProfileContext';
+import { auth, db } from '../lib/firebase';
+import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from 'firebase/firestore';
+import { useNavigate } from 'react-router-dom';
+import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+
+// --- Types ---
+interface RiskPrediction {
+    condition: string;
+    timeline: string;
+    riskLevel: 'Low' | 'Moderate' | 'High';
+    reason: string;
+    contributingFactors: string[];
+}
+
+interface ActionItem {
+    id: string;
+    task: string;
+    category: 'Immediate' | 'Short-term' | 'Long-term';
+    completed: boolean;
+}
+
+interface InsightsData {
+    score: number;
+    riskLevel: string;
+    color: string;
+    ringColor: string;
+    summary: string;
+    predictions: RiskPrediction[];
+    actionPlan: ActionItem[];
+    history: { date: string; score: number }[];
+}
+export default function AIInsights() {
+    const { profile } = useUserProfile();
+    const navigate = useNavigate();
+    const [activeTab, setActiveTab] = useState<'risks' | 'trends' | 'predictions' | 'plan'>('risks');
+    const [selectedPrediction, setSelectedPrediction] = useState<RiskPrediction | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [insights, setInsights] = useState<InsightsData | null>(null);
+
+    // Toggle Action Item Completion
+    const toggleActionItem = (id: string) => {
+        if (!insights) return;
+        const updatedPlan = insights.actionPlan.map(item =>
+            item.id === id ? { ...item, completed: !item.completed } : item
+        );
+        setInsights({ ...insights, actionPlan: updatedPlan });
+
+        // Save to LocalStorage
+        const completedIds = updatedPlan.filter(i => i.completed).map(i => i.id);
+        localStorage.setItem('docmate_completed_actions', JSON.stringify(completedIds));
+    };
+
+    const handleFindSpecialist = () => {
+        const specialty = profile.allergies.length > 0 ? 'Allergist' : 'General Physician';
+        navigate(`/find-doctor?search=${specialty}`);
+    };
+
+    useEffect(() => {
+        if (!auth.currentUser) return;
+
+        const q = query(
+            collection(db, 'SymptomAssessment'),
+            where('patient_id', '==', auth.currentUser.uid),
+            orderBy('created_date', 'desc'),
+            limit(10)
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            try {
+                const assessments = snapshot.docs.map(doc => doc.data());
+
+                // --- Calculate Health Score ---
+                let baseScore = 90; // Start high
+
+                // Safe Profile Access
+                const safeProfile = {
+                    age: Number(profile?.age) || 30,
+                    gender: profile?.gender || 'Unknown',
+                    pastConditions: Array.isArray(profile?.pastConditions) ? profile.pastConditions : [],
+                    allergies: Array.isArray(profile?.allergies) ? profile.allergies : []
+                };
+
+                // Deduct for age (minor)
+                if (safeProfile.age > 40) baseScore -= 5;
+                if (safeProfile.age > 60) baseScore -= 5;
+
+                // Deduct for chronic conditions
+                if (safeProfile.pastConditions.length > 0) baseScore -= (safeProfile.pastConditions.length * 5);
+
+                // Deduct based on recent report severity
+                let recentSeveritySum = 0;
+                assessments.forEach(a => {
+                    recentSeveritySum += (Number(a.severity_score) || 0);
+                });
+                const avgSeverity = assessments.length > 0 ? recentSeveritySum / assessments.length : 0;
+
+                // Impact of recent health events (weighted)
+                baseScore -= (avgSeverity * 2.5);
+
+                // Clamp score
+                const score = Math.max(0, Math.min(100, Math.round(baseScore)));
+
+                const riskLevel = score > 80 ? 'Low' : score > 50 ? 'Moderate' : 'High';
+                const color = score > 80 ? 'text-emerald-400' : score > 50 ? 'text-amber-400' : 'text-red-400';
+                const ringColor = score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500';
+
+                // --- Generate Predictions ---
+                const predictions: RiskPrediction[] = [];
+
+                // 1. Chronic Condition Risks
+                if (safeProfile.pastConditions.includes('Diabetes') || avgSeverity > 5) {
+                    predictions.push({
+                        condition: 'Metabolic Syndrome',
+                        timeline: '3-5 Years',
+                        riskLevel: 'High',
+                        reason: 'Elevated severity scores in recent reports combined with history.',
+                        contributingFactors: ['Recent High Severity Reports', 'Medical History']
+                    });
+                }
+
+                // 2. Cardiovascular (General)
+                if (safeProfile.age > 45 || safeProfile.gender === 'Male') {
+                    predictions.push({
+                        condition: 'Cardiovascular Strain',
+                        timeline: '5-10 Years',
+                        riskLevel: 'Moderate',
+                        reason: 'Age and gender demographics suggest increased monitoring.',
+                        contributingFactors: ['Age', 'Gender']
+                    });
+                }
+
+                // 3. Allergies / Respiratory
+                if (safeProfile.allergies.length > 0) {
+                    predictions.push({
+                        condition: 'Recurrent Allergic Reactions',
+                        timeline: 'Seasonal',
+                        riskLevel: 'Moderate',
+                        reason: 'Known history of allergies.',
+                        contributingFactors: safeProfile.allergies
+                    });
+                }
+
+                // 4. Based on recent assessments
+                const recentConditions = assessments.flatMap(a => a.ai_analysis?.possible_conditions?.map((c: any) => c.name) || []);
+                const uniqueConditions = [...new Set(recentConditions)];
+                if (uniqueConditions.length > 0) {
+                    predictions.push({
+                        condition: `Recurrence of ${uniqueConditions[0]}`,
+                        timeline: 'Within 6 Months',
+                        riskLevel: 'Moderate',
+                        reason: 'Recently detected condition in symptom analysis.',
+                        contributingFactors: ['Recent Assessment Data']
+                    });
+                }
+
+                // --- Generate Action Plan ---
+                // Load saved state
+                let savedCompletedIds: string[];
+                try {
+                    const stored = localStorage.getItem('docmate_completed_actions');
+                    savedCompletedIds = stored ? JSON.parse(stored) : ['2'];
+                } catch (e) {
+                    savedCompletedIds = ['2'];
+                }
+
+                const actionPlan: ActionItem[] = [
+                    { id: '1', task: 'Schedule annual physical', category: 'Immediate', completed: savedCompletedIds.includes('1') },
+                    { id: '2', task: 'Update vaccination records', category: 'Short-term', completed: savedCompletedIds.includes('2') },
+                ];
+
+                if (score < 70) {
+                    actionPlan.push({ id: '3', task: 'Consult a specialist for recent symptoms', category: 'Immediate', completed: savedCompletedIds.includes('3') });
+                }
+                if (safeProfile.allergies.length > 0) {
+                    actionPlan.push({ id: '4', task: 'Carry EpiPen / Antihistamines', category: 'Immediate', completed: savedCompletedIds.includes('4') });
+                }
+                if (assessments.length === 0) {
+                    actionPlan.push({ id: '5', task: 'Complete your first Symptom Check', category: 'Immediate', completed: savedCompletedIds.includes('5') });
+                }
+
+                setInsights({
+                    score,
+                    riskLevel,
+                    color,
+                    ringColor,
+                    summary: `Patient is a ${safeProfile.age}-year-old ${safeProfile.gender} with a ${score > 80 ? 'generally good' : 'moderate'} health profile. ${assessments.length} recent health assessments analyzed.`,
+                    predictions,
+                    actionPlan,
+                    history: assessments.map(a => ({
+                        date: a.created_date?.toDate ? new Date(a.created_date.toDate()).toLocaleDateString() : 'N/A',
+                        score: a.severity_score ? 10 - a.severity_score : 10
+                    })).reverse()
+                });
+                setLoading(false);
+            } catch (e) {
+                console.error("Error generating insights", e);
+                setLoading(false);
+            }
+        });
+
+        return () => unsubscribe();
+    }, [profile, auth.currentUser]);
+
+    // Circular Gauge Component
+    const ScoreGauge = () => {
+        if (!insights) return null;
+        return (
+            <div className="relative w-48 h-48 flex items-center justify-center">
+                {/* Background Ring */}
+                <svg className="w-full h-full transform -rotate-90">
+                    <circle
+                        cx="96"
+                        cy="96"
+                        r="88"
+                        stroke="currentColor"
+                        strokeWidth="12"
+                        fill="transparent"
+                        className="text-slate-800"
+                    />
+                    {/* Progress Ring */}
+                    <circle
+                        cx="96"
+                        cy="96"
+                        r="88"
+                        stroke="currentColor"
+                        strokeWidth="12"
+                        fill="transparent"
+                        strokeDasharray={2 * Math.PI * 88}
+                        strokeDashoffset={2 * Math.PI * 88 * (1 - insights.score / 100)}
+                        className={`${insights.ringColor} transition-all duration-1000 ease-out`}
+                        strokeLinecap="round"
+                    />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                    <span className={`text-5xl font-bold font-serif ${insights.color}`}>{insights.score}</span>
+                    <span className="text-xs text-slate-500 uppercase tracking-widest mt-1">Health Score</span>
+                </div>
+            </div>
+        );
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+            </div>
+        );
+    }
+
+    if (!insights) return <div>Failed to load insights.</div>;
+
+    return (
+        <div className="max-w-full mx-auto pb-20 relative min-w-0">
+            <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
+
+            {/* Header Section */}
+            <div className="mb-10">
+                <h1 className="text-3xl md:text-4xl font-serif text-slate-100 mb-4 flex items-center gap-3">
+                    <Brain className="w-8 h-8 text-teal-400" /> Health 360° Insights
+                </h1>
+                <p className="text-slate-400">AI-powered predictive analysis and personalized health roadmap.</p>
+            </div>
+
+            {/* 1. Health Scorecard */}
+            <div className="glass-card p-8 rounded-3xl border border-white/5 mb-10 flex flex-col md:flex-row items-center gap-10">
+                <div className="shrink-0">
+                    <ScoreGauge />
+                </div>
+                <div className="flex-1 text-center md:text-left">
+                    <h2 className="text-2xl font-bold text-slate-100 mb-2">Overall Health Profile</h2>
+                    <p className="text-slate-300 leading-relaxed text-lg mb-6">
+                        {insights.summary}
+                    </p>
+                    <div className="flex flex-wrap gap-4 justify-center md:justify-start">
+                        <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5 flex items-center gap-2">
+                            <Activity className="w-4 h-4 text-teal-400" />
+                            <span className="text-sm text-slate-300">Vitals Stable</span>
+                        </div>
+                        <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5 flex items-center gap-2">
+                            <Shield className="w-4 h-4 text-blue-400" />
+                            <span className="text-sm text-slate-300">Insurance Active</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            {/* 2. Tabbed Navigation */}
+            <div className="flex flex-wrap gap-2 mb-8 border-b border-white/10 pb-1">
+                {[
+                    { id: 'risks', label: 'Risk Factors', icon: AlertTriangle },
+                    { id: 'trends', label: 'Trends', icon: TrendingUp },
+                    { id: 'predictions', label: 'Predictions', icon: Brain },
+                    { id: 'plan', label: 'Action Plan', icon: CheckCircle },
+                ].map((tab) => (
+                    <button
+                        key={tab.id}
+                        onClick={() => setActiveTab(tab.id as any)}
+                        className={`px-6 py-3 rounded-t-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all relative top-[1px]
+                            ${activeTab === tab.id
+                                ? 'bg-surface-highlight text-teal-400 border-t border-x border-white/10'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                            }`}
+                    >
+                        <tab.icon className="w-4 h-4" /> {tab.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* 3. Tab Content */}
+            <div className="min-h-[400px]">
+                <AnimatePresence mode="wait">
+                    {activeTab === 'risks' && (
+                        <motion.div
+                            key="risks"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="grid grid-cols-1 md:grid-cols-2 gap-6"
+                        >
+                            <div className="glass-card p-6 rounded-2xl border border-white/5">
+                                <h3 className="text-lg font-serif text-slate-100 mb-6">Identified Risk Factors</h3>
+                                {profile.allergies.length > 0 ? (
+                                    <div className="space-y-4">
+                                        {profile.allergies.map((allergy, i) => (
+                                            <div key={i} className="flex items-center justify-between p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
+                                                <span className="text-red-200 font-medium">{allergy}</span>
+                                                <span className="px-3 py-1 bg-red-500/20 text-red-400 text-xs font-bold uppercase rounded-full">High Sensitivity</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-slate-500 italic">No major allergies reported.</div>
+                                )}
+                            </div>
+                            <div className="glass-card p-6 rounded-2xl border border-white/5">
+                                <h3 className="text-lg font-serif text-slate-100 mb-6">Lifestyle Factors</h3>
+                                <div className="space-y-4">
+                                    <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl">
+                                        <span className="text-slate-300">Age Group Risk</span>
+                                        <span className="px-3 py-1 bg-teal-500/10 text-teal-400 text-xs font-bold uppercase rounded-full">Low</span>
+                                    </div>
+                                    <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl">
+                                        <span className="text-slate-300">Chronic Conditions</span>
+                                        <span className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${profile.pastConditions.length > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-teal-500/10 text-teal-400'}`}>
+                                            {profile.pastConditions.length > 0 ? 'Moderate' : 'Low'}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'trends' && (
+                        <motion.div
+                            key="trends"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="glass-card p-8 rounded-2xl border border-white/5"
+                        >
+                            <h3 className="text-lg font-serif text-slate-100 mb-6">Health Score Trends</h3>
+                            {insights.history.length > 1 ? (
+                                <div className="h-[300px] w-full">
+                                    <ResponsiveContainer width="100%" height="100%">
+                                        <AreaChart data={insights.history}>
+                                            <defs>
+                                                <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
+                                                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                                                </linearGradient>
+                                            </defs>
+                                            <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
+                                            <XAxis
+                                                dataKey="date"
+                                                stroke="#94a3b8"
+                                                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                                tickLine={false}
+                                                axisLine={false}
+                                            />
+                                            <YAxis
+                                                stroke="#94a3b8"
+                                                tick={{ fill: '#94a3b8', fontSize: 12 }}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                domain={[0, 10]}
+                                            />
+                                            <Tooltip
+                                                contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px' }}
+                                                itemStyle={{ color: '#2dd4bf' }}
+                                            />
+                                            <Area
+                                                type="monotone"
+                                                dataKey="score"
+                                                stroke="#14b8a6"
+                                                strokeWidth={3}
+                                                fillOpacity={1}
+                                                fill="url(#colorScore)"
+                                            />
+                                        </AreaChart>
+                                    </ResponsiveContainer>
+                                </div>
+                            ) : (
+                                <div className="text-center py-20">
+                                    <TrendingUp className="w-16 h-16 text-slate-600 mx-auto mb-4" />
+                                    <h3 className="text-xl font-serif text-slate-300 mb-2">Not Enough Data</h3>
+                                    <p className="text-slate-500">Complete at least 2 symptom checks to see trends.</p>
+                                </div>
+                            )}
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'predictions' && (
+                        <motion.div
+                            key="predictions"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-6"
+                        >
+                            <div className="relative border-l-2 border-slate-800 ml-4 md:ml-8 space-y-8 pl-8 py-4">
+                                {insights.predictions.map((pred, i) => (
+                                    <div key={i} className="relative group">
+                                        {/* Timeline Dot */}
+                                        <div className={`absolute -left-[41px] top-0 w-5 h-5 rounded-full border-4 border-[#0f172a] ${pred.riskLevel === 'High' ? 'bg-red-500' : 'bg-amber-500'}`} />
+
+                                        <div
+                                            onClick={() => setSelectedPrediction(pred)}
+                                            className="glass-card p-6 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer group-hover:translate-x-2"
+                                        >
+                                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
+                                                <div>
+                                                    <h3 className="text-xl font-bold text-slate-100">{pred.condition}</h3>
+                                                    <div className="flex items-center gap-2 text-sm text-slate-400 mt-1">
+                                                        <Calendar className="w-4 h-4" /> Timeline: {pred.timeline}
+                                                    </div>
+                                                </div>
+                                                <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${pred.riskLevel === 'High' ? 'bg-red-500/10 text-red-400 border-red-500/20' : 'bg-amber-500/10 text-amber-400 border-amber-500/20'}`}>
+                                                    {pred.riskLevel} Risk
+                                                </span>
+                                            </div>
+                                            <p className="text-slate-400 text-sm mb-4">{pred.reason}</p>
+                                            <div className="flex items-center gap-2 text-teal-400 text-xs font-bold uppercase tracking-wider">
+                                                View Contributing Factors <ChevronRight className="w-4 h-4" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+
+                    {activeTab === 'plan' && (
+                        <motion.div
+                            key="plan"
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="space-y-8"
+                        >
+                            <div className="glass-card p-6 rounded-2xl border border-white/5">
+                                <h3 className="text-lg font-serif text-slate-100 mb-6">Preventive Measures Roadmap</h3>
+                                <div className="space-y-6">
+                                    {['Immediate', 'Short-term', 'Long-term'].map((cat) => {
+                                        const items = insights.actionPlan.filter(i => i.category === cat);
+                                        if (items.length === 0) return null;
+                                        return (
+                                            <div key={cat}>
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-3">{cat} Actions</h4>
+                                                <div className="space-y-2">
+                                                    {items.map(item => (
+                                                        <div
+                                                            key={item.id}
+                                                            onClick={() => toggleActionItem(item.id)}
+                                                            className="flex items-center gap-3 p-3 bg-surface-highlight/30 rounded-xl border border-white/5 cursor-pointer hover:bg-white/5 transition-colors"
+                                                        >
+                                                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${item.completed ? 'bg-teal-500 border-teal-500' : 'border-slate-600'}`}>
+                                                                {item.completed && <CheckCircle className="w-3 h-3 text-white" />}
+                                                            </div>
+                                                            <span className={`text-sm transition-all ${item.completed ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{item.task}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            <div className="glass-card p-6 rounded-2xl border border-teal-500/20 bg-teal-900/5 flex items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold text-slate-100 mb-1">Recommended Specialist</h3>
+                                    <p className="text-slate-400 text-sm">Based on your risk profile</p>
+                                </div>
+                                <button
+                                    onClick={handleFindSpecialist}
+                                    className="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-bold uppercase tracking-widest text-sm transition-colors"
+                                >
+                                    Find {profile.allergies.length > 0 ? 'Allergist' : 'General Physician'}
+                                </button>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Prediction Detail Slide-out Panel */}
+            <AnimatePresence>
+                {selectedPrediction && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedPrediction(null)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        />
+                        <motion.div
+                            initial={{ x: '100%' }}
+                            animate={{ x: 0 }}
+                            exit={{ x: '100%' }}
+                            className="fixed top-0 right-0 bottom-0 w-full md:w-[400px] bg-surface-highlight border-l border-white/10 z-50 p-8 shadow-2xl overflow-y-auto"
+                        >
+                            <div className="flex justify-between items-center mb-8">
+                                <h2 className="text-2xl font-serif text-slate-100">Prediction Details</h2>
+                                <button onClick={() => setSelectedPrediction(null)} className="p-2 hover:bg-white/10 rounded-full text-slate-400">
+                                    <X className="w-6 h-6" />
+                                </button>
+                            </div>
+
+                            <div className="space-y-8">
+                                <div>
+                                    <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-2">Condition</div>
+                                    <div className="text-xl font-bold text-teal-400">{selectedPrediction.condition}</div>
+                                </div>
+
+                                <div>
+                                    <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-2">Why this matters</div>
+                                    <p className="text-slate-300 leading-relaxed">{selectedPrediction.reason}</p>
+                                </div>
+
+                                <div>
+                                    <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-4">Contributing Data Points</div>
+                                    <div className="space-y-3">
+                                        {selectedPrediction.contributingFactors.map((factor, i) => (
+                                            <div key={i} className="flex items-center gap-3 p-3 bg-black/20 rounded-xl border border-white/5">
+                                                <Activity className="w-4 h-4 text-slate-500" />
+                                                <span className="text-slate-200 text-sm">{factor}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+
+                                <div className="pt-8 border-t border-white/5">
+                                    <button
+                                        onClick={() => alert("Prevention tips coming soon! (This would open a detailed content modal)")}
+                                        className="w-full py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-bold uppercase tracking-widest transition-colors"
+                                    >
+                                        View Prevention Tips
+                                    </button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
+        </div>
+    );
+}

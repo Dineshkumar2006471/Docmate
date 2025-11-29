@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import Sidebar from './Sidebar';
-import MedicalDisclaimer from './MedicalDisclaimer';
+
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Menu } from 'lucide-react';
+import { useUserProfile } from '../context/UserProfileContext';
 
 const pageTitles: Record<string, string> = {
     '/dashboard': 'Dashboard',
@@ -22,6 +23,8 @@ export default function DashboardLayout() {
     const navigate = useNavigate();
     const location = useLocation();
 
+    const { isProfileComplete, loading: profileLoading } = useUserProfile();
+
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(auth, (user) => {
             if (!user) {
@@ -34,7 +37,14 @@ export default function DashboardLayout() {
         return () => unsubscribe();
     }, [navigate]);
 
-    if (loading) {
+    // Profile Gatekeeping
+    useEffect(() => {
+        if (!loading && !profileLoading && !isProfileComplete && location.pathname !== '/profile') {
+            navigate('/profile');
+        }
+    }, [loading, profileLoading, isProfileComplete, location.pathname, navigate]);
+
+    if (loading || profileLoading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
@@ -70,7 +80,7 @@ export default function DashboardLayout() {
                     <Outlet />
                 </main>
 
-                <MedicalDisclaimer />
+                {/* Medical Disclaimer Removed */}
             </div>
         </div>
     );
