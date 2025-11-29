@@ -66,7 +66,7 @@ export default function DashboardLayout() {
                     <h1 className="text-xl md:text-2xl font-serif text-slate-100 truncate">{currentTitle}</h1>
                 </header>
 
-                <main className="flex-1 overflow-y-auto relative z-10 p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                <main className="flex-1 overflow-y-auto relative z-10 p-4 md:p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
                     <Outlet />
                 </main>
 

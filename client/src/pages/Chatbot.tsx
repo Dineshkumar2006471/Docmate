@@ -405,7 +405,7 @@ export default function Chatbot() {
             </div>
 
             {/* Input Area */}
-            <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background/95 to-transparent z-10">
+            <div className="absolute bottom-0 left-0 right-0 p-4 md:p-6 bg-gradient-to-t from-background via-background/95 to-transparent z-10">
                 {/* Voice Visualizer Overlay */}
                 <AnimatePresence>
                     {isRecording && (
@@ -452,18 +452,18 @@ export default function Chatbot() {
                     </button>
                 </div>
 
-                <form onSubmit={handleSend} className="relative flex items-center gap-3 glass-panel p-2 rounded-2xl shadow-2xl border-white/10">
+                <form onSubmit={handleSend} className="relative flex items-center gap-2 glass-panel p-1.5 rounded-full shadow-2xl border-white/10">
                     <input
                         type="text"
                         value={input}
                         onChange={(e) => setInput(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 bg-transparent border-none py-4 pl-6 text-slate-200 placeholder:text-slate-500 focus:outline-none text-base"
+                        className="flex-1 min-w-0 bg-transparent border-none py-3 pl-6 text-slate-200 placeholder:text-slate-500 focus:outline-none text-base"
                     />
                     <button
                         type="submit"
                         disabled={!input.trim() || isTyping}
-                        className="p-4 bg-slate-800 hover:bg-teal-500 text-slate-400 hover:text-white rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        className="p-3 aspect-square flex items-center justify-center bg-slate-800 hover:bg-teal-500 text-slate-400 hover:text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     >
                         <Send className="w-5 h-5" />
                     </button>

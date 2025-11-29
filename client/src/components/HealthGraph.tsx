@@ -116,9 +116,7 @@ export default function HealthGraph() {
     }, []);
 
     return (
-        <div className="min-h-screen min-w-0 bg-background text-slate-200 font-sans selection:bg-teal-300/20 relative overflow-hidden">
-            <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
-
+        <div className="w-full min-w-0 text-slate-200 font-sans selection:bg-teal-300/20 relative">
             {/* Header Section */}
             <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <motion.div
