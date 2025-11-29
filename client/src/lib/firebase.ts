@@ -13,6 +13,12 @@ const firebaseConfig = {
     appId: import.meta.env.VITE_FIREBASE_APP_ID || "mock_app_id"
 };
 
+console.log("Firebase Config Loaded:", {
+    apiKey: firebaseConfig.apiKey ? "PRESENT (Starts with " + firebaseConfig.apiKey.substring(0, 5) + ")" : "MISSING",
+    authDomain: firebaseConfig.authDomain,
+    projectId: firebaseConfig.projectId
+});
+
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
