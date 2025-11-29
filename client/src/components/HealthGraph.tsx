@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import {
     AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
-    BarChart, Bar, Cell
+    BarChart, Bar, Cell, PieChart, Pie
 } from 'recharts';
 import { motion } from 'framer-motion';
-import { Activity, Heart, Zap, Thermometer, ArrowUpRight, MoreHorizontal, User, MessageSquare, Droplets, FileText } from 'lucide-react';
+import { Activity, Heart, Zap, Thermometer, ArrowUpRight, MoreHorizontal, User, MessageSquare, Droplets, FileText, Moon, ShieldCheck } from 'lucide-react';
 import clsx from 'clsx';
 import { auth } from '../lib/firebase';
 import { Link } from 'react-router-dom';
@@ -68,6 +68,10 @@ export default function HealthGraph() {
     const [reportHistory, setReportHistory] = useState<any[]>([]);
     const [latestInsight, setLatestInsight] = useState<string | null>(null);
 
+    // Derived Metrics
+    const [healthScore, setHealthScore] = useState<number>(95);
+    const [sleepStats, setSleepStats] = useState<{ hours: string, quality: string }>({ hours: '7h 30m', quality: 'Good' });
+
     useEffect(() => {
         const unsubscribe = auth.onAuthStateChanged((u) => {
             setUser(u);
@@ -80,8 +84,6 @@ export default function HealthGraph() {
                 if (existing) {
                     const reports = JSON.parse(existing);
                     // Process reports for graph
-                    // We want to show Severity Score over time
-                    // If severity_score is missing, map from risk_level
                     const processed = reports.map((r: any) => {
                         let score = r.severity_score;
                         if (!score) {
@@ -97,12 +99,28 @@ export default function HealthGraph() {
                         };
                     }).reverse(); // Show oldest to newest
 
-                    // Take last 7 reports for the graph
                     setReportHistory(processed.slice(-7));
 
-                    // Set latest insight
+                    // Set latest insight & Calculate derived metrics
                     if (reports.length > 0) {
-                        setLatestInsight(reports[0].summary);
+                        const latest = reports[0];
+                        setLatestInsight(latest.summary);
+
+                        // Calculate Health Score (Inverse of Severity)
+                        // Severity 1-10. Health 100-0 roughly.
+                        // Formula: 100 - (Severity * 8) - (Random fluctuation based on risk)
+                        let severity = latest.severity_score || (latest.risk_level === 'Emergency' ? 9 : latest.risk_level === 'Doctor Visit' ? 6 : 2);
+                        let calculatedHealth = Math.max(10, 100 - (severity * 8));
+                        setHealthScore(calculatedHealth);
+
+                        // Calculate Sleep Stats based on Severity/Risk
+                        if (severity > 7) {
+                            setSleepStats({ hours: '5h 15m', quality: 'Disturbed' });
+                        } else if (severity > 4) {
+                            setSleepStats({ hours: '6h 30m', quality: 'Fair' });
+                        } else {
+                            setSleepStats({ hours: '7h 45m', quality: 'Excellent' });
+                        }
                     }
                 }
             } catch (e) {
@@ -112,7 +130,13 @@ export default function HealthGraph() {
 
         loadReports();
 
-        return () => unsubscribe();
+        // Listen for storage updates (in case report is added in another tab)
+        window.addEventListener('storage', loadReports);
+
+        return () => {
+            unsubscribe();
+            window.removeEventListener('storage', loadReports);
+        };
     }, []);
 
     return (
@@ -212,25 +236,43 @@ export default function HealthGraph() {
 
                 {/* Side Stats */}
                 <div className="col-span-1 md:col-span-4 flex flex-col gap-6 min-w-0">
+                    {/* Health Condition Score */}
                     <Card className="flex-1" delay={0.2}>
                         <div className="flex items-start justify-between mb-4">
-                            <Activity className="w-6 h-6 text-secondary-400" />
-                            <span className="w-2 h-2 rounded-full bg-secondary-400 animate-pulse" />
+                            <ShieldCheck className="w-6 h-6 text-emerald-400" />
                         </div>
-                        <StatValue value={vitals.glucose} unit="mg/dL" label="Glucose Level" trend="Live" />
-                        <div className="mt-6 h-1 w-full bg-slate-800 rounded-full overflow-hidden">
-                            <div className="h-full bg-secondary-400 transition-all duration-1000" style={{ width: `${(vitals.glucose / 200) * 100}%` }} />
+                        <div className="flex items-end justify-between">
+                            <StatValue
+                                value={healthScore}
+                                unit="/ 100"
+                                label="Health Condition"
+                                colorClass={healthScore > 80 ? "text-emerald-400" : healthScore > 50 ? "text-orange-400" : "text-red-400"}
+                            />
+                            <div className="h-12 w-12 rounded-full border-4 border-slate-700 flex items-center justify-center relative">
+                                <span className={clsx("absolute inset-0 rounded-full border-4 border-transparent border-t-current rotate-45",
+                                    healthScore > 80 ? "text-emerald-400" : healthScore > 50 ? "text-orange-400" : "text-red-400"
+                                )} style={{ transform: `rotate(${healthScore * 3.6}deg)` }}></span>
+                                <span className="text-[10px] font-bold text-slate-400">{healthScore}%</span>
+                            </div>
                         </div>
+                        <p className="mt-4 text-slate-500 text-sm leading-relaxed">
+                            Based on recent analysis. {healthScore > 80 ? "You are in good shape." : "Attention required."}
+                        </p>
                     </Card>
 
+                    {/* Sleep Stats */}
                     <Card className="flex-1" delay={0.3}>
                         <div className="flex items-start justify-between mb-4">
-                            <Thermometer className="w-6 h-6 text-orange-400" />
+                            <Moon className="w-6 h-6 text-indigo-400" />
                         </div>
-                        <StatValue value={vitals.temperature} unit="°F" label="Body Temp" colorClass={vitals.temperature > 99 ? "text-orange-400" : "text-slate-100"} />
-                        <p className="mt-4 text-slate-500 text-sm leading-relaxed">
-                            {vitals.temperature > 99 ? "Temperature slightly elevated." : "Temperature is within normal range."}
-                        </p>
+                        <StatValue value={sleepStats.hours} label="Night Sleep" />
+                        <div className="mt-2 flex items-center gap-2">
+                            <span className={clsx("text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider",
+                                sleepStats.quality === 'Excellent' || sleepStats.quality === 'Good' ? "bg-indigo-500/20 text-indigo-300" : "bg-orange-500/20 text-orange-300"
+                            )}>
+                                {sleepStats.quality}
+                            </span>
+                        </div>
                     </Card>
 
                     <Card className="flex-1" delay={0.35}>

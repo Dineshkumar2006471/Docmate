@@ -14,8 +14,11 @@ const audioUpload = multer({ storage: multer.memoryStorage() });
 
 // Initialize Gemini Lazily
 const getGenAI = () => {
-    const key = process.env.GEMINI_API_KEY || "AIzaSyCcQb_gmdu_uM9AcJqLgl_ciyH_G3klEm8";
-    if (!key) throw new Error("GEMINI_API_KEY is missing");
+    const key = process.env.GEMINI_API_KEY;
+    if (!key) {
+        console.error("CRITICAL ERROR: GEMINI_API_KEY is missing in environment variables.");
+        throw new Error("GEMINI_API_KEY is missing. Please check your .env file.");
+    }
     return new GoogleGenerativeAI(key);
 };
 
