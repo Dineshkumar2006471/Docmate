@@ -80,7 +80,7 @@ export default function HealthGraph() {
     }, []);
 
     return (
-        <div className="min-h-screen bg-background text-slate-200 font-sans selection:bg-teal-300/20 relative overflow-hidden">
+        <div className="min-h-screen min-w-0 bg-background text-slate-200 font-sans selection:bg-teal-300/20 relative overflow-hidden">
             <div className="hero-gradient absolute inset-0 -z-10 opacity-30 pointer-events-none"></div>
 
             {/* Header Section */}
@@ -117,10 +117,10 @@ export default function HealthGraph() {
             </header>
 
             {/* Main Grid */}
-            <main className="grid grid-cols-1 md:grid-cols-12 gap-6">
+            <main className="grid grid-cols-1 md:grid-cols-12 gap-6 min-w-0">
 
                 {/* Primary Chart - Heart Rate */}
-                <Card className="col-span-1 md:col-span-8 min-h-[400px] flex flex-col" delay={0.1}>
+                <Card className="col-span-1 md:col-span-8 min-h-[400px] flex flex-col min-w-0" delay={0.1}>
                     <div className="flex justify-between items-start mb-8">
                         <div className="flex items-center gap-3">
                             <div className="p-2 bg-teal-900/30 rounded-full border border-teal-800/50 relative">
@@ -137,8 +137,8 @@ export default function HealthGraph() {
                         </div>
                     </div>
 
-                    <div className="flex-1 w-full h-full min-h-[300px]">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="flex-1 w-full h-full min-h-[300px] min-w-0">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={200}>
                             <AreaChart data={heartRateHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorHeart" x1="0" y1="0" x2="0" y2="1">
@@ -177,7 +177,7 @@ export default function HealthGraph() {
                 </Card>
 
                 {/* Side Stats */}
-                <div className="col-span-1 md:col-span-4 flex flex-col gap-6">
+                <div className="col-span-1 md:col-span-4 flex flex-col gap-6 min-w-0">
                     <Card className="flex-1" delay={0.2}>
                         <div className="flex items-start justify-between mb-4">
                             <Activity className="w-6 h-6 text-secondary-400" />
@@ -208,13 +208,13 @@ export default function HealthGraph() {
                 </div>
 
                 {/* Sleep Analysis Bar Chart */}
-                <Card className="col-span-1 md:col-span-6 min-h-[300px]" delay={0.4}>
+                <Card className="col-span-1 md:col-span-6 min-h-[300px] min-w-0" delay={0.4}>
                     <div className="flex items-center gap-3 mb-6">
                         <Zap className="w-5 h-5 text-purple-400" />
                         <h3 className="text-lg font-serif text-slate-100">Sleep Quality Index</h3>
                     </div>
-                    <div className="h-[200px] w-full">
-                        <ResponsiveContainer width="100%" height="100%">
+                    <div className="h-[200px] w-full min-w-0">
+                        <ResponsiveContainer width="100%" height="100%" minWidth={1} minHeight={150}>
                             <BarChart data={sleepData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.1} vertical={false} />
                                 <XAxis
