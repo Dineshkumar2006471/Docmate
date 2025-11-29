@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
-import { Activity, Shield, MessageSquare, ChevronRight, HeartPulse, ArrowRight, CheckCircle, Globe, Users, Zap } from 'lucide-react';
+import { Activity, Shield, MessageSquare, ChevronRight, HeartPulse, ArrowRight, CheckCircle, Globe, Users, Zap, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export default function LandingPage() {
+    const [isMenuOpen, setIsMenuOpen] = useState(false);
     return (
         <div className="min-h-screen bg-background text-slate-200 selection:bg-primary-300/30 overflow-x-hidden">
             {/* Navigation */}
@@ -25,7 +26,7 @@ export default function LandingPage() {
                                 <a href="#about" className="text-sm font-medium text-slate-300 hover:text-primary-300 transition-colors">About</a>
                             </div>
                         </div>
-                        <div>
+                        <div className="hidden md:block">
                             <Link to="/login">
                                 <button className="btn-primary group relative overflow-hidden">
                                     <span className="relative z-10 flex items-center gap-2">
@@ -34,8 +35,59 @@ export default function LandingPage() {
                                 </button>
                             </Link>
                         </div>
+                        <div className="md:hidden">
+                            <button
+                                onClick={() => setIsMenuOpen(!isMenuOpen)}
+                                className="text-slate-300 hover:text-white p-2"
+                            >
+                                {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                            </button>
+                        </div>
                     </div>
                 </div>
+
+                {/* Mobile Menu */}
+                {isMenuOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="md:hidden bg-surface-highlight/95 backdrop-blur-xl border-b border-white/5 overflow-hidden"
+                    >
+                        <div className="px-4 pt-2 pb-6 space-y-2">
+                            <a
+                                href="#features"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                Features
+                            </a>
+                            <a
+                                href="#technology"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                Technology
+                            </a>
+                            <a
+                                href="#about"
+                                onClick={() => setIsMenuOpen(false)}
+                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                                About
+                            </a>
+                            <div className="pt-4">
+                                <Link to="/login" onClick={() => setIsMenuOpen(false)}>
+                                    <button className="w-full btn-primary group relative overflow-hidden justify-center">
+                                        <span className="relative z-10 flex items-center justify-center gap-2">
+                                            Login / Sign In <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </span>
+                                    </button>
+                                </Link>
+                            </div>
+                        </div>
+                    </motion.div>
+                )}
             </nav>
 
             {/* Hero Section */}

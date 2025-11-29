@@ -4,6 +4,7 @@ import Sidebar from './Sidebar';
 import MedicalDisclaimer from './MedicalDisclaimer';
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
+import { Menu } from 'lucide-react';
 
 const pageTitles: Record<string, string> = {
     '/dashboard': 'Dashboard',
@@ -17,6 +18,7 @@ const pageTitles: Record<string, string> = {
 
 export default function DashboardLayout() {
     const [loading, setLoading] = useState(true);
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -45,7 +47,7 @@ export default function DashboardLayout() {
     return (
         <div className="flex h-screen bg-background overflow-hidden font-sans">
             <div className="no-print">
-                <Sidebar />
+                <Sidebar mobileOpen={mobileMenuOpen} onClose={() => setMobileMenuOpen(false)} />
             </div>
             <div className="flex-1 flex flex-col min-w-0 relative">
                 {/* Background Noise/Gradient */}
@@ -54,8 +56,14 @@ export default function DashboardLayout() {
                 </div>
 
                 {/* Dynamic Header */}
-                <header className="h-20 border-b border-white/5 flex items-center px-8 z-10 bg-background/50 backdrop-blur-sm no-print">
-                    <h1 className="text-2xl font-serif text-slate-100">{currentTitle}</h1>
+                <header className="h-20 border-b border-white/5 flex items-center px-4 md:px-8 z-10 bg-background/50 backdrop-blur-sm no-print gap-4">
+                    <button
+                        onClick={() => setMobileMenuOpen(true)}
+                        className="md:hidden p-2 hover:bg-white/5 rounded-lg transition-colors text-slate-400"
+                    >
+                        <Menu className="w-6 h-6" />
+                    </button>
+                    <h1 className="text-xl md:text-2xl font-serif text-slate-100 truncate">{currentTitle}</h1>
                 </header>
 
                 <main className="flex-1 overflow-y-auto relative z-10 p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
