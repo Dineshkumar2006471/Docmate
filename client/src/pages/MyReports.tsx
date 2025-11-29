@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+// DocMate Reports Dashboard
 import { FileText, Calendar, AlertTriangle, CheckCircle, ChevronRight, Download, Search, Activity, ArrowUpRight, TrendingUp, Clock } from 'lucide-react';
 import { motion } from 'framer-motion';
 
