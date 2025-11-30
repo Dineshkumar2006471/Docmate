@@ -70,6 +70,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [docId, setDocId] = useState<string | null>(null);
 
     useEffect(() => {
         let mounted = true;
@@ -95,7 +96,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
                     if (mounted) {
                         if (!querySnapshot.empty) {
-                            const docData = querySnapshot.docs[0].data();
+                            const doc = querySnapshot.docs[0];
+                            setDocId(doc.id); // Store docId for future updates
+                            const docData = doc.data();
                             const { user_id, created_by, updated_at, ...profileData } = docData as any;
                             setProfile(prev => ({ ...prev, ...profileData }));
                         } else {
@@ -123,6 +126,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
             } else {
                 if (mounted) {
                     setLoading(false);
+                    setDocId(null);
                     setProfile({
                         fullName: '', age: '', gender: '', bloodType: '', weight: '', height: '',
                         pastConditions: [], allergies: [], currentMedications: [],
@@ -149,10 +153,6 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
         try {
             // 1. Save Medical Data to 'patients' collection
-            const patientsRef = collection(db, 'patients');
-            const q = query(patientsRef, where('user_id', '==', user.uid));
-            const querySnapshot = await getDocs(q);
-
             const medicalData = {
                 user_id: user.uid,
                 created_by: user.email,
@@ -160,11 +160,25 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                 ...newProfile
             };
 
-            if (!querySnapshot.empty) {
-                const docId = querySnapshot.docs[0].id;
+            if (docId) {
+                // Update existing document directly using ID (No read required)
                 await setDoc(doc(db, 'patients', docId), medicalData, { merge: true });
             } else {
-                await setDoc(doc(collection(db, 'patients')), medicalData);
+                // Fallback: Query if docId is missing (rare case)
+                const patientsRef = collection(db, 'patients');
+                const q = query(patientsRef, where('user_id', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const existingDocId = querySnapshot.docs[0].id;
+                    setDocId(existingDocId);
+                    await setDoc(doc(db, 'patients', existingDocId), medicalData, { merge: true });
+                } else {
+                    // Create new document
+                    const newDocRef = doc(collection(db, 'patients'));
+                    setDocId(newDocRef.id);
+                    await setDoc(newDocRef, medicalData);
+                }
             }
 
             // 2. Save Consent Data to 'users' collection
