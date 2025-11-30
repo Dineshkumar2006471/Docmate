@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Outlet, useNavigate, useLocation, Link } from 'react-router-dom';
 import Sidebar from './Sidebar';
 
 import { auth } from '../lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
-import { Menu } from 'lucide-react';
+import { Menu, AlertCircle } from 'lucide-react';
 import { useUserProfile } from '../context/UserProfileContext';
 
 const pageTitles: Record<string, string> = {
@@ -48,12 +48,14 @@ export default function DashboardLayout() {
         };
     }, [navigate, loading]);
 
-    // Profile Gatekeeping
+    // Profile Gatekeeping - REMOVED to allow navigation
+    /*
     useEffect(() => {
         if (!loading && !profileLoading && !isProfileComplete && location.pathname !== '/profile') {
             navigate('/profile');
         }
     }, [loading, profileLoading, isProfileComplete, location.pathname, navigate]);
+    */
 
     if (loading || profileLoading) {
         return (
@@ -88,6 +90,23 @@ export default function DashboardLayout() {
                 </header>
 
                 <main className="flex-1 overflow-y-auto relative z-10 p-4 md:p-8 scrollbar-thin scrollbar-thumb-white/10 scrollbar-track-transparent">
+                    {!loading && !profileLoading && !isProfileComplete && location.pathname !== '/profile' && (
+                        <div className="mb-6 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in slide-in-from-top-2">
+                            <div className="flex items-center gap-3 text-amber-400">
+                                <AlertCircle className="w-5 h-5 shrink-0" />
+                                <div>
+                                    <p className="text-sm font-bold">Profile Incomplete</p>
+                                    <p className="text-xs text-amber-400/80">Complete your profile to enable personalized AI health insights.</p>
+                                </div>
+                            </div>
+                            <Link
+                                to="/profile"
+                                className="text-xs font-bold uppercase tracking-wider text-amber-400 hover:text-amber-300 border border-amber-500/30 px-4 py-2 rounded-lg hover:bg-amber-500/10 transition-colors whitespace-nowrap"
+                            >
+                                Complete Profile
+                            </Link>
+                        </div>
+                    )}
                     <Outlet />
                 </main>
 
