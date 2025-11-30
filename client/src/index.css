@@ -2,24 +2,65 @@
 
 @import "tailwindcss";
 
+:root {
+  /* Default Dark Mode Values */
+  --background: #050505;
+  --surface: #0f1012;
+  --surface-highlight: #1a1b1e;
+
+  --slate-100: #e6e6e6;
+  /* Main Text */
+  --slate-200: #cccccc;
+  /* Secondary Text */
+  --slate-300: #aaaaaa;
+  --slate-400: #888888;
+  /* Muted Text */
+  --slate-500: #666666;
+  --slate-800: #161618;
+  /* Dark Borders/Cards */
+  --slate-900: #0a0a0c;
+  /* Darkest Backgrounds */
+}
+
+:root.light {
+  /* Light Mode Values */
+  --background: #ffffff;
+  --surface: #f8fafc;
+  /* slate-50 */
+  --surface-highlight: #f1f5f9;
+  /* slate-100 */
+
+  --slate-100: #0f172a;
+  /* slate-900 (Main Text) */
+  --slate-200: #334155;
+  /* slate-700 */
+  --slate-300: #475569;
+  /* slate-600 */
+  --slate-400: #64748b;
+  /* slate-500 */
+  --slate-500: #94a3b8;
+  /* slate-400 */
+  --slate-800: #e2e8f0;
+  /* slate-200 (Borders) */
+  --slate-900: #f8fafc;
+  /* slate-50 */
+}
+
 @theme {
   --font-sans: "JetBrains Mono", monospace;
   --font-serif: "Playfair Display", serif;
   --font-display: "Poppins", sans-serif;
 
-  --color-background: #050505;
-  /* Deep Void */
-  --color-surface: #0f1012;
-  /* Panel Black */
-  --color-surface-highlight: #1a1b1e;
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-highlight: var(--surface-highlight);
 
-  /* Bioluminescent Lime (Primary Accent) */
+  /* Bioluminescent Lime (Primary Accent) - Constant for now */
   --color-primary-50: #f7fee7;
   --color-primary-100: #ecfccb;
   --color-primary-200: #d9f99d;
   --color-primary-300: #bef264;
   --color-primary-400: #ccff00;
-  /* Main Accent */
   --color-primary-500: #aacc00;
   --color-primary-600: #88aa00;
   --color-primary-700: #668000;
@@ -42,16 +83,14 @@
   --color-red-500: #cf4b2c;
   --color-red-400: #e65c3b;
 
-  /* Text Colors */
-  --color-slate-100: #e6e6e6;
-  /* Raw Silk */
-  --color-slate-200: #cccccc;
-  --color-slate-300: #aaaaaa;
-  --color-slate-400: #888888;
-  /* Ash Grey */
-  --color-slate-500: #666666;
-  --color-slate-800: #161618;
-  --color-slate-900: #0a0a0c;
+  /* Text Colors Mapped to Variables */
+  --color-slate-100: var(--slate-100);
+  --color-slate-200: var(--slate-200);
+  --color-slate-300: var(--slate-300);
+  --color-slate-400: var(--slate-400);
+  --color-slate-500: var(--slate-500);
+  --color-slate-800: var(--slate-800);
+  --color-slate-900: var(--slate-900);
 }
 
 @layer base {

@@ -38,15 +38,20 @@ Role: You are 'Aura', an empathetic and calm AI health assistant designed for ru
 Tone: Warm, respectful, slow-paced, and caring. Speak like a knowledgeable elder sister or a kind doctor.
 
 Language Protocol (STRICT):
-1. **CHECK "preferred_language"**: The user may explicitly specify a preferred language (e.g., 'te-IN' for Telugu, 'hi-IN' for Hindi).
-   - IF a preferred language is provided, you MUST reply in that language, regardless of the input language.
-   - Example: If preferred is 'te-IN' (Telugu) but user types in English, reply in Telugu.
-2. **FALLBACK (Detection)**: If no preferred language is specified, DETECT the user's input language and dialect.
-   - If user speaks Hindi -> Reply in Hindi (Devanagari).
-   - If user speaks Telugu -> Reply in Telugu (Telugu script).
-   - If user speaks Tamil -> Reply in Tamil (Tamil script).
-   - If user speaks Hinglish -> Reply in Hinglish.
-3. **ENGLISH**: Only reply in English if the preferred language is English OR the user speaks English and no preference is set.
+1. **DETECT INPUT LANGUAGE**: Always identify the language the user is currently speaking.
+2. **ADAPTABILITY**: 
+   - IF the user speaks in a specific language (e.g., Telugu, Hindi, English), **YOU MUST REPLY IN THAT SAME LANGUAGE**.
+   - This overrides any "preferred_language" setting if the user explicitly switches languages in the conversation.
+3. **PREFERRED LANGUAGE HINT**: If the user's input is ambiguous or short, use the "preferred_language" (if provided) as a default.
+   - If preferred is 'te-IN' and input is ambiguous, use Telugu.
+   - If preferred is 'en-IN' and input is ambiguous, use English.
+4. **FALLBACK**: If no preference and unable to detect, default to English (or Hindi if the context suggests rural India).
+
+Specific Rules:
+- If user speaks Hindi -> Reply in Hindi (Devanagari).
+- If user speaks Telugu -> Reply in Telugu (Telugu script).
+- If user speaks English -> Reply in English.
+- If user speaks Hinglish -> Reply in Hinglish.
 
 Emergency Protocol: If the user mentions symptoms like 'chest pain', 'unconscious', 'bleeding', 'difficulty breathing', or 'severe trauma', immediately stop the diagnosis and instruct them to go to a hospital.
 
@@ -73,6 +78,12 @@ router.post('/analyze-symptoms', async (req, res) => {
       Profile: ${JSON.stringify(userProfile)}
       Symptoms: ${symptoms}
       Vitals: ${JSON.stringify(vitals)}
+
+      STRICT RULES FOR OUTPUT:
+      1. **Risk Level**: Assign 'High' or 'Critical' ONLY if there are severe symptoms (e.g., chest pain, difficulty breathing, severe bleeding, high fever > 103F, very low/high BP). Otherwise, use 'Low' or 'Moderate'.
+      2. **Warning Signs**: 
+         - **IF Risk is 'Low' or 'Moderate'**: Return an EMPTY array [] for "warning_signs". Do NOT show warning signs for normal/mild problems.
+         - **IF Risk is 'High' or 'Critical'**: List specific warning signs that triggered this risk.
 
       Return a JSON object ONLY with this structure:
       {
@@ -236,7 +247,9 @@ router.post('/chat', async (req, res) => {
         const genAI = getGenAI();
 
         // Append language preference to system instruction dynamically
-        const langInstruction = preferred_language ? `\n\nUSER PREFERRED LANGUAGE: ${preferred_language}. YOU MUST REPLY IN THIS LANGUAGE.` : "";
+        const langInstruction = (preferred_language && preferred_language !== 'Auto')
+            ? `\n\nUSER PREFERRED LANGUAGE SETTING: ${preferred_language}. Try to use this, but if the user writes in a different language, ADAPT to their language.`
+            : "\n\nUSER LANGUAGE SETTING: Auto-Detect. Respond in the same language as the user's input.";
 
         const model = genAI.getGenerativeModel({
             model: "gemini-2.5-flash",

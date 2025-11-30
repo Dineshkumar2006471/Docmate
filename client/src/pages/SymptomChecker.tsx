@@ -229,7 +229,7 @@ export default function SymptomChecker() {
                                 {/* Left Column: Warning Signs & Recommendation */}
                                 <div className="space-y-6">
                                     {/* Warning Signs */}
-                                    {result.warning_signs && result.warning_signs.length > 0 && (
+                                    {result.warning_signs && result.warning_signs.length > 0 && (result.risk_level === 'High' || result.risk_level === 'Critical') && (
                                         <div className="p-6 bg-red-500/10 border border-red-500/20 rounded-xl">
                                             <div className="flex items-center gap-2 text-red-400 font-bold text-sm uppercase tracking-wider mb-4">
                                                 <AlertTriangle className="w-5 h-5" /> Warning Signs

@@ -19,6 +19,7 @@ const FindDoctor = lazy(() => import('./pages/FindDoctor'));
 const AIInsights = lazy(() => import('./pages/AIInsights'));
 
 import { UserProfileProvider } from './context/UserProfileContext';
+import { ThemeProvider } from './context/ThemeContext';
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
@@ -28,31 +29,33 @@ const PageLoader = () => (
 
 function App() {
   return (
-    <UserProfileProvider>
-      <Router>
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={<LandingPage />} />
-            <Route path="/login" element={<LoginPage />} />
+    <ThemeProvider>
+      <UserProfileProvider>
+        <Router>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<LandingPage />} />
+              <Route path="/login" element={<LoginPage />} />
 
-            {/* Protected Dashboard Routes */}
-            <Route element={<DashboardLayout />}>
-              <Route path="/dashboard" element={<HealthGraph />} />
-              <Route path="/symptom-check" element={<SymptomChecker />} />
-              <Route path="/report-analyzer" element={<ReportAnalyzer />} />
-              <Route path="/chat" element={<Chatbot />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/my-reports" element={<MyReports />} />
-              <Route path="/find-doctor" element={<FindDoctor />} />
-              <Route path="/ai-insights" element={<AIInsights />} />
-              <Route path="/report-viewer/:id" element={<ReportViewer />} />
-            </Route>
+              {/* Protected Dashboard Routes */}
+              <Route element={<DashboardLayout />}>
+                <Route path="/dashboard" element={<HealthGraph />} />
+                <Route path="/symptom-check" element={<SymptomChecker />} />
+                <Route path="/report-analyzer" element={<ReportAnalyzer />} />
+                <Route path="/chat" element={<Chatbot />} />
+                <Route path="/profile" element={<Profile />} />
+                <Route path="/my-reports" element={<MyReports />} />
+                <Route path="/find-doctor" element={<FindDoctor />} />
+                <Route path="/ai-insights" element={<AIInsights />} />
+                <Route path="/report-viewer/:id" element={<ReportViewer />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </Suspense>
-      </Router>
-    </UserProfileProvider>
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+          </Suspense>
+        </Router>
+      </UserProfileProvider>
+    </ThemeProvider>
   );
 }
 

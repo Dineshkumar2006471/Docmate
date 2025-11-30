@@ -13,6 +13,7 @@ interface Message {
 }
 
 const LANGUAGES = [
+    { code: 'Auto', name: 'Auto Detect', label: 'Auto' },
     { code: 'en-IN', name: 'English (India)', label: 'English' },
     { code: 'hi-IN', name: 'Hindi', label: 'हिंदी' },
     { code: 'te-IN', name: 'Telugu', label: 'తెలుగు' },
@@ -38,7 +39,7 @@ export default function Chatbot() {
     const [isRecording, setIsRecording] = useState(false);
     const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([]);
     const [playingMessageId, setPlayingMessageId] = useState<string | null>(null);
-    const [selectedLanguage, setSelectedLanguage] = useState('en-IN');
+    const [selectedLanguage, setSelectedLanguage] = useState('Auto');
     const [showLangMenu, setShowLangMenu] = useState(false);
 
     const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -130,7 +131,8 @@ export default function Chatbot() {
             // Priority: 
             // 1. Backend detected language (langCode)
             // 2. User selected language (selectedLanguage)
-            const targetLang = langCode || selectedLanguage;
+            // 3. Fallback to English if Auto
+            const targetLang = langCode || (selectedLanguage === 'Auto' ? 'en-IN' : selectedLanguage);
 
             let voices = availableVoices;
             if (voices.length === 0) {
