@@ -35,52 +35,48 @@
 }
 
 :root.light {
-  /* THE PORCELAIN LAB - Hyper-Clean Light Mode */
+  /* CALM PRECISION - Light Mode */
 
-  /* Backgrounds: Ceramic & Alabaster */
-  --background: #f4f5f7;
-  /* Ceramic White */
-  --surface: #ffffff;
+  /* Backgrounds */
+  --background: #F8F9FA;
+  /* Warm Off-White */
+  --surface: #FFFFFF;
   /* Pure White */
-  --surface-highlight: #f9fafb;
-  /* Warm Alabaster */
+  --surface-highlight: #F1F3F4;
+  /* Very Light Grey */
 
-  /* Text: Midnight Navy & Slate */
-  --slate-100: #0b1120;
-  /* Midnight Navy - Primary Text */
-  --slate-200: #1e293b;
-  /* Deep Slate */
-  --slate-300: #475569;
-  /* Medium Slate */
-  --slate-400: #64748b;
-  /* Slate - Secondary Text */
-  --slate-500: #94a3b8;
-  /* Light Muted */
+  /* Text */
+  --slate-100: #1A202C;
+  /* Primary Text - Dark Navy */
+  --slate-200: #2D3748;
+  --slate-300: #4A5568;
+  --slate-400: #718096;
+  /* Secondary Text - Medium Grey */
+  --slate-500: #A0AEC0;
 
-  /* Borders: Extremely subtle, relying on shadows */
-  --slate-800: rgba(0, 0, 0, 0.04);
-  /* Almost invisible structure */
-  --slate-900: rgba(0, 0, 0, 0.08);
-  /* Slightly clearer division */
+  /* Borders - Soft & Diffused */
+  --slate-800: rgba(0, 0, 0, 0.05);
+  --slate-900: rgba(0, 0, 0, 0.1);
 
-  /* Primary Color - International Klein Blue */
-  --primary-50: #eff6ff;
-  --primary-100: #dbeafe;
-  --primary-200: #bfdbfe;
-  --primary-300: #93c5fd;
-  --primary-400: #60a5fa;
-  --primary-500: #0055ff;
-  /* International Klein Blue */
-  --primary-600: #2563eb;
-  --primary-700: #1d4ed8;
-  --primary-800: #1e40af;
-  --primary-900: #1e3a8a;
+  /* Primary Color - Deep Teal (#00796B) */
+  --primary-50: #E0F2F1;
+  --primary-100: #B2DFDB;
+  --primary-200: #80CBC4;
+  --primary-300: #4DB6AC;
+  --primary-400: #26A69A;
+  --primary-500: #00796B;
+  /* Main Accent */
+  --primary-600: #00695C;
+  --primary-700: #004D40;
+  --primary-800: #00382E;
+  --primary-900: #00251F;
 }
 
 @theme {
-  --font-sans: "JetBrains Mono", monospace;
-  --font-serif: "Playfair Display", serif;
-  --font-display: "Poppins", sans-serif;
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Lora", serif;
+  --font-display: "Playfair Display", serif;
+  --font-mono: "JetBrains Mono", monospace;
 
   --color-background: var(--background);
   --color-surface: var(--surface);
