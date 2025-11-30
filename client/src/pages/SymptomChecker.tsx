@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, AlertTriangle, ArrowRight, Thermometer, Heart, Wind, Droplets, RefreshCw } from 'lucide-react';
 import { useHealthData } from '../hooks/useHealthData';
 import { API_URL } from '../config';
+import { useUserProfile } from '../context/UserProfileContext';
 
 // --- Types ---
 type RiskLevel = 'Low' | 'Moderate' | 'High' | 'Critical';
@@ -35,6 +36,7 @@ const InputCard = ({ label, icon: Icon, value, onChange, unit, placeholder }: an
 );
 
 export default function SymptomChecker() {
+    const { profile } = useUserProfile();
     const [symptoms, setSymptoms] = useState('');
     const [vitals, setVitals] = useState({ temp: '', hr: '', bpSys: '', bpDia: '', spo2: '' });
     const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -84,7 +86,12 @@ export default function SymptomChecker() {
                 body: JSON.stringify({
                     symptoms,
                     vitals,
-                    userProfile: { age: 30, gender: 'Male', history: 'None' } // Mock Profile
+                    userProfile: {
+                        age: profile.age || 30,
+                        gender: profile.gender || 'Unknown',
+                        history: profile.pastConditions.join(', ') || 'None',
+                        allergies: profile.allergies.join(', ') || 'None'
+                    }
                 })
             });
 
@@ -130,10 +137,20 @@ export default function SymptomChecker() {
             >
                 <div>
                     <h3 className="text-lg font-serif text-slate-100">Personalized Risk Profile</h3>
-                    <p className="text-slate-400 text-sm mt-1">Based on your history: <span className="text-slate-200">Male, 30, No known allergies</span></p>
+                    <p className="text-slate-400 text-sm mt-1">
+                        Analyzing for: <span className="text-slate-200 font-bold">{profile.fullName || 'Guest'}</span>
+                        <span className="mx-2 text-slate-600">|</span>
+                        <span className="text-slate-200">{profile.gender || 'Unknown'}, {profile.age || '?'} yrs</span>
+                        {profile.allergies.length > 0 && (
+                            <>
+                                <span className="mx-2 text-slate-600">|</span>
+                                <span className="text-red-400 text-xs uppercase font-bold">Allergies: {profile.allergies.join(', ')}</span>
+                            </>
+                        )}
+                    </p>
                 </div>
                 <div className="px-4 py-2 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-xs font-bold uppercase tracking-widest">
-                    Low Baseline Risk
+                    {profile.pastConditions.length > 0 ? 'Monitor History' : 'Low Baseline Risk'}
                 </div>
             </motion.div>
 
