@@ -577,13 +577,13 @@ export default function ReportAnalyzer() {
                                                 {/* Vital Specific Advice */}
                                                 {remedies.vital_advice && (
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                        {remedies.vital_advice.temperature && (
+                                                        {remedies.vital_advice?.temperature && (
                                                             <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-xl">
                                                                 <h4 className="text-red-400 font-bold text-sm uppercase mb-2">Temperature Advice</h4>
                                                                 <p className="text-slate-300 text-sm">{remedies.vital_advice.temperature}</p>
                                                             </div>
                                                         )}
-                                                        {remedies.vital_advice.blood_pressure && (
+                                                        {remedies.vital_advice?.blood_pressure && (
                                                             <div className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-xl">
                                                                 <h4 className="text-blue-400 font-bold text-sm uppercase mb-2">Blood Pressure Support</h4>
                                                                 <p className="text-slate-300 text-sm">{remedies.vital_advice.blood_pressure}</p>
