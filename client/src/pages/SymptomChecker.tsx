@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, AlertTriangle, ArrowRight, Thermometer, Heart, Wind, Droplets, RefreshCw } from 'lucide-react';
 import { useHealthData } from '../hooks/useHealthData';
+import { API_URL } from '../config';
 
 // --- Types ---
 type RiskLevel = 'Low' | 'Moderate' | 'High' | 'Critical';
@@ -77,7 +78,7 @@ export default function SymptomChecker() {
         setResult(null);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/analyze-symptoms`, {
+            const response = await fetch(`${API_URL}/api/analyze-symptoms`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

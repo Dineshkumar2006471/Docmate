@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, AlertTriangle, Phone, MapPin, CheckCircle, Download, Calendar, Share2, Loader2, Check, Shield } from 'lucide-react';
+import { API_URL } from '../config';
 
 // --- Types ---
 interface ReportAnalysis {
@@ -86,7 +87,7 @@ export default function ReportAnalyzer() {
         const isValid = (d: any) => d && d.patient_info && d.triage_status && d.vital_signs && d.ai_analysis;
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/analyze-report`, {
+            const response = await fetch(`${API_URL}/api/analyze-report`, {
                 method: 'POST',
                 body: formData
             });
@@ -138,7 +139,7 @@ export default function ReportAnalyzer() {
             // Get the most probable condition or the first one found
             const diagnosis = result.ai_analysis.possible_conditions[0]?.condition || "General Health Check";
 
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/suggest-remedies`, {
+            const response = await fetch(`${API_URL}/api/suggest-remedies`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ diagnosis })

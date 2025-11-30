@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Send, Bot, User, Loader2, Mic, Volume2, StopCircle, Square, X, Globe } from 'lucide-react';
+import { API_URL } from '../config';
 
 interface Message {
     id: string;
@@ -203,7 +204,7 @@ export default function Chatbot() {
         setIsTyping(true);
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/chat-audio`, {
+            const response = await fetch(`${API_URL}/api/chat-audio`, {
                 method: 'POST',
                 body: formData
             });
@@ -253,7 +254,7 @@ export default function Chatbot() {
         scrollToBottom();
 
         try {
-            const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/api/chat`, {
+            const response = await fetch(`${API_URL}/api/chat`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
