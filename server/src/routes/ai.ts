@@ -213,9 +213,7 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
 // --- Route: Suggest Remedies ---
 router.post('/suggest-remedies', async (req, res) => {
     try {
-        const { diagnosis } = req.body;
-
-
+        const { diagnosis, risk_level, vital_signs } = req.body;
 
         const model = getGenAI().getGenerativeModel({
             model: "gemini-2.5-flash",
@@ -223,13 +221,35 @@ router.post('/suggest-remedies', async (req, res) => {
         });
 
         const prompt = `
-        Suggest natural and holistic remedies for: ${diagnosis}.
-        Return a JSON object with this structure:
+        Act as an expert naturopath and holistic health specialist.
+        Patient Condition: ${diagnosis}
+        Risk Level: ${risk_level}
+        Vital Signs: ${JSON.stringify(vital_signs)}
+
+        Generate a structured response for natural remedies.
+        
+        STRICT RULES:
+        1. **Disclaimer**: Always include a disclaimer that these are supportive measures and not a substitute for professional medical advice.
+        2. **Vital Specific Advice**: 
+           - IF Temperature is > 38°C (100.4°F), provide specific "Temperature" advice (e.g., cool compresses, hydration).
+           - IF Blood Pressure is abnormal (Systolic > 140 or < 90), provide specific "Blood Pressure" advice.
+           - If vitals are normal, you can omit these specific sections or provide general wellness advice.
+        3. **Remedies**: Provide 3 distinct categories:
+           - "Home Remedies": Simple things to do at home.
+           - "Ayurvedic Remedies": Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.).
+           - "Natural Remedies": General naturopathic suggestions.
+
+        Return a JSON object with this EXACT structure:
         {
+          "disclaimer": "String (The disclaimer text)",
+          "vital_advice": {
+            "temperature": "String (Optional, advice if temp is high)",
+            "blood_pressure": "String (Optional, advice if BP is abnormal)"
+          },
           "remedies": {
-            "home": ["List 3-5 home remedies"],
-            "ayurvedic": ["List 3-5 Ayurvedic remedies"],
-            "natural": ["List 3-5 natural/naturopathic remedies"]
+            "home": ["List 3-5 home remedies with brief details"],
+            "ayurvedic": ["List 3-5 Ayurvedic remedies with brief details"],
+            "natural": ["List 3-5 natural/naturopathic remedies with brief details"]
           }
         }
         `;

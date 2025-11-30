@@ -34,9 +34,16 @@ interface ReportAnalysis {
 }
 
 interface Remedies {
-    home: string[];
-    ayurvedic: string[];
-    natural: string[];
+    disclaimer: string;
+    vital_advice?: {
+        temperature?: string;
+        blood_pressure?: string;
+    };
+    remedies: {
+        home: string[];
+        ayurvedic: string[];
+        natural: string[];
+    };
 }
 
 export default function ReportAnalyzer() {
@@ -157,13 +164,17 @@ export default function ReportAnalyzer() {
             const response = await fetch(`${API_URL}/api/suggest-remedies`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ diagnosis })
+                body: JSON.stringify({
+                    diagnosis,
+                    risk_level: result.triage_status.level,
+                    vital_signs: result.vital_signs
+                })
             });
 
             const data = await response.json();
 
             if (data.remedies) {
-                setRemedies(data.remedies);
+                setRemedies(data);
 
                 // Update the report in localStorage with remedies
                 if (currentReportId) {
@@ -176,7 +187,7 @@ export default function ReportAnalyzer() {
                                     ...r,
                                     fullData: {
                                         ...r.fullData,
-                                        remedies: data.remedies
+                                        remedies: data
                                     }
                                 };
                             }
@@ -192,9 +203,12 @@ export default function ReportAnalyzer() {
             console.error("Failed to fetch remedies", e);
             // Fallback
             setRemedies({
-                home: ["Hydration", "Rest"],
-                ayurvedic: ["Ginger Tea"],
-                natural: ["Sunlight"]
+                disclaimer: "These are general suggestions. Consult a doctor.",
+                remedies: {
+                    home: ["Hydration", "Rest"],
+                    ayurvedic: ["Ginger Tea"],
+                    natural: ["Sunlight"]
+                }
             });
         }
     };
@@ -544,27 +558,56 @@ export default function ReportAnalyzer() {
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
-                                        className="space-y-4"
+                                        className="space-y-6"
                                     >
                                         {remedies ? (
                                             <>
-                                                <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-4">
-                                                    <h4 className="text-primary-400 font-bold text-sm uppercase mb-2">Home Remedies</h4>
-                                                    <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
-                                                        {remedies.home?.map((r, i) => <li key={i}>{r}</li>)}
-                                                    </ul>
+                                                {/* Disclaimer */}
+                                                <div className="bg-amber-500/10 border border-amber-500/20 p-4 rounded-xl flex items-start gap-3">
+                                                    <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+                                                    <p className="text-amber-200 text-sm italic">
+                                                        <span className="font-bold block mb-1">Disclaimer:</span>
+                                                        {remedies.disclaimer}
+                                                    </p>
                                                 </div>
-                                                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
-                                                    <h4 className="text-emerald-400 font-bold text-sm uppercase mb-2">Ayurvedic</h4>
-                                                    <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
-                                                        {remedies.ayurvedic?.map((r, i) => <li key={i}>{r}</li>)}
-                                                    </ul>
-                                                </div>
-                                                <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
-                                                    <h4 className="text-amber-400 font-bold text-sm uppercase mb-2">Natural / Holistic</h4>
-                                                    <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
-                                                        {remedies.natural?.map((r, i) => <li key={i}>{r}</li>)}
-                                                    </ul>
+
+                                                {/* Vital Specific Advice */}
+                                                {remedies.vital_advice && (
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                                        {remedies.vital_advice.temperature && (
+                                                            <div className="bg-red-500/5 border border-red-500/10 p-4 rounded-xl">
+                                                                <h4 className="text-red-400 font-bold text-sm uppercase mb-2">Temperature Advice</h4>
+                                                                <p className="text-slate-300 text-sm">{remedies.vital_advice.temperature}</p>
+                                                            </div>
+                                                        )}
+                                                        {remedies.vital_advice.blood_pressure && (
+                                                            <div className="bg-blue-500/5 border border-blue-500/10 p-4 rounded-xl">
+                                                                <h4 className="text-blue-400 font-bold text-sm uppercase mb-2">Blood Pressure Support</h4>
+                                                                <p className="text-slate-300 text-sm">{remedies.vital_advice.blood_pressure}</p>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                )}
+
+                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                                    <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-4">
+                                                        <h4 className="text-primary-400 font-bold text-sm uppercase mb-2">Home Remedies</h4>
+                                                        <ul className="list-disc list-inside text-slate-300 text-sm space-y-2">
+                                                            {remedies.remedies.home?.map((r, i) => <li key={i}>{r}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
+                                                        <h4 className="text-emerald-400 font-bold text-sm uppercase mb-2">Ayurvedic</h4>
+                                                        <ul className="list-disc list-inside text-slate-300 text-sm space-y-2">
+                                                            {remedies.remedies.ayurvedic?.map((r, i) => <li key={i}>{r}</li>)}
+                                                        </ul>
+                                                    </div>
+                                                    <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
+                                                        <h4 className="text-amber-400 font-bold text-sm uppercase mb-2">Natural / Holistic</h4>
+                                                        <ul className="list-disc list-inside text-slate-300 text-sm space-y-2">
+                                                            {remedies.remedies.natural?.map((r, i) => <li key={i}>{r}</li>)}
+                                                        </ul>
+                                                    </div>
                                                 </div>
                                             </>
                                         ) : (
