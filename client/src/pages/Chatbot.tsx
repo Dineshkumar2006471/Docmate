@@ -28,7 +28,7 @@ export default function Chatbot() {
     const [messages, setMessages] = useState<Message[]>([
         {
             id: '1',
-            text: "Namaste! I'm Aura, your health assistant. I can speak many languages. Press the mic to talk to me.",
+            text: "Namaste! I'm Viraj, your health assistant. I can speak many languages. Press the mic to talk to me.",
             sender: 'ai',
             timestamp: new Date()
         }
@@ -399,7 +399,7 @@ export default function Chatbot() {
                             <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
                             <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                         </div>
-                        <span className="text-teal-500/70 font-medium">Aura is thinking...</span>
+                        <span className="text-teal-500/70 font-medium">Viraj is thinking...</span>
                     </motion.div>
                 )}
                 <div ref={messagesEndRef} />

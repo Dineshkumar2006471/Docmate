@@ -169,7 +169,7 @@ export default function HealthGraph() {
                     className="flex gap-4"
                 >
                     <Link to="/chat" className="flex items-center gap-2 px-6 py-3 bg-teal-500 text-slate-900 rounded-full font-bold uppercase tracking-wider hover:bg-teal-400 transition-colors shadow-[0_0_20px_-5px_rgba(20,184,166,0.4)]">
-                        <MessageSquare className="w-4 h-4" /> Chat with Aura
+                        <MessageSquare className="w-4 h-4" /> Chat with Viraj
                     </Link>
                 </motion.div>
             </header>

@@ -173,7 +173,7 @@ export default function LandingPage() {
                         />
                         <FeatureCard
                             icon={<MessageSquare className="w-8 h-8 text-primary-300" />}
-                            title="Aura AI Assistant"
+                            title="Viraj AI Assistant"
                             description="Your personal health companion. Ask questions, get remedies, and track your wellness journey 24/7."
                             delay={0.4}
                         />
