@@ -91,6 +91,12 @@ export default function Profile() {
                         <User className="w-5 h-5 text-primary-400" /> Personal Information
                     </h3>
 
+                    <div className="flex justify-center mb-6">
+                        <div className="w-24 h-24 bg-surface-highlight/50 rounded-full flex items-center justify-center border-2 border-primary-500/30 shadow-[0_0_20px_-5px_rgba(204,255,0,0.2)]">
+                            <User className="w-12 h-12 text-primary-300" />
+                        </div>
+                    </div>
+
                     <div className="grid grid-cols-2 gap-4">
                         <div className="col-span-2">
                             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Full Name</label>
@@ -123,10 +129,10 @@ export default function Profile() {
                                 disabled={!isEditing}
                                 className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             >
-                                <option value="">Select</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
+                                <option value="" className="bg-slate-800 text-slate-200">Select</option>
+                                <option value="Male" className="bg-slate-800 text-slate-200">Male</option>
+                                <option value="Female" className="bg-slate-800 text-slate-200">Female</option>
+                                <option value="Other" className="bg-slate-800 text-slate-200">Other</option>
                             </select>
                         </div>
                         <div>
@@ -160,15 +166,15 @@ export default function Profile() {
                                 disabled={!isEditing}
                                 className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             >
-                                <option value="">Select</option>
-                                <option value="A+">A+</option>
-                                <option value="A-">A-</option>
-                                <option value="B+">B+</option>
-                                <option value="B-">B-</option>
-                                <option value="AB+">AB+</option>
-                                <option value="AB-">AB-</option>
-                                <option value="O+">O+</option>
-                                <option value="O-">O-</option>
+                                <option value="" className="bg-slate-800 text-slate-200">Select</option>
+                                <option value="A+" className="bg-slate-800 text-slate-200">A+</option>
+                                <option value="A-" className="bg-slate-800 text-slate-200">A-</option>
+                                <option value="B+" className="bg-slate-800 text-slate-200">B+</option>
+                                <option value="B-" className="bg-slate-800 text-slate-200">B-</option>
+                                <option value="AB+" className="bg-slate-800 text-slate-200">AB+</option>
+                                <option value="AB-" className="bg-slate-800 text-slate-200">AB-</option>
+                                <option value="O+" className="bg-slate-800 text-slate-200">O+</option>
+                                <option value="O-" className="bg-slate-800 text-slate-200">O-</option>
                             </select>
                         </div>
                     </div>

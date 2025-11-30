@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Upload, FileText, AlertTriangle, Phone, MapPin, CheckCircle, Download, Calendar, Share2, Loader2, Check, Shield } from 'lucide-react';
+import { Upload, FileText, AlertTriangle, Phone, MapPin, CheckCircle, Download, Calendar, Share2, Loader2, Check, Shield, User } from 'lucide-react';
 import { API_URL } from '../config';
 
 // --- Types ---
@@ -386,7 +386,12 @@ export default function ReportAnalyzer() {
                         <div className="space-y-6 min-w-0">
                             {/* Patient Info */}
                             <div className="glass-card p-6 rounded-2xl border-l-4 border-l-teal-500">
-                                <h3 className="text-lg font-serif text-slate-100 mb-4">Patient Information</h3>
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="w-10 h-10 bg-teal-500/20 rounded-full flex items-center justify-center">
+                                        <User className="w-5 h-5 text-teal-400" />
+                                    </div>
+                                    <h3 className="text-lg font-serif text-slate-100">Patient Information</h3>
+                                </div>
                                 <div className="space-y-3 text-sm">
                                     <div className="flex justify-between border-b border-white/5 pb-2">
                                         <span className="text-slate-500">Name</span>
