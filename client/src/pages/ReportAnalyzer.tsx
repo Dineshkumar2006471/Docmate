@@ -492,7 +492,7 @@ export default function ReportAnalyzer() {
                                                 <div className={`text-lg md:text-xl font-bold ${valueClass} break-words w-full leading-tight px-1`}>
                                                     {vital.value}
                                                 </div>
-                                                <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full whitespace-nowrap`}>
+                                                <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full text-center leading-tight`}>
                                                     {vital.status}
                                                 </div>
                                             </div>

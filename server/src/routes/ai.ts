@@ -246,10 +246,10 @@ router.post('/suggest-remedies', async (req, res) => {
            - "Ayurvedic Remedies": Provide **at least 5** distinct Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.) relevant to the condition.
            - "Natural Remedies": Provide **at least 5** distinct General naturopathic suggestions.
            
-           **CRITICAL FORMATTING**: 
-           - Each remedy string MUST start with the **Remedy Name** followed by a colon and then the description.
-           - Example: "Ginger Tea: Boil fresh ginger... This helps because..."
-           - **Description Length**: Must be 3-4 sentences, fully explaining the *how* and *why*.
+           **REQUIRED OUTPUT FORMAT**: 
+           - **Structure**: "Remedy Name: Detailed description (3-4 sentences)."
+           - **Example**: "Ginger Tea: Brew fresh ginger slices in boiling water for 10 minutes. Ginger contains gingerol, which has powerful anti-inflammatory and antioxidant properties. This helps improve circulation and can naturally lower blood pressure by relaxing blood vessels."
+           - **Detail Level**: Single sentence descriptions are **UNACCEPTABLE**. You must explain the *how* and *why*.
            
            **CONTENT RULE**: 
            - If specific vitals are abnormal (e.g., Low BP), you MUST include remedies for that specific issue within these lists.
@@ -263,9 +263,9 @@ router.post('/suggest-remedies', async (req, res) => {
             "blood_pressure": "String (Optional, specific advice if BP is abnormal)"
           },
           "remedies": {
-            "home": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", ...],
-            "ayurvedic": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", ...],
-            "natural": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", ...]
+            "home": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description..."],
+            "ayurvedic": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description..."],
+            "natural": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description..."]
           }
         }
         `;
