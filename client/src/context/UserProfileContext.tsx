@@ -76,14 +76,6 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     useEffect(() => {
         let mounted = true;
 
-        // Safety timeout to prevent infinite loading
-        const safetyTimeout = setTimeout(() => {
-            if (mounted && loading) {
-                console.warn("Profile loading timed out - forcing completion");
-                setLoading(false);
-            }
-        }, 8000); // 8 seconds timeout
-
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
@@ -126,8 +118,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
                 } catch (err: any) {
                     console.error("Error fetching profile:", err);
-                    // Suppress offline errors to prevent user confusion
-                    if (mounted && !err.message?.includes('offline') && !err.message?.includes('Failed to get document')) {
+                    if (mounted && !err.message?.includes('offline')) {
                         setError(err.message);
                     }
                 } finally {
@@ -144,14 +135,12 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                         emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelationship: ''
                     });
                 }
-                clearTimeout(safetyTimeout);
             }
         });
 
         return () => {
             mounted = false;
             unsubscribe();
-            clearTimeout(safetyTimeout);
         };
     }, []);
 
@@ -161,69 +150,68 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
             throw new Error("User not authenticated");
         }
 
-        // 1. Optimistic Update (Instant UI Feedback)
+        // 1. Optimistic Update
         const previousProfile = profile;
         const previousSettings = settings;
 
         setProfile(newProfile);
         setSettings(newSettings);
 
-        // 2. Background Persistence (Fire and Forget with Error Handling)
-        (async () => {
-            try {
-                const medicalData = {
-                    user_id: user.uid,
-                    created_by: user.email,
-                    updated_at: serverTimestamp(),
-                    ...newProfile
-                };
+        // 2. Background Persistence
+        try {
+            const { photoURL, ...profileDataToSave } = newProfile; // Don't save photoURL to Firestore
 
-                let targetDocId = docId;
+            const medicalData = {
+                user_id: user.uid,
+                created_by: user.email,
+                updated_at: serverTimestamp(),
+                ...profileDataToSave
+            };
 
-                // If we don't have a docId, try to find one first to prevent duplicates
-                if (!targetDocId) {
-                    const patientsRef = collection(db, 'patients');
-                    const q = query(patientsRef, where('user_id', '==', user.uid));
-                    const querySnapshot = await getDocs(q);
+            let targetDocId = docId;
 
-                    if (!querySnapshot.empty) {
-                        // Handle potential duplicates by picking the most recently updated one
-                        const docs = querySnapshot.docs.sort((a, b) => {
-                            const aTime = a.data().updated_at?.toMillis() || 0;
-                            const bTime = b.data().updated_at?.toMillis() || 0;
-                            return bTime - aTime;
-                        });
-                        targetDocId = docs[0].id;
-                        setDocId(targetDocId);
-                    }
+            // Double-check for existing document if we don't have an ID
+            if (!targetDocId) {
+                const patientsRef = collection(db, 'patients');
+                const q = query(patientsRef, where('user_id', '==', user.uid));
+                const querySnapshot = await getDocs(q);
+
+                if (!querySnapshot.empty) {
+                    const docs = querySnapshot.docs.sort((a, b) => {
+                        const aTime = a.data().updated_at?.toMillis() || 0;
+                        const bTime = b.data().updated_at?.toMillis() || 0;
+                        return bTime - aTime;
+                    });
+                    targetDocId = docs[0].id;
+                    setDocId(targetDocId);
                 }
-
-                if (targetDocId) {
-                    await setDoc(doc(db, 'patients', targetDocId), medicalData, { merge: true });
-                } else {
-                    const newDocRef = doc(collection(db, 'patients'));
-                    setDocId(newDocRef.id);
-                    await setDoc(newDocRef, medicalData);
-                }
-
-                // Save Consent Data to 'users' collection
-                const userDocRef = doc(db, 'users', user.uid);
-                await setDoc(userDocRef, {
-                    email: user.email,
-                    settings: newSettings,
-                    updated_at: serverTimestamp()
-                }, { merge: true });
-
-            } catch (err: any) {
-                console.error("Background save failed - Reverting:", err);
-                // Revert local state on failure
-                setProfile(previousProfile);
-                setSettings(previousSettings);
-                setError("Failed to save changes. Please check your connection.");
             }
-        })();
 
-        return true; // Return immediately for instant feedback
+            if (targetDocId) {
+                await setDoc(doc(db, 'patients', targetDocId), medicalData, { merge: true });
+            } else {
+                const newDocRef = doc(collection(db, 'patients'));
+                setDocId(newDocRef.id);
+                await setDoc(newDocRef, medicalData);
+            }
+
+            // Save Consent Data
+            const userDocRef = doc(db, 'users', user.uid);
+            await setDoc(userDocRef, {
+                email: user.email,
+                settings: newSettings,
+                updated_at: serverTimestamp()
+            }, { merge: true });
+
+        } catch (err: any) {
+            console.error("Background save failed - Reverting:", err);
+            setProfile(previousProfile);
+            setSettings(previousSettings);
+            setError("Failed to save changes. Please check your connection.");
+            return false;
+        }
+
+        return true;
     };
 
     const isProfileComplete = Boolean(

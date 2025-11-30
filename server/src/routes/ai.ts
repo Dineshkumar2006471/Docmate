@@ -401,8 +401,10 @@ router.post('/generate-health-insights', async (req, res) => {
 
         **Task**:
         1. **Calculate Health Score**: 0-100 based on overall wellness, vitals, and risks.
-        2. **Generate Predictions**: Predict potential future health risks based on trends, history, and report findings.
+        2. **Generate Predictions**: Predict potential future health risks based on trends, history, and **specifically findings from the provided medical reports**.
         3. **Create Roadmap**: A personalized, actionable health roadmap (Immediate, Short-term, Long-term).
+        
+        **CRITICAL**: You MUST integrate data from the "Recent Medical Reports" if available. If a report shows abnormal vitals or a specific diagnosis, this must heavily influence the Risk Level and Predictions. Do not ignore the report data.
 
         **Output Format (JSON)**:
         {

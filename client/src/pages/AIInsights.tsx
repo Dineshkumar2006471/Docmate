@@ -19,6 +19,7 @@ import { auth, db } from '../lib/firebase';
 import { collection, query, where, getDocs, orderBy, limit, onSnapshot } from 'firebase/firestore';
 import { useNavigate } from 'react-router-dom';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { API_URL } from '../config';
 
 // --- Types ---
 interface RiskPrediction {
@@ -108,141 +109,86 @@ export default function AIInsights() {
         return () => unsubscribe();
     }, [auth.currentUser]);
 
-    // 2. Calculate Insights (Depends on Profile & Assessments)
+    // 2. Fetch AI Insights (Depends on Profile & Assessments)
     useEffect(() => {
         if (!profile || !rawAssessments) return;
 
-        try {
-            const assessments = rawAssessments;
-
-            // --- Calculate Health Score ---
-            let baseScore = 90; // Start high
-
-            // Safe Profile Access
-            const safeProfile = {
-                age: Number(profile?.age) || 30,
-                gender: profile?.gender || 'Unknown',
-                pastConditions: Array.isArray(profile?.pastConditions) ? profile.pastConditions : [],
-                allergies: Array.isArray(profile?.allergies) ? profile.allergies : []
-            };
-
-            // Deduct for age (minor)
-            if (safeProfile.age > 40) baseScore -= 5;
-            if (safeProfile.age > 60) baseScore -= 5;
-
-            // Deduct for chronic conditions
-            if (safeProfile.pastConditions.length > 0) baseScore -= (safeProfile.pastConditions.length * 5);
-
-            // Deduct based on recent report severity
-            let recentSeveritySum = 0;
-            assessments.forEach(a => {
-                recentSeveritySum += (Number(a.severity_score) || 0);
-            });
-            const avgSeverity = assessments.length > 0 ? recentSeveritySum / assessments.length : 0;
-
-            // Impact of recent health events (weighted)
-            baseScore -= (avgSeverity * 2.5);
-
-            // Clamp score
-            const score = Math.max(0, Math.min(100, Math.round(baseScore)));
-
-            const riskLevel = score > 80 ? 'Low' : score > 50 ? 'Moderate' : 'High';
-            const color = score > 80 ? 'text-emerald-400' : score > 50 ? 'text-amber-400' : 'text-red-400';
-            const ringColor = score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500';
-
-            // --- Generate Predictions ---
-            const predictions: RiskPrediction[] = [];
-
-            // 1. Chronic Condition Risks
-            if (safeProfile.pastConditions.includes('Diabetes') || avgSeverity > 5) {
-                predictions.push({
-                    condition: 'Metabolic Syndrome',
-                    timeline: '3-5 Years',
-                    riskLevel: 'High',
-                    reason: 'Elevated severity scores in recent reports combined with history.',
-                    contributingFactors: ['Recent High Severity Reports', 'Medical History']
-                });
-            }
-
-            // 2. Cardiovascular (General)
-            if (safeProfile.age > 45 || safeProfile.gender === 'Male') {
-                predictions.push({
-                    condition: 'Cardiovascular Strain',
-                    timeline: '5-10 Years',
-                    riskLevel: 'Moderate',
-                    reason: 'Age and gender demographics suggest increased monitoring.',
-                    contributingFactors: ['Age', 'Gender']
-                });
-            }
-
-            // 3. Allergies / Respiratory
-            if (safeProfile.allergies.length > 0) {
-                predictions.push({
-                    condition: 'Recurrent Allergic Reactions',
-                    timeline: 'Seasonal',
-                    riskLevel: 'Moderate',
-                    reason: 'Known history of allergies.',
-                    contributingFactors: safeProfile.allergies
-                });
-            }
-
-            // 4. Based on recent assessments
-            const recentConditions = assessments.flatMap(a => a.ai_analysis?.possible_conditions?.map((c: any) => c.name) || []);
-            const uniqueConditions = [...new Set(recentConditions)];
-            if (uniqueConditions.length > 0) {
-                predictions.push({
-                    condition: `Recurrence of ${uniqueConditions[0]}`,
-                    timeline: 'Within 6 Months',
-                    riskLevel: 'Moderate',
-                    reason: 'Recently detected condition in symptom analysis.',
-                    contributingFactors: ['Recent Assessment Data']
-                });
-            }
-
-            // --- Generate Action Plan ---
-            // Load saved state
-            let savedCompletedIds: string[];
+        const fetchAIInsights = async () => {
             try {
-                const stored = localStorage.getItem('docmate_completed_actions');
-                savedCompletedIds = stored ? JSON.parse(stored) : ['2'];
-            } catch (e) {
-                savedCompletedIds = ['2'];
-            }
+                // Get recent reports from local storage
+                let recentReports = [];
+                try {
+                    const storedReports = localStorage.getItem('docmate_reports');
+                    if (storedReports) {
+                        const parsed = JSON.parse(storedReports);
+                        if (Array.isArray(parsed)) {
+                            recentReports = parsed.slice(0, 3); // Send last 3 reports
+                        }
+                    }
+                } catch (e) {
+                    console.error("Error reading reports", e);
+                }
 
-            const actionPlan: ActionItem[] = [
-                { id: '1', task: 'Schedule annual physical', category: 'Immediate', completed: savedCompletedIds.includes('1') },
-                { id: '2', task: 'Update vaccination records', category: 'Short-term', completed: savedCompletedIds.includes('2') },
-            ];
+                console.log("Sending to AI:", { profile, assessmentsCount: rawAssessments.length, reportsCount: recentReports.length });
 
-            if (score < 70) {
-                actionPlan.push({ id: '3', task: 'Consult a specialist for recent symptoms', category: 'Immediate', completed: savedCompletedIds.includes('3') });
-            }
-            if (safeProfile.allergies.length > 0) {
-                actionPlan.push({ id: '4', task: 'Carry EpiPen / Antihistamines', category: 'Immediate', completed: savedCompletedIds.includes('4') });
-            }
-            if (assessments.length === 0) {
-                actionPlan.push({ id: '5', task: 'Complete your first Symptom Check', category: 'Immediate', completed: savedCompletedIds.includes('5') });
-            }
+                const response = await fetch(`${API_URL}/api/generate-health-insights`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        userProfile: profile,
+                        assessments: rawAssessments.slice(0, 5), // Send last 5 assessments
+                        recentReports
+                    })
+                });
 
-            setInsights({
-                score,
-                riskLevel,
-                color,
-                ringColor,
-                summary: `Patient is a ${safeProfile.age}-year-old ${safeProfile.gender} with a ${score > 80 ? 'generally good' : 'moderate'} health profile. ${assessments.length} recent health assessments analyzed.`,
-                predictions,
-                actionPlan,
-                history: assessments.map(a => ({
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                // --- Process Data & UI Logic ---
+                const score = data.score || 0;
+                const color = score > 80 ? 'text-emerald-400' : score > 50 ? 'text-amber-400' : 'text-red-400';
+                const ringColor = score > 80 ? 'text-emerald-500' : score > 50 ? 'text-amber-500' : 'text-red-500';
+
+                // Merge with locally calculated history
+                const history = rawAssessments.map(a => ({
                     date: a.created_date?.toDate ? new Date(a.created_date.toDate()).toLocaleDateString() : 'N/A',
                     score: a.severity_score ? 10 - a.severity_score : 10
-                })).reverse()
-            });
-            setLoading(false);
+                })).reverse();
 
-        } catch (e) {
-            console.error("Error generating insights", e);
-            setLoading(false);
-        }
+                // Merge saved completion status for action plan
+                let savedCompletedIds: string[] = [];
+                try {
+                    const stored = localStorage.getItem('docmate_completed_actions');
+                    savedCompletedIds = stored ? JSON.parse(stored) : [];
+                } catch (e) { }
+
+                const actionPlan = data.actionPlan.map((item: any) => ({
+                    ...item,
+                    completed: savedCompletedIds.includes(item.id)
+                }));
+
+                setInsights({
+                    score,
+                    riskLevel: data.riskLevel,
+                    color,
+                    ringColor,
+                    summary: data.summary,
+                    predictions: data.predictions,
+                    actionPlan,
+                    history
+                });
+
+                setLoading(false);
+
+            } catch (e) {
+                console.error("Error generating AI insights", e);
+                // Fallback to basic calculation if API fails
+                setLoading(false);
+            }
+        };
+
+        fetchAIInsights();
     }, [profile, rawAssessments]);
 
     // Circular Gauge Component
