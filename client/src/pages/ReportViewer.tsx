@@ -20,6 +20,11 @@ interface Assessment {
     };
     red_flags?: string[];
     vitals?: any;
+    remedies?: {
+        home: string[];
+        ayurvedic: string[];
+        natural: string[];
+    };
 }
 
 export default function ReportViewer() {
@@ -53,10 +58,40 @@ export default function ReportViewer() {
                             warning_signs: parsedReport.warning_signs || []
                         },
                         red_flags: parsedReport.warning_signs,
-                        vitals: parsedReport.fullData?.vitals
+                        vitals: parsedReport.fullData?.vitals,
+                        remedies: parsedReport.fullData?.remedies
                     } as Assessment);
                     setLoading(false);
                     return;
+                }
+
+                // Check localStorage for reports (from ReportAnalyzer/SymptomChecker)
+                const localReports = localStorage.getItem('docmate_reports');
+                if (localReports) {
+                    const reports = JSON.parse(localReports);
+                    const foundReport = reports.find((r: any) => r.id === id);
+                    if (foundReport) {
+                        setReport({
+                            id: foundReport.id,
+                            created_date: { seconds: new Date(foundReport.date).getTime() / 1000 },
+                            symptoms_description: foundReport.fullData?.symptoms || foundReport.summary,
+                            triage_level: foundReport.risk_level,
+                            severity_score: foundReport.severity_score || 5,
+                            ai_analysis: foundReport.fullData?.analysis || foundReport.fullData?.ai_analysis || {
+                                possible_conditions: foundReport.top_condition ? [{
+                                    name: foundReport.top_condition,
+                                    probability: parseInt(foundReport.probability) || 0
+                                }] : [],
+                                recommendation: foundReport.summary,
+                                warning_signs: foundReport.warning_signs || []
+                            },
+                            red_flags: foundReport.warning_signs,
+                            vitals: foundReport.fullData?.vitals || foundReport.fullData?.vital_signs,
+                            remedies: foundReport.fullData?.remedies
+                        } as Assessment);
+                        setLoading(false);
+                        return;
+                    }
                 }
 
                 // Fall back to Firestore
@@ -110,7 +145,12 @@ export default function ReportViewer() {
             overall: report.symptoms_description,
             recommendation: report.ai_analysis.recommendation || 'No specific recommendation.'
         },
-        remedies: [] // Placeholder as remedies are not yet saved in report data
+        remedies: report.remedies ? [{
+            condition: report.ai_analysis.possible_conditions[0]?.name || 'Condition',
+            home: report.remedies.home || [],
+            ayurvedic: report.remedies.ayurvedic || [],
+            natural: report.remedies.natural || []
+        }] : []
     };
 
     return (

@@ -33,6 +33,12 @@ interface ReportAnalysis {
     };
 }
 
+interface Remedies {
+    home: string[];
+    ayurvedic: string[];
+    natural: string[];
+}
+
 export default function ReportAnalyzer() {
     // Input State
     const [reportTitle, setReportTitle] = useState('');
@@ -45,8 +51,9 @@ export default function ReportAnalyzer() {
 
     // Result State
     const [result, setResult] = useState<ReportAnalysis | null>(null);
-    const [remedies, setRemedies] = useState<string[]>([]);
+    const [remedies, setRemedies] = useState<Remedies | null>(null);
     const [showRemedies, setShowRemedies] = useState(false);
+    const [currentReportId, setCurrentReportId] = useState<string | null>(null);
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -102,7 +109,8 @@ export default function ReportAnalyzer() {
                 clearInterval(stepInterval);
                 setResult(data as ReportAnalysis);
                 setIsProcessing(false);
-                saveReportToHistory(data as ReportAnalysis, reportTitle, reportDate);
+                const id = saveReportToHistory(data as ReportAnalysis, reportTitle, reportDate);
+                setCurrentReportId(id);
             }, 1500 * 4); // align with steps timing
 
         } catch (error) {
@@ -114,26 +122,33 @@ export default function ReportAnalyzer() {
     };
 
     const saveReportToHistory = (data: ReportAnalysis, title: string, date: string) => {
+        const id = Date.now().toString();
         const newReport = {
-            id: Date.now().toString(),
+            id,
             title: title || "Untitled Report",
             date: date || new Date().toISOString().split('T')[0],
             risk_level: data.triage_status.level,
             severity_score: data.triage_status.severity_score,
             summary: data.ai_analysis.recommendations,
-            type: 'Lab Report'
+            type: 'Lab Report',
+            // Store full data for PDF generation
+            fullData: {
+                ...data,
+                remedies: null // Will be updated if fetched
+            }
         };
 
         const existing = localStorage.getItem('docmate_reports');
         const reports = existing ? JSON.parse(existing) : [];
         reports.unshift(newReport);
         localStorage.setItem('docmate_reports', JSON.stringify(reports));
+        return id;
     };
 
     const fetchRemedies = async () => {
         if (!result) return;
         setShowRemedies(true);
-        if (remedies.length > 0) return; // Already fetched
+        if (remedies) return; // Already fetched
 
         try {
             // Get the most probable condition or the first one found
@@ -147,19 +162,40 @@ export default function ReportAnalyzer() {
 
             const data = await response.json();
 
-            if (data.remedies && Array.isArray(data.remedies)) {
+            if (data.remedies) {
                 setRemedies(data.remedies);
+
+                // Update the report in localStorage with remedies
+                if (currentReportId) {
+                    const existing = localStorage.getItem('docmate_reports');
+                    if (existing) {
+                        const reports = JSON.parse(existing);
+                        const updatedReports = reports.map((r: any) => {
+                            if (r.id === currentReportId) {
+                                return {
+                                    ...r,
+                                    fullData: {
+                                        ...r.fullData,
+                                        remedies: data.remedies
+                                    }
+                                };
+                            }
+                            return r;
+                        });
+                        localStorage.setItem('docmate_reports', JSON.stringify(updatedReports));
+                    }
+                }
             } else {
                 throw new Error("Invalid remedies format");
             }
         } catch (e) {
             console.error("Failed to fetch remedies", e);
-            setRemedies([
-                "Ensure adequate hydration.",
-                "Maintain a balanced diet rich in nutrients.",
-                "Get sufficient rest and sleep.",
-                "Consult a healthcare provider for personalized advice."
-            ]);
+            // Fallback
+            setRemedies({
+                home: ["Hydration", "Rest"],
+                ayurvedic: ["Ginger Tea"],
+                natural: ["Sunlight"]
+            });
         }
     };
 
@@ -170,10 +206,11 @@ export default function ReportAnalyzer() {
     const reset = () => {
         setFile(null);
         setResult(null);
-        setRemedies([]);
+        setRemedies(null);
         setShowRemedies(false);
         setReportTitle('');
         setReportDate('');
+        setCurrentReportId(null);
     };
 
     const handleShareLocation = () => {
@@ -507,17 +544,31 @@ export default function ReportAnalyzer() {
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
-                                        className="grid grid-cols-1 gap-4"
+                                        className="space-y-4"
                                     >
-                                        {remedies.length > 0 ? remedies.map((remedy, i) => (
-                                            <div key={i} className="flex items-start gap-3 p-4 bg-primary-500/5 border border-primary-500/10 rounded-xl">
-                                                <div className="w-6 h-6 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                                                    <span className="text-xs font-bold text-primary-400">{i + 1}</span>
+                                        {remedies ? (
+                                            <>
+                                                <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-4">
+                                                    <h4 className="text-primary-400 font-bold text-sm uppercase mb-2">Home Remedies</h4>
+                                                    <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
+                                                        {remedies.home?.map((r, i) => <li key={i}>{r}</li>)}
+                                                    </ul>
                                                 </div>
-                                                <p className="text-slate-300 text-sm">{remedy}</p>
-                                            </div>
-                                        )) : (
-                                            <div className="col-span-2 flex items-center justify-center py-8 text-slate-500 gap-2">
+                                                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
+                                                    <h4 className="text-emerald-400 font-bold text-sm uppercase mb-2">Ayurvedic</h4>
+                                                    <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
+                                                        {remedies.ayurvedic?.map((r, i) => <li key={i}>{r}</li>)}
+                                                    </ul>
+                                                </div>
+                                                <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
+                                                    <h4 className="text-amber-400 font-bold text-sm uppercase mb-2">Natural / Holistic</h4>
+                                                    <ul className="list-disc list-inside text-slate-300 text-sm space-y-1">
+                                                        {remedies.natural?.map((r, i) => <li key={i}>{r}</li>)}
+                                                    </ul>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <div className="flex items-center justify-center py-8 text-slate-500 gap-2">
                                                 <Loader2 className="w-5 h-5 animate-spin" /> Generating suggestions...
                                             </div>
                                         )}

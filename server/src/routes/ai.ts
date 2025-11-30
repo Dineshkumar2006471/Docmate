@@ -222,7 +222,17 @@ router.post('/suggest-remedies', async (req, res) => {
             generationConfig: { responseMimeType: "application/json" }
         });
 
-        const prompt = `Suggest 3-5 natural or home remedies for: ${diagnosis}. Return JSON: { "remedies": string[] }`;
+        const prompt = `
+        Suggest natural and holistic remedies for: ${diagnosis}.
+        Return a JSON object with this structure:
+        {
+          "remedies": {
+            "home": ["List 3-5 home remedies"],
+            "ayurvedic": ["List 3-5 Ayurvedic remedies"],
+            "natural": ["List 3-5 natural/naturopathic remedies"]
+          }
+        }
+        `;
 
         const result = await model.generateContent(prompt);
         const response = await result.response;
