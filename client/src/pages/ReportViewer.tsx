@@ -73,7 +73,7 @@ export default function ReportViewer() {
                 <ArrowLeft className="w-4 h-4" /> Back to Reports
             </button>
 
-            <div className="glass-panel p-8 rounded-3xl border border-white/10">
+            <div className="glass-panel p-8 rounded-3xl border border-slate-800">
                 <div className="flex justify-between items-start mb-8">
                     <div>
                         <h1 className="text-3xl font-serif text-slate-100 mb-2">
@@ -82,8 +82,8 @@ export default function ReportViewer() {
                         <div className="flex items-center gap-4 text-sm text-slate-400">
                             <span className="flex items-center gap-1"><Calendar className="w-4 h-4" /> {new Date(report.created_date?.seconds * 1000).toLocaleDateString()}</span>
                             <span className={`px-2 py-0.5 rounded-full text-xs font-bold uppercase border ${report.triage_level === 'Emergency' ? 'bg-red-500/10 text-red-400 border-red-500/20' :
-                                    report.triage_level === 'High' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
-                                        'bg-teal-500/10 text-teal-400 border-teal-500/20'
+                                report.triage_level === 'High' ? 'bg-amber-500/10 text-amber-400 border-amber-500/20' :
+                                    'bg-primary-500/10 text-primary-400 border-primary-500/20'
                                 }`}>
                                 {report.triage_level}
                             </span>
@@ -98,9 +98,9 @@ export default function ReportViewer() {
                     <div className="md:col-span-2 space-y-8">
                         <div>
                             <h3 className="text-lg font-bold text-slate-200 mb-3 flex items-center gap-2">
-                                <FileText className="w-5 h-5 text-teal-400" /> Symptoms
+                                <FileText className="w-5 h-5 text-primary-400" /> Symptoms
                             </h3>
-                            <p className="text-slate-300 leading-relaxed bg-white/5 p-4 rounded-xl border border-white/5">
+                            <p className="text-slate-300 leading-relaxed bg-surface-highlight p-4 rounded-xl border border-slate-800">
                                 {report.symptoms_description}
                             </p>
                         </div>
@@ -111,9 +111,9 @@ export default function ReportViewer() {
                             </h3>
                             <div className="space-y-4">
                                 {report.ai_analysis.possible_conditions.map((condition, idx) => (
-                                    <div key={idx} className="flex justify-between items-center p-4 bg-white/5 rounded-xl border border-white/5">
+                                    <div key={idx} className="flex justify-between items-center p-4 bg-surface-highlight rounded-xl border border-slate-800">
                                         <span className="text-slate-200 font-medium">{condition.name}</span>
-                                        <span className="text-teal-400 font-bold">{condition.probability}% Match</span>
+                                        <span className="text-primary-400 font-bold">{condition.probability}% Match</span>
                                     </div>
                                 ))}
                             </div>
@@ -121,12 +121,12 @@ export default function ReportViewer() {
                     </div>
 
                     <div className="space-y-6">
-                        <div className="bg-surface-highlight/30 p-6 rounded-2xl border border-white/5 text-center">
+                        <div className="bg-surface-highlight/30 p-6 rounded-2xl border border-slate-800 text-center">
                             <div className="text-xs text-slate-500 uppercase font-bold mb-2">Severity Score</div>
                             <div className="text-4xl font-serif text-slate-100 mb-2">{report.severity_score}/10</div>
                             <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
                                 <div
-                                    className={`h-full ${report.severity_score > 7 ? 'bg-red-500' : report.severity_score > 4 ? 'bg-amber-500' : 'bg-teal-500'}`}
+                                    className={`h-full ${report.severity_score > 7 ? 'bg-red-500' : report.severity_score > 4 ? 'bg-amber-500' : 'bg-primary-500'}`}
                                     style={{ width: `${report.severity_score * 10}%` }}
                                 />
                             </div>

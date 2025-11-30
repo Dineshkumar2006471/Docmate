@@ -32,7 +32,7 @@ const StatValue = ({ value, unit, label, trend, colorClass = "text-slate-100" }:
             {unit && <span className="text-sm text-slate-500 font-sans">{unit}</span>}
         </div>
         {trend && (
-            <div className="flex items-center gap-1 mt-2 text-teal-300 text-xs font-medium">
+            <div className="flex items-center gap-1 mt-2 text-primary-300 text-xs font-medium">
                 <ArrowUpRight className="w-3 h-3" />
                 {trend}
             </div>
@@ -43,9 +43,9 @@ const StatValue = ({ value, unit, label, trend, colorClass = "text-slate-100" }:
 const CustomTooltip = ({ active, payload, label }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-surface border border-white/10 p-3 shadow-xl backdrop-blur-md">
+            <div className="bg-surface border border-slate-800 p-3 shadow-xl backdrop-blur-md">
                 <p className="text-slate-400 text-xs mb-1 font-sans uppercase tracking-wider">{label}</p>
-                <p className="text-teal-300 font-serif text-xl">
+                <p className="text-primary-300 font-serif text-xl">
                     {payload[0].value} <span className="text-xs font-sans text-slate-500">
                         {payload[0].name === 'severity' ? 'Score' : 'BPM'}
                     </span>
@@ -140,7 +140,7 @@ export default function HealthGraph() {
     }, []);
 
     return (
-        <div className="w-full min-w-0 text-slate-200 font-sans selection:bg-teal-300/20 relative">
+        <div className="w-full min-w-0 text-slate-200 font-sans selection:bg-primary-300/20 relative">
             {/* Header Section */}
             <header className="mb-12 flex flex-col md:flex-row justify-between items-start md:items-end gap-6">
                 <motion.div
@@ -149,8 +149,8 @@ export default function HealthGraph() {
                     transition={{ duration: 0.8, ease: "easeOut" }}
                 >
                     <div className="flex items-center gap-3 mb-2">
-                        <div className="w-10 h-10 rounded-full bg-teal-500/20 flex items-center justify-center border border-teal-500/30">
-                            <User className="w-5 h-5 text-teal-400" />
+                        <div className="w-10 h-10 rounded-full bg-primary-500/20 flex items-center justify-center border border-primary-500/30">
+                            <User className="w-5 h-5 text-primary-400" />
                         </div>
                         <div>
                             <h2 className="text-slate-400 text-xs font-bold tracking-[0.2em] uppercase">Welcome Back</h2>
@@ -168,7 +168,7 @@ export default function HealthGraph() {
                     transition={{ delay: 0.4 }}
                     className="flex gap-4"
                 >
-                    <Link to="/chat" className="flex items-center gap-2 px-6 py-3 bg-teal-500 text-slate-900 rounded-full font-bold uppercase tracking-wider hover:bg-teal-400 transition-colors shadow-[0_0_20px_-5px_rgba(20,184,166,0.4)]">
+                    <Link to="/chat" className="flex items-center gap-2 px-6 py-3 bg-primary-500 text-slate-900 rounded-full font-bold uppercase tracking-wider hover:bg-primary-400 transition-colors shadow-[0_0_20px_-5px_rgba(163,230,53,0.4)]">
                         <MessageSquare className="w-4 h-4" /> Chat with Viraj
                     </Link>
                 </motion.div>
@@ -181,9 +181,9 @@ export default function HealthGraph() {
                 <Card className="col-span-1 md:col-span-8 min-h-[400px] flex flex-col min-w-0" delay={0.1}>
                     <div className="flex justify-between items-start mb-8">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-teal-900/30 rounded-full border border-teal-800/50 relative">
-                                <Heart className="w-5 h-5 text-teal-300" />
-                                <span className="absolute top-0 right-0 w-2 h-2 bg-teal-400 rounded-full animate-ping" />
+                            <div className="p-2 bg-primary-900/30 rounded-full border border-primary-800/50 relative">
+                                <Heart className="w-5 h-5 text-primary-300" />
+                                <span className="absolute top-0 right-0 w-2 h-2 bg-primary-400 rounded-full animate-ping" />
                             </div>
                             <div>
                                 <h3 className="text-xl font-serif text-slate-100">Live Heart Rate</h3>
@@ -191,7 +191,7 @@ export default function HealthGraph() {
                             </div>
                         </div>
                         <div className="text-right">
-                            <div className="text-3xl font-serif text-teal-300">{vitals.heartRate} <span className="text-sm font-sans text-slate-500">BPM</span></div>
+                            <div className="text-3xl font-serif text-primary-300">{vitals.heartRate} <span className="text-sm font-sans text-slate-500">BPM</span></div>
                         </div>
                     </div>
 
@@ -200,8 +200,8 @@ export default function HealthGraph() {
                             <AreaChart data={heartRateHistory} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                                 <defs>
                                     <linearGradient id="colorHeart" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.2} />
-                                        <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                                        <stop offset="5%" stopColor="#aacc00" stopOpacity={0.2} />
+                                        <stop offset="95%" stopColor="#aacc00" stopOpacity={0} />
                                     </linearGradient>
                                 </defs>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.2} vertical={false} />
@@ -219,11 +219,11 @@ export default function HealthGraph() {
                                     tick={{ fill: '#64748b', fontSize: 12, fontFamily: 'Plus Jakarta Sans' }}
                                     domain={['auto', 'auto']}
                                 />
-                                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#14b8a6', strokeWidth: 1, strokeDasharray: '4 4' }} />
+                                <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#aacc00', strokeWidth: 1, strokeDasharray: '4 4' }} />
                                 <Area
                                     type="monotone"
                                     dataKey="value"
-                                    stroke="#14b8a6"
+                                    stroke="#aacc00"
                                     strokeWidth={2}
                                     fillOpacity={1}
                                     fill="url(#colorHeart)"
@@ -306,7 +306,7 @@ export default function HealthGraph() {
                                     />
                                     <Bar dataKey="severity" radius={[4, 4, 0, 0]}>
                                         {reportHistory.map((entry, index) => (
-                                            <Cell key={`cell-${index}`} fill={entry.severity > 7 ? '#ef4444' : entry.severity > 4 ? '#f97316' : '#14b8a6'} fillOpacity={0.8} />
+                                            <Cell key={`cell-${index}`} fill={entry.severity > 7 ? '#ef4444' : entry.severity > 4 ? '#f97316' : '#aacc00'} fillOpacity={0.8} />
                                         ))}
                                     </Bar>
                                 </BarChart>
@@ -316,16 +316,16 @@ export default function HealthGraph() {
                         <div className="h-[200px] flex flex-col items-center justify-center text-slate-500">
                             <FileText className="w-8 h-8 mb-2 opacity-50" />
                             <p>No reports analyzed yet.</p>
-                            <Link to="/report-analyzer" className="text-teal-400 text-sm mt-2 hover:underline">Upload a report</Link>
+                            <Link to="/report-analyzer" className="text-primary-400 text-sm mt-2 hover:underline">Upload a report</Link>
                         </div>
                     )}
                 </Card>
 
                 {/* AI Insight Card */}
-                <Card className="col-span-1 md:col-span-6 bg-gradient-to-br from-teal-900/20 to-transparent border-teal-500/20" delay={0.5}>
+                <Card className="col-span-1 md:col-span-6 bg-gradient-to-br from-primary-900/20 to-transparent border-primary-500/20" delay={0.5}>
                     <div className="flex flex-col h-full justify-between">
                         <div>
-                            <span className="inline-block px-2 py-1 bg-teal-500/10 border border-teal-500/20 rounded text-[10px] uppercase tracking-widest text-teal-300 mb-4">
+                            <span className="inline-block px-2 py-1 bg-primary-500/10 border border-primary-500/20 rounded text-[10px] uppercase tracking-widest text-primary-300 mb-4">
                                 AI Analysis
                             </span>
                             <h3 className="text-2xl font-serif text-slate-100 mb-3">Latest Insight</h3>
@@ -333,8 +333,8 @@ export default function HealthGraph() {
                                 {latestInsight || "We've noticed a correlation between your late-night work sessions and elevated morning heart rate. Consider shifting focus time to 10:00 AM."}
                             </p>
                         </div>
-                        <div className="mt-6 pt-6 border-t border-white/5 flex gap-4">
-                            <Link to="/report-analyzer" className="text-sm text-teal-300 hover:text-teal-200 transition-colors uppercase tracking-wider font-medium">
+                        <div className="mt-6 pt-6 border-t border-slate-800 flex gap-4">
+                            <Link to="/report-analyzer" className="text-sm text-primary-300 hover:text-primary-200 transition-colors uppercase tracking-wider font-medium">
                                 View Reports
                             </Link>
                             <button className="text-sm text-slate-500 hover:text-slate-300 transition-colors uppercase tracking-wider font-medium">

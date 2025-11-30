@@ -17,7 +17,7 @@ interface AnalysisResult {
 }
 
 const InputCard = ({ label, icon: Icon, value, onChange, unit, placeholder }: any) => (
-    <div className="bg-surface-highlight/30 border border-white/5 rounded-xl p-4 flex flex-col gap-2 focus-within:border-teal-500/50 transition-colors">
+    <div className="bg-surface-highlight/30 border border-slate-800 rounded-xl p-4 flex flex-col gap-2 focus-within:border-primary-500/50 transition-colors">
         <div className="flex items-center gap-2 text-slate-400 text-xs uppercase tracking-wider font-medium">
             <Icon className="w-4 h-4" />
             {label}
@@ -133,7 +133,7 @@ export default function SymptomChecker() {
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="glass-panel p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-teal-500"
+                className="glass-panel p-6 rounded-2xl flex items-center justify-between border-l-4 border-l-primary-500"
             >
                 <div>
                     <h3 className="text-lg font-serif text-slate-100">Personalized Risk Profile</h3>
@@ -149,7 +149,7 @@ export default function SymptomChecker() {
                         )}
                     </p>
                 </div>
-                <div className="px-4 py-2 bg-teal-500/10 border border-teal-500/20 rounded-full text-teal-400 text-xs font-bold uppercase tracking-widest">
+                <div className="px-4 py-2 bg-primary-500/10 border border-primary-500/20 rounded-full text-primary-400 text-xs font-bold uppercase tracking-widest">
                     {profile.pastConditions.length > 0 ? 'Monitor History' : 'Low Baseline Risk'}
                 </div>
             </motion.div>
@@ -158,24 +158,24 @@ export default function SymptomChecker() {
             <div className="space-y-6">
                 <div className="glass-card p-6 rounded-2xl">
                     <h3 className="text-lg font-serif text-slate-100 mb-4 flex items-center gap-2">
-                        <Activity className="w-5 h-5 text-teal-400" /> Describe Symptoms
+                        <Activity className="w-5 h-5 text-primary-400" /> Describe Symptoms
                     </h3>
                     <textarea
                         value={symptoms}
                         onChange={(e) => setSymptoms(e.target.value)}
                         placeholder="Describe what you're feeling (e.g., 'Severe stomach pain after eating...')"
-                        className="w-full h-32 bg-surface-highlight/30 border border-white/5 rounded-xl p-4 text-slate-200 placeholder:text-slate-600 focus:border-teal-500/50 outline-none transition-colors resize-none"
+                        className="w-full h-32 bg-surface-highlight/30 border border-slate-800 rounded-xl p-4 text-slate-200 placeholder:text-slate-600 focus:border-primary-500/50 outline-none transition-colors resize-none"
                     />
                 </div>
 
                 <div className="glass-card p-6 rounded-2xl">
                     <div className="flex items-center justify-between mb-4">
                         <h3 className="text-lg font-serif text-slate-100 flex items-center gap-2">
-                            <Heart className="w-5 h-5 text-teal-400" /> Vitals (Optional)
+                            <Heart className="w-5 h-5 text-primary-400" /> Vitals (Optional)
                         </h3>
                         <button
                             onClick={syncVitals}
-                            className="text-xs flex items-center gap-1 text-teal-300 hover:text-teal-200 transition-colors uppercase tracking-wider font-bold"
+                            className="text-xs flex items-center gap-1 text-primary-300 hover:text-primary-200 transition-colors uppercase tracking-wider font-bold"
                         >
                             <RefreshCw className="w-3 h-3" /> Sync Live Data
                         </button>
@@ -192,7 +192,7 @@ export default function SymptomChecker() {
                     onClick={handleAnalyze}
                     disabled={isAnalyzing || !symptoms}
                     className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all duration-300 flex items-center justify-center gap-3
-              ${isAnalyzing ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-teal-500 hover:bg-teal-400 text-slate-900 shadow-[0_0_20px_-5px_rgba(20,184,166,0.4)]'}
+              ${isAnalyzing ? 'bg-slate-800 text-slate-500 cursor-not-allowed' : 'bg-primary-500 hover:bg-primary-400 text-slate-900 shadow-[0_0_20px_-5px_rgba(163,230,53,0.4)]'}
             `}
                 >
                     {isAnalyzing ? (
@@ -219,7 +219,7 @@ export default function SymptomChecker() {
                                     <h3 className="text-2xl font-serif text-slate-100">Analysis Result</h3>
                                     <p className="text-slate-400 text-sm mt-1">AI Assessment based on provided symptoms</p>
                                 </div>
-                                <div className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-widest border text-center ${result.risk_level === 'Critical' || result.risk_level === 'High' ? 'bg-red-500 text-white border-red-400' : 'bg-teal-500/20 text-teal-400 border-teal-500/30'
+                                <div className={`px-4 py-2 rounded-full text-sm font-bold uppercase tracking-widest border text-center ${result.risk_level === 'Critical' || result.risk_level === 'High' ? 'bg-red-500 text-white border-red-400' : 'bg-primary-500/20 text-primary-400 border-primary-500/30'
                                     }`}>
                                     {result.risk_level} Risk
                                 </div>
@@ -241,8 +241,8 @@ export default function SymptomChecker() {
                                     )}
 
                                     {/* Recommendation */}
-                                    <div className="p-6 bg-surface-highlight/20 rounded-xl border border-white/5">
-                                        <div className="text-teal-400 text-xs uppercase tracking-wider mb-2 font-bold">Recommendation</div>
+                                    <div className="p-6 bg-surface-highlight/20 rounded-xl border border-slate-800">
+                                        <div className="text-primary-400 text-xs uppercase tracking-wider mb-2 font-bold">Recommendation</div>
                                         <div className="text-lg font-serif text-slate-100 leading-relaxed">{result.recommendation}</div>
 
                                         <div className="mt-6">
@@ -252,7 +252,7 @@ export default function SymptomChecker() {
                                             </div>
                                             <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
                                                 <div
-                                                    className={`h-full rounded-full ${result.risk_level === 'Critical' ? 'bg-red-500' : 'bg-teal-500'}`}
+                                                    className={`h-full rounded-full ${result.risk_level === 'Critical' ? 'bg-red-500' : 'bg-primary-500'}`}
                                                     style={{ width: `${result.risk_score * 10}%` }}
                                                 />
                                             </div>
@@ -267,16 +267,16 @@ export default function SymptomChecker() {
                                     </div>
                                     <div className="space-y-3">
                                         {result.possible_conditions.map((condition, i) => (
-                                            <div key={i} className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl border border-white/5 hover:border-teal-500/30 transition-colors">
+                                            <div key={i} className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl border border-slate-800 hover:border-primary-500/30 transition-colors">
                                                 <span className="text-slate-200 font-medium">{condition.name}</span>
                                                 <div className="flex items-center gap-3">
                                                     <div className="w-24 h-1.5 bg-slate-800 rounded-full overflow-hidden">
                                                         <div
-                                                            className="h-full bg-teal-500 rounded-full"
+                                                            className="h-full bg-primary-500 rounded-full"
                                                             style={{ width: `${condition.probability}%` }}
                                                         />
                                                     </div>
-                                                    <span className="text-sm font-bold text-teal-400 w-10 text-right">{condition.probability}%</span>
+                                                    <span className="text-sm font-bold text-primary-400 w-10 text-right">{condition.probability}%</span>
                                                 </div>
                                             </div>
                                         ))}

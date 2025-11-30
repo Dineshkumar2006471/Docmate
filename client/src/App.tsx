@@ -23,7 +23,7 @@ import { ThemeProvider } from './context/ThemeContext';
 
 const PageLoader = () => (
   <div className="min-h-screen flex items-center justify-center bg-background">
-    <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+    <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
   </div>
 );
 

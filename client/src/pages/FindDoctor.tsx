@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Search, MapPin, Star, Calendar, Clock, Filter, ChevronRight, Navigation, Loader2, AlertCircle } from 'lucide-react';
 import { useSearchParams } from 'react-router-dom';
+import { useUserProfile } from '../context/UserProfileContext';
+import { motion, AnimatePresence } from 'framer-motion';
+import { User, X, CheckCircle } from 'lucide-react';
+import { auth } from '../lib/firebase';
 
 interface Doctor {
     id: string | number;
@@ -19,6 +23,12 @@ export default function FindDoctor() {
     const initialSearch = searchParams.get('search') || '';
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [selectedSpecialty, setSelectedSpecialty] = useState('All');
+    const { profile } = useUserProfile();
+
+    // Booking State
+    const [selectedDoctor, setSelectedDoctor] = useState<Doctor | null>(null);
+    const [bookingStep, setBookingStep] = useState<'form' | 'success'>('form');
+    const [bookingData, setBookingData] = useState({ date: '', time: '', reason: '' });
 
     // Location & Data State
     const [doctors, setDoctors] = useState<Doctor[]>([]);
@@ -194,7 +204,7 @@ export default function FindDoctor() {
                 <button
                     onClick={handleUseLocation}
                     disabled={loading}
-                    className="flex items-center gap-2 bg-teal-500/10 hover:bg-teal-500/20 text-teal-400 px-4 py-2 rounded-lg border border-teal-500/20 transition-all font-bold uppercase text-xs tracking-wider"
+                    className="flex items-center gap-2 bg-primary-500/10 hover:bg-primary-500/20 text-primary-400 px-4 py-2 rounded-lg border border-primary-500/20 transition-all font-bold uppercase text-xs tracking-wider"
                 >
                     {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Navigation className="w-4 h-4" />}
                     {loading ? "Detecting..." : "Use My Location"}
@@ -210,14 +220,25 @@ export default function FindDoctor() {
 
             {/* Location Indicator */}
             {locationName && (
-                <div className="mb-6 flex items-center gap-2 text-slate-300 bg-white/5 w-fit px-4 py-2 rounded-full border border-white/10">
-                    <MapPin className="w-4 h-4 text-teal-400" />
-                    <span className="text-sm">Showing results near <span className="font-bold text-white">{locationName}</span></span>
+                <div className="mb-6 flex items-center gap-3 text-slate-300 bg-white/5 w-fit pr-6 pl-2 py-2 rounded-full border border-slate-800">
+                    <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center">
+                        {auth.currentUser?.photoURL ? (
+                            <img src={auth.currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                        ) : (
+                            <User className="w-4 h-4 text-slate-400" />
+                        )}
+                    </div>
+                    <div className="flex flex-col">
+                        <span className="text-[10px] text-slate-500 uppercase font-bold tracking-wider leading-none mb-0.5">Current Location</span>
+                        <div className="flex items-center gap-1 text-sm font-bold text-white leading-none">
+                            <MapPin className="w-3 h-3 text-primary-400" /> {locationName}
+                        </div>
+                    </div>
                 </div>
             )}
 
             {/* Search and Filter */}
-            <div className="glass-card p-6 rounded-2xl mb-10 border border-white/5">
+            <div className="glass-card p-6 rounded-2xl mb-10 border border-slate-800">
                 <div className="flex flex-col md:flex-row gap-4">
                     <div className="relative flex-1">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
@@ -226,7 +247,7 @@ export default function FindDoctor() {
                             placeholder="Search doctors, specialties, conditions..."
                             value={searchTerm}
                             onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl py-4 pl-12 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-all"
+                            className="w-full bg-surface-highlight/30 border border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-all"
                         />
                     </div>
                     <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
@@ -235,8 +256,8 @@ export default function FindDoctor() {
                                 key={spec}
                                 onClick={() => setSelectedSpecialty(spec)}
                                 className={`px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${selectedSpecialty === spec
-                                    ? 'bg-teal-500 text-white border-teal-500'
-                                    : 'bg-surface-highlight/30 text-slate-400 border-white/5 hover:border-white/20'
+                                    ? 'bg-primary-500 text-white border-primary-500'
+                                    : 'bg-surface-highlight/30 text-slate-400 border-slate-800 hover:border-white/20'
                                     }`}
                             >
                                 {spec}
@@ -249,9 +270,9 @@ export default function FindDoctor() {
             {/* Doctor Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {filteredDoctors.length > 0 ? filteredDoctors.map(doctor => (
-                    <div key={doctor.id} className="glass-card p-6 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all group">
+                    <div key={doctor.id} className="glass-card p-6 rounded-2xl border border-slate-800 hover:border-primary-500/30 transition-all group">
                         <div className="flex items-start gap-4 mb-6">
-                            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-white/10 bg-slate-800 relative">
+                            <div className="w-20 h-20 rounded-2xl overflow-hidden border-2 border-slate-800 bg-slate-800 relative">
                                 <img
                                     src={doctor.image}
                                     alt={doctor.name}
@@ -263,7 +284,7 @@ export default function FindDoctor() {
                             </div>
                             <div>
                                 <h3 className="text-lg font-bold text-slate-100 mb-1 line-clamp-1">{doctor.name}</h3>
-                                <p className="text-teal-400 text-sm font-medium mb-2 capitalize">{doctor.specialty.replace(/_/g, ' ')}</p>
+                                <p className="text-primary-400 text-sm font-medium mb-2 capitalize">{doctor.specialty.replace(/_/g, ' ')}</p>
                                 <div className="flex items-center gap-1 text-amber-400 text-xs font-bold">
                                     <Star className="w-3 h-3 fill-current" />
                                     <span>{doctor.rating}</span>
@@ -288,7 +309,14 @@ export default function FindDoctor() {
                             </div>
                         </div>
 
-                        <button className="w-full bg-surface-highlight hover:bg-teal-500 hover:text-white text-slate-300 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-teal-500/20">
+                        <button
+                            onClick={() => {
+                                setSelectedDoctor(doctor);
+                                setBookingStep('form');
+                                setBookingData({ date: '', time: '', reason: '' });
+                            }}
+                            className="w-full bg-surface-highlight hover:bg-primary-500 hover:text-white text-slate-300 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-primary-500/20"
+                        >
                             Book Appointment <ChevronRight className="w-4 h-4" />
                         </button>
                     </div>
@@ -299,6 +327,133 @@ export default function FindDoctor() {
                     </div>
                 )}
             </div>
+
+            {/* Booking Modal */}
+            <AnimatePresence>
+                {selectedDoctor && (
+                    <>
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setSelectedDoctor(null)}
+                            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
+                        />
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-lg bg-surface border border-slate-800 rounded-3xl shadow-2xl z-50 overflow-hidden"
+                        >
+                            {/* Modal Header */}
+                            <div className="p-6 border-b border-slate-800 flex items-center justify-between bg-surface-highlight/30">
+                                <h3 className="text-xl font-serif text-slate-100">
+                                    {bookingStep === 'form' ? 'Book Appointment' : 'Booking Confirmed'}
+                                </h3>
+                                <button
+                                    onClick={() => setSelectedDoctor(null)}
+                                    className="p-2 hover:bg-white/10 rounded-full text-slate-400 transition-colors"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+
+                            {/* Modal Body */}
+                            <div className="p-6">
+                                {bookingStep === 'form' ? (
+                                    <div className="space-y-6">
+                                        {/* Doctor Summary */}
+                                        <div className="flex items-center gap-4 p-4 bg-surface-highlight/30 rounded-xl border border-slate-800">
+                                            <div className="w-16 h-16 rounded-full overflow-hidden border border-slate-700">
+                                                <img src={selectedDoctor.image} alt={selectedDoctor.name} className="w-full h-full object-cover" />
+                                            </div>
+                                            <div>
+                                                <h4 className="font-bold text-slate-100">{selectedDoctor.name}</h4>
+                                                <p className="text-primary-400 text-xs uppercase tracking-wider font-bold">{selectedDoctor.specialty}</p>
+                                                <div className="flex items-center gap-1 text-slate-500 text-xs mt-1">
+                                                    <MapPin className="w-3 h-3" /> {selectedDoctor.location}
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {/* Form Fields */}
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Date</label>
+                                                <div className="relative">
+                                                    <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                                    <input
+                                                        type="date"
+                                                        value={bookingData.date}
+                                                        onChange={(e) => setBookingData({ ...bookingData, date: e.target.value })}
+                                                        className="w-full bg-surface-highlight/50 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-colors [color-scheme:dark]"
+                                                    />
+                                                </div>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Time</label>
+                                                <div className="relative">
+                                                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+                                                    <input
+                                                        type="time"
+                                                        value={bookingData.time}
+                                                        onChange={(e) => setBookingData({ ...bookingData, time: e.target.value })}
+                                                        className="w-full bg-surface-highlight/50 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-colors [color-scheme:dark]"
+                                                    />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="text-xs font-bold uppercase tracking-wider text-slate-500">Reason for Visit</label>
+                                            <textarea
+                                                value={bookingData.reason}
+                                                onChange={(e) => setBookingData({ ...bookingData, reason: e.target.value })}
+                                                placeholder="Briefly describe your symptoms or reason for visit..."
+                                                className="w-full bg-surface-highlight/50 border border-slate-800 rounded-xl p-4 text-slate-200 focus:border-primary-500/50 outline-none transition-colors h-24 resize-none"
+                                            />
+                                        </div>
+
+                                        <button
+                                            onClick={() => setBookingStep('success')}
+                                            disabled={!bookingData.date || !bookingData.time}
+                                            className={`w-full py-4 rounded-xl font-bold uppercase tracking-widest transition-all flex items-center justify-center gap-2
+                                                ${!bookingData.date || !bookingData.time
+                                                    ? 'bg-slate-800 text-slate-500 cursor-not-allowed'
+                                                    : 'bg-primary-500 hover:bg-primary-400 text-slate-900 shadow-lg shadow-primary-500/20'
+                                                }
+                                            `}
+                                        >
+                                            Confirm Booking
+                                        </button>
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-8 space-y-6">
+                                        <div className="w-20 h-20 bg-primary-500/10 rounded-full flex items-center justify-center mx-auto border border-primary-500/20">
+                                            <CheckCircle className="w-10 h-10 text-primary-500" />
+                                        </div>
+                                        <div>
+                                            <h4 className="text-2xl font-serif text-slate-100 mb-2">Appointment Confirmed!</h4>
+                                            <p className="text-slate-400">
+                                                Your appointment with <span className="text-slate-200 font-bold">{selectedDoctor.name}</span> is scheduled for <span className="text-primary-400 font-bold">{bookingData.date} at {bookingData.time}</span>.
+                                            </p>
+                                        </div>
+                                        <div className="p-4 bg-surface-highlight/30 rounded-xl border border-slate-800 text-sm text-slate-400">
+                                            A confirmation email has been sent to your registered address.
+                                        </div>
+                                        <button
+                                            onClick={() => setSelectedDoctor(null)}
+                                            className="w-full py-3 bg-surface-highlight hover:bg-slate-800 text-slate-200 rounded-xl font-bold uppercase tracking-wider transition-colors"
+                                        >
+                                            Close
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    </>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

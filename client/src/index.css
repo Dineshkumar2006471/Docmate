@@ -25,25 +25,25 @@
 :root.light {
   /* Light Mode Values */
   --background: #ffffff;
-  --surface: #f8fafc;
-  /* slate-50 */
-  --surface-highlight: #f1f5f9;
-  /* slate-100 */
+  --surface: #ffffff;
+  /* Pure White for cards */
+  --surface-highlight: #f8fafc;
+  /* Very light gray for inputs/highlights */
 
-  --slate-100: #0f172a;
-  /* slate-900 (Main Text) */
+  --slate-100: #020617;
+  /* Almost Black (Main Text) */
   --slate-200: #334155;
-  /* slate-700 */
+  /* Dark Gray (Secondary) */
   --slate-300: #475569;
-  /* slate-600 */
+  /* Medium Gray */
   --slate-400: #64748b;
-  /* slate-500 */
+  /* Light Gray (Muted) */
   --slate-500: #94a3b8;
-  /* slate-400 */
-  --slate-800: #e2e8f0;
-  /* slate-200 (Borders) */
-  --slate-900: #f8fafc;
-  /* slate-50 */
+  /* Lighter Gray */
+  --slate-800: #000000;
+  /* Black (Borders) */
+  --slate-900: #f1f5f9;
+  /* Light background for some elements */
 }
 
 @theme {
@@ -131,11 +131,11 @@
 
   /* Glassmorphism - Dark & Moody */
   .glass-panel {
-    @apply bg-[#0f1012]/80 backdrop-blur-xl border border-white/5 shadow-2xl;
+    @apply bg-surface/80 backdrop-blur-xl border border-slate-800 shadow-2xl;
   }
 
   .glass-card {
-    @apply bg-[#0f1012] border border-white/5 transition-all duration-500;
+    @apply bg-surface border border-slate-800 transition-all duration-500;
     transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
     box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
   }

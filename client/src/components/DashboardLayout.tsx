@@ -81,7 +81,7 @@ export default function DashboardLayout() {
                 </div>
 
                 {/* Dynamic Header */}
-                <header className="h-20 border-b border-white/5 flex items-center justify-between px-4 md:px-8 z-10 bg-background/50 backdrop-blur-sm no-print animate-in-fade-up stagger-1">
+                <header className="h-20 border-b border-slate-800 flex items-center justify-between px-4 md:px-8 z-10 bg-background/50 backdrop-blur-sm no-print animate-in-fade-up stagger-1">
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                         <button
                             onClick={() => setMobileMenuOpen(true)}
@@ -94,7 +94,7 @@ export default function DashboardLayout() {
 
                     <button
                         onClick={toggleTheme}
-                        className="p-2 rounded-full hover:bg-white/5 transition-colors text-slate-400 hover:text-teal-400"
+                        className="p-2 rounded-full hover:bg-white/5 transition-colors text-slate-400 hover:text-primary-400"
                         title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
                     >
                         {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}

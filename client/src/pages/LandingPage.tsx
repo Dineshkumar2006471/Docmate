@@ -9,11 +9,11 @@ export default function LandingPage() {
     return (
         <div className="min-h-screen bg-background text-slate-200 selection:bg-primary-300/30 overflow-x-hidden">
             {/* Navigation */}
-            <nav className="fixed w-full z-50 glass-panel border-b-0 border-b-slate-700/50 rounded-none top-0 backdrop-blur-md">
+            <nav className="fixed w-full z-50 glass-panel border-b-0 border-b-slate-800 rounded-none top-0 backdrop-blur-md">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex items-center justify-between h-20">
                         <div className="flex items-center gap-3">
-                            <div className="bg-gradient-to-br from-primary-500/20 to-secondary-500/20 p-2.5 rounded-xl border border-white/10 shadow-lg shadow-primary-500/10">
+                            <div className="bg-gradient-to-br from-primary-500/20 to-secondary-500/20 p-2.5 rounded-xl border border-slate-800 shadow-lg shadow-primary-500/10">
                                 <HeartPulse className="w-6 h-6 text-primary-300" />
                             </div>
                             <span className="text-2xl font-serif font-bold text-slate-100 tracking-tight">
@@ -53,27 +53,27 @@ export default function LandingPage() {
                         initial={{ opacity: 0, height: 0 }}
                         animate={{ opacity: 1, height: 'auto' }}
                         exit={{ opacity: 0, height: 0 }}
-                        className="md:hidden bg-surface-highlight/95 backdrop-blur-xl border-b border-white/5 overflow-hidden"
+                        className="md:hidden bg-surface-highlight/95 backdrop-blur-xl border-b border-slate-800 overflow-hidden"
                     >
                         <div className="px-4 pt-2 pb-6 space-y-2">
                             <a
                                 href="#features"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-surface-highlight/50 transition-colors"
                             >
                                 Features
                             </a>
                             <a
                                 href="#technology"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-surface-highlight/50 transition-colors"
                             >
                                 Technology
                             </a>
                             <a
                                 href="#about"
                                 onClick={() => setIsMenuOpen(false)}
-                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+                                className="block px-3 py-3 rounded-lg text-base font-medium text-slate-300 hover:text-white hover:bg-surface-highlight/50 transition-colors"
                             >
                                 About
                             </a>
@@ -150,7 +150,7 @@ export default function LandingPage() {
                 </div>
 
                 {/* Stats / Trust Section */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-y border-white/5 bg-white/5 backdrop-blur-sm rounded-sm mb-20 animate-in-fade-up stagger-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-8 py-12 border-y border-slate-800 bg-surface-highlight/50 backdrop-blur-sm rounded-sm mb-20 animate-in-fade-up stagger-4">
                     <StatItem number="99.9%" label="System Uptime" />
                     <StatItem number="50k+" label="Patient Reports" />
                     <StatItem number="24/7" label="AI Availability" />
@@ -188,7 +188,7 @@ export default function LandingPage() {
             </main >
 
             {/* Footer */}
-            < footer className="border-t border-white/10 bg-surface-highlight/20 mt-20" >
+            < footer className="border-t border-slate-800 bg-surface-highlight/20 mt-20" >
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
                         <div className="col-span-1 md:col-span-2">
@@ -217,7 +217,7 @@ export default function LandingPage() {
                             </ul>
                         </div>
                     </div>
-                    <div className="border-t border-white/5 mt-12 pt-8 text-center text-slate-600 text-xs">
+                    <div className="border-t border-slate-800 mt-12 pt-8 text-center text-slate-600 text-xs">
                         &copy; 2024 DocMate Health AI. All rights reserved.
                     </div>
                 </div>
@@ -247,7 +247,7 @@ function FeatureCard({ icon, title, description, delay }: { icon: React.ReactNod
             <div className="absolute top-0 right-0 p-6 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                 <ArrowRight className="w-6 h-6 text-primary-300 -rotate-45 group-hover:rotate-0 transition-transform duration-300" />
             </div>
-            <div className="mb-6 p-4 bg-surface-highlight rounded-sm border border-white/5 w-fit group-hover:border-primary-500/30 transition-colors duration-300 shadow-lg">
+            <div className="mb-6 p-4 bg-surface-highlight rounded-sm border border-slate-800 w-fit group-hover:border-primary-500/30 transition-colors duration-300 shadow-lg">
                 {icon}
             </div>
             <h3 className="text-2xl font-serif text-slate-100 mb-3 group-hover:text-primary-200 transition-colors">{title}</h3>

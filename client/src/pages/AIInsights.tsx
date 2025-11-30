@@ -269,7 +269,7 @@ export default function AIInsights() {
     if (loading) {
         return (
             <div className="min-h-screen flex items-center justify-center">
-                <Loader2 className="w-8 h-8 text-teal-500 animate-spin" />
+                <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
             </div>
         );
     }
@@ -283,13 +283,13 @@ export default function AIInsights() {
             {/* Header Section */}
             <div className="mb-10">
                 <h1 className="text-3xl md:text-4xl font-serif text-slate-100 mb-4 flex items-center gap-3">
-                    <Brain className="w-8 h-8 text-teal-400" /> Health 360° Insights
+                    <Brain className="w-8 h-8 text-primary-400" /> Health 360° Insights
                 </h1>
                 <p className="text-slate-400">AI-powered predictive analysis and personalized health roadmap.</p>
             </div>
 
             {/* 1. Health Scorecard */}
-            <div className="glass-card p-8 rounded-3xl border border-white/5 mb-10 flex flex-col md:flex-row items-center gap-10">
+            <div className="glass-card p-8 rounded-3xl border border-slate-800 mb-10 flex flex-col md:flex-row items-center gap-10">
                 <div className="shrink-0">
                     <ScoreGauge />
                 </div>
@@ -299,11 +299,11 @@ export default function AIInsights() {
                         {insights.summary}
                     </p>
                     <div className="flex flex-wrap gap-4 justify-center md:justify-start">
-                        <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5 flex items-center gap-2">
-                            <Activity className="w-4 h-4 text-teal-400" />
+                        <div className="px-4 py-2 bg-surface-highlight rounded-xl border border-slate-800 flex items-center gap-2">
+                            <Activity className="w-4 h-4 text-primary-400" />
                             <span className="text-sm text-slate-300">Vitals Stable</span>
                         </div>
-                        <div className="px-4 py-2 bg-white/5 rounded-xl border border-white/5 flex items-center gap-2">
+                        <div className="px-4 py-2 bg-surface-highlight rounded-xl border border-slate-800 flex items-center gap-2">
                             <Shield className="w-4 h-4 text-blue-400" />
                             <span className="text-sm text-slate-300">Insurance Active</span>
                         </div>
@@ -312,7 +312,7 @@ export default function AIInsights() {
             </div>
 
             {/* 2. Tabbed Navigation */}
-            <div className="flex flex-wrap gap-2 mb-8 border-b border-white/10 pb-1">
+            <div className="flex flex-wrap gap-2 mb-8 border-b border-slate-800 pb-1">
                 {[
                     { id: 'risks', label: 'Risk Factors', icon: AlertTriangle },
                     { id: 'trends', label: 'Trends', icon: TrendingUp },
@@ -324,8 +324,8 @@ export default function AIInsights() {
                         onClick={() => setActiveTab(tab.id as any)}
                         className={`px-6 py-3 rounded-t-xl font-bold text-sm uppercase tracking-wider flex items-center gap-2 transition-all relative top-[1px]
                             ${activeTab === tab.id
-                                ? 'bg-surface-highlight text-teal-400 border-t border-x border-white/10'
-                                : 'text-slate-500 hover:text-slate-300 hover:bg-white/5'
+                                ? 'bg-surface-highlight text-primary-400 border-t border-x border-slate-800'
+                                : 'text-slate-500 hover:text-slate-300 hover:bg-surface-highlight'
                             }`}
                     >
                         <tab.icon className="w-4 h-4" /> {tab.label}
@@ -344,7 +344,7 @@ export default function AIInsights() {
                             exit={{ opacity: 0, y: -10 }}
                             className="grid grid-cols-1 md:grid-cols-2 gap-6"
                         >
-                            <div className="glass-card p-6 rounded-2xl border border-white/5">
+                            <div className="glass-card p-6 rounded-2xl border border-slate-800">
                                 <h3 className="text-lg font-serif text-slate-100 mb-6">Identified Risk Factors</h3>
                                 {profile.allergies.length > 0 ? (
                                     <div className="space-y-4">
@@ -359,16 +359,16 @@ export default function AIInsights() {
                                     <div className="text-slate-500 italic">No major allergies reported.</div>
                                 )}
                             </div>
-                            <div className="glass-card p-6 rounded-2xl border border-white/5">
+                            <div className="glass-card p-6 rounded-2xl border border-slate-800">
                                 <h3 className="text-lg font-serif text-slate-100 mb-6">Lifestyle Factors</h3>
                                 <div className="space-y-4">
                                     <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl">
                                         <span className="text-slate-300">Age Group Risk</span>
-                                        <span className="px-3 py-1 bg-teal-500/10 text-teal-400 text-xs font-bold uppercase rounded-full">Low</span>
+                                        <span className="px-3 py-1 bg-primary-500/10 text-primary-400 text-xs font-bold uppercase rounded-full">Low</span>
                                     </div>
                                     <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl">
                                         <span className="text-slate-300">Chronic Conditions</span>
-                                        <span className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${profile.pastConditions.length > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-teal-500/10 text-teal-400'}`}>
+                                        <span className={`px-3 py-1 text-xs font-bold uppercase rounded-full ${profile.pastConditions.length > 0 ? 'bg-amber-500/10 text-amber-400' : 'bg-primary-500/10 text-primary-400'}`}>
                                             {profile.pastConditions.length > 0 ? 'Moderate' : 'Low'}
                                         </span>
                                     </div>
@@ -383,7 +383,7 @@ export default function AIInsights() {
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -10 }}
-                            className="glass-card p-8 rounded-2xl border border-white/5"
+                            className="glass-card p-8 rounded-2xl border border-slate-800"
                         >
                             <h3 className="text-lg font-serif text-slate-100 mb-6">Health Score Trends</h3>
                             {insights.history.length > 1 ? (
@@ -392,8 +392,8 @@ export default function AIInsights() {
                                         <AreaChart data={insights.history}>
                                             <defs>
                                                 <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
-                                                    <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
-                                                    <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
+                                                    <stop offset="5%" stopColor="#aacc00" stopOpacity={0.3} />
+                                                    <stop offset="95%" stopColor="#aacc00" stopOpacity={0} />
                                                 </linearGradient>
                                             </defs>
                                             <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
@@ -413,12 +413,12 @@ export default function AIInsights() {
                                             />
                                             <Tooltip
                                                 contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '12px' }}
-                                                itemStyle={{ color: '#2dd4bf' }}
+                                                itemStyle={{ color: '#aacc00' }}
                                             />
                                             <Area
                                                 type="monotone"
                                                 dataKey="score"
-                                                stroke="#14b8a6"
+                                                stroke="#aacc00"
                                                 strokeWidth={3}
                                                 fillOpacity={1}
                                                 fill="url(#colorScore)"
@@ -452,7 +452,7 @@ export default function AIInsights() {
 
                                         <div
                                             onClick={() => setSelectedPrediction(pred)}
-                                            className="glass-card p-6 rounded-2xl border border-white/5 hover:border-teal-500/30 transition-all cursor-pointer group-hover:translate-x-2"
+                                            className="glass-card p-6 rounded-2xl border border-slate-800 hover:border-primary-500/30 transition-all cursor-pointer group-hover:translate-x-2"
                                         >
                                             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
                                                 <div>
@@ -466,7 +466,7 @@ export default function AIInsights() {
                                                 </span>
                                             </div>
                                             <p className="text-slate-400 text-sm mb-4">{pred.reason}</p>
-                                            <div className="flex items-center gap-2 text-teal-400 text-xs font-bold uppercase tracking-wider">
+                                            <div className="flex items-center gap-2 text-primary-400 text-xs font-bold uppercase tracking-wider">
                                                 View Contributing Factors <ChevronRight className="w-4 h-4" />
                                             </div>
                                         </div>
@@ -484,7 +484,7 @@ export default function AIInsights() {
                             exit={{ opacity: 0, y: -10 }}
                             className="space-y-8"
                         >
-                            <div className="glass-card p-6 rounded-2xl border border-white/5">
+                            <div className="glass-card p-6 rounded-2xl border border-slate-800">
                                 <h3 className="text-lg font-serif text-slate-100 mb-6">Preventive Measures Roadmap</h3>
                                 <div className="space-y-6">
                                     {['Immediate', 'Short-term', 'Long-term'].map((cat) => {
@@ -492,15 +492,15 @@ export default function AIInsights() {
                                         if (items.length === 0) return null;
                                         return (
                                             <div key={cat}>
-                                                <h4 className="text-xs font-bold uppercase tracking-wider text-teal-400 mb-3">{cat} Actions</h4>
+                                                <h4 className="text-xs font-bold uppercase tracking-wider text-primary-400 mb-3">{cat} Actions</h4>
                                                 <div className="space-y-2">
                                                     {items.map(item => (
                                                         <div
                                                             key={item.id}
                                                             onClick={() => toggleActionItem(item.id)}
-                                                            className="flex items-center gap-3 p-3 bg-surface-highlight/30 rounded-xl border border-white/5 cursor-pointer hover:bg-white/5 transition-colors"
+                                                            className="flex items-center gap-3 p-3 bg-surface-highlight/30 rounded-xl border border-slate-800 cursor-pointer hover:bg-surface-highlight transition-colors"
                                                         >
-                                                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${item.completed ? 'bg-teal-500 border-teal-500' : 'border-slate-600'}`}>
+                                                            <div className={`w-5 h-5 rounded-full border flex items-center justify-center transition-colors ${item.completed ? 'bg-primary-500 border-primary-500' : 'border-slate-600'}`}>
                                                                 {item.completed && <CheckCircle className="w-3 h-3 text-white" />}
                                                             </div>
                                                             <span className={`text-sm transition-all ${item.completed ? 'text-slate-500 line-through' : 'text-slate-200'}`}>{item.task}</span>
@@ -513,14 +513,14 @@ export default function AIInsights() {
                                 </div>
                             </div>
 
-                            <div className="glass-card p-6 rounded-2xl border border-teal-500/20 bg-teal-900/5 flex items-center justify-between">
+                            <div className="glass-card p-6 rounded-2xl border border-primary-500/20 bg-primary-900/5 flex items-center justify-between">
                                 <div>
                                     <h3 className="text-lg font-bold text-slate-100 mb-1">Recommended Specialist</h3>
                                     <p className="text-slate-400 text-sm">Based on your risk profile</p>
                                 </div>
                                 <button
                                     onClick={handleFindSpecialist}
-                                    className="px-6 py-3 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-bold uppercase tracking-widest text-sm transition-colors"
+                                    className="px-6 py-3 bg-primary-500 hover:bg-primary-400 text-slate-900 rounded-xl font-bold uppercase tracking-widest text-sm transition-colors"
                                 >
                                     Find {profile.allergies.length > 0 ? 'Allergist' : 'General Physician'}
                                 </button>
@@ -545,11 +545,11 @@ export default function AIInsights() {
                             initial={{ x: '100%' }}
                             animate={{ x: 0 }}
                             exit={{ x: '100%' }}
-                            className="fixed top-0 right-0 bottom-0 w-full md:w-[400px] bg-surface-highlight border-l border-white/10 z-50 p-8 shadow-2xl overflow-y-auto"
+                            className="fixed top-0 right-0 bottom-0 w-full md:w-[400px] bg-surface-highlight border-l border-slate-800 z-50 p-8 shadow-2xl overflow-y-auto"
                         >
                             <div className="flex justify-between items-center mb-8">
                                 <h2 className="text-2xl font-serif text-slate-100">Prediction Details</h2>
-                                <button onClick={() => setSelectedPrediction(null)} className="p-2 hover:bg-white/10 rounded-full text-slate-400">
+                                <button onClick={() => setSelectedPrediction(null)} className="p-2 hover:bg-surface-highlight rounded-full text-slate-400">
                                     <X className="w-6 h-6" />
                                 </button>
                             </div>
@@ -557,7 +557,7 @@ export default function AIInsights() {
                             <div className="space-y-8">
                                 <div>
                                     <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-2">Condition</div>
-                                    <div className="text-xl font-bold text-teal-400">{selectedPrediction.condition}</div>
+                                    <div className="text-xl font-bold text-primary-400">{selectedPrediction.condition}</div>
                                 </div>
 
                                 <div>
@@ -569,7 +569,7 @@ export default function AIInsights() {
                                     <div className="text-xs text-slate-500 uppercase tracking-wider font-bold mb-4">Contributing Data Points</div>
                                     <div className="space-y-3">
                                         {selectedPrediction.contributingFactors.map((factor, i) => (
-                                            <div key={i} className="flex items-center gap-3 p-3 bg-black/20 rounded-xl border border-white/5">
+                                            <div key={i} className="flex items-center gap-3 p-3 bg-black/20 rounded-xl border border-slate-800">
                                                 <Activity className="w-4 h-4 text-slate-500" />
                                                 <span className="text-slate-200 text-sm">{factor}</span>
                                             </div>
@@ -577,10 +577,10 @@ export default function AIInsights() {
                                     </div>
                                 </div>
 
-                                <div className="pt-8 border-t border-white/5">
+                                <div className="pt-8 border-t border-slate-800">
                                     <button
                                         onClick={() => alert("Prevention tips coming soon! (This would open a detailed content modal)")}
-                                        className="w-full py-4 bg-teal-500 hover:bg-teal-400 text-slate-900 rounded-xl font-bold uppercase tracking-widest transition-colors"
+                                        className="w-full py-4 bg-primary-500 hover:bg-primary-400 text-slate-900 rounded-xl font-bold uppercase tracking-widest transition-colors"
                                     >
                                         View Prevention Tips
                                     </button>

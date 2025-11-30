@@ -224,9 +224,9 @@ export default function ReportAnalyzer() {
                         className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex flex-col items-center justify-center"
                     >
                         <div className="relative">
-                            <div className="w-24 h-24 border-4 border-teal-500/30 border-t-teal-500 rounded-full animate-spin"></div>
+                            <div className="w-24 h-24 border-4 border-primary-500/30 border-t-primary-500 rounded-full animate-spin"></div>
                             <div className="absolute inset-0 flex items-center justify-center">
-                                <FileText className="w-8 h-8 text-teal-500 animate-pulse" />
+                                <FileText className="w-8 h-8 text-primary-500 animate-pulse" />
                             </div>
                         </div>
                         <motion.h2
@@ -271,7 +271,7 @@ export default function ReportAnalyzer() {
                         <p className="text-slate-400">Upload blood tests, ECGs, X-rays, or clinical documents for AI analysis.</p>
                     </div>
 
-                    <div className="glass-panel p-8 rounded-3xl border border-white/5 shadow-2xl">
+                    <div className="glass-panel p-8 rounded-3xl border border-slate-800 shadow-2xl">
                         {/* Form Inputs */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                             <div className="space-y-2">
@@ -283,7 +283,7 @@ export default function ReportAnalyzer() {
                                         value={reportTitle}
                                         onChange={(e) => setReportTitle(e.target.value)}
                                         placeholder="e.g. Breathing Problem"
-                                        className="w-full bg-surface-highlight/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-colors"
+                                        className="w-full bg-surface-highlight/50 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-colors"
                                     />
                                 </div>
                             </div>
@@ -295,7 +295,7 @@ export default function ReportAnalyzer() {
                                         type="date"
                                         value={reportDate}
                                         onChange={(e) => setReportDate(e.target.value)}
-                                        className="w-full bg-surface-highlight/50 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-teal-500/50 outline-none transition-colors [color-scheme:dark]"
+                                        className="w-full bg-surface-highlight/50 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-colors [color-scheme:dark]"
                                     />
                                 </div>
                             </div>
@@ -312,21 +312,21 @@ export default function ReportAnalyzer() {
                         <label
                             htmlFor="report-upload"
                             className={`block border-2 border-dashed rounded-2xl p-10 text-center cursor-pointer transition-all duration-300 group
-                                ${file ? 'border-teal-500/50 bg-teal-500/5' : 'border-white/10 hover:border-teal-500/30 hover:bg-surface-highlight/30'}
+                                ${file ? 'border-primary-500/50 bg-primary-500/5' : 'border-slate-800 hover:border-primary-500/30 hover:bg-surface-highlight/30'}
                             `}
                         >
                             {file ? (
                                 <div className="flex flex-col items-center animate-in fade-in zoom-in duration-300">
-                                    <div className="w-16 h-16 bg-teal-500/20 rounded-full flex items-center justify-center mb-4 text-teal-400">
+                                    <div className="w-16 h-16 bg-primary-500/20 rounded-full flex items-center justify-center mb-4 text-primary-400">
                                         <Check className="w-8 h-8" />
                                     </div>
-                                    <h3 className="text-lg font-bold text-teal-100 mb-1">{file.name}</h3>
-                                    <p className="text-teal-500/60 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    <h3 className="text-lg font-bold text-primary-100 mb-1">{file.name}</h3>
+                                    <p className="text-primary-500/60 text-sm">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
                                 </div>
                             ) : (
                                 <>
                                     <div className="w-16 h-16 bg-surface-highlight rounded-full flex items-center justify-center mx-auto mb-6 group-hover:scale-110 transition-transform duration-300">
-                                        <Upload className="w-8 h-8 text-teal-400" />
+                                        <Upload className="w-8 h-8 text-primary-400" />
                                     </div>
                                     <h3 className="text-xl font-serif text-slate-100 mb-2">Click to upload file</h3>
                                     <p className="text-slate-500 text-sm">PDF, JPEG, PNG, TXT (Max 10MB)</p>
@@ -365,16 +365,16 @@ export default function ReportAnalyzer() {
 
                             <button
                                 onClick={handleShareLocation}
-                                className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200"
+                                className="bg-surface-highlight/30 border border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-surface-highlight transition-colors group text-slate-200"
                             >
                                 <Share2 className="w-8 h-8 text-blue-400 mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-bold uppercase tracking-wider mb-1">Share My Location</h3>
                                 <p className="text-slate-500 text-xs">Send to Contacts</p>
                             </button>
 
-                            <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" rel="noopener noreferrer" className="bg-surface-highlight/30 border border-white/10 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-white/5 transition-colors group text-slate-200"
+                            <a href="https://www.google.com/maps/search/hospitals+near+me" target="_blank" rel="noopener noreferrer" className="bg-surface-highlight/30 border border-slate-800 p-6 rounded-2xl flex flex-col items-center text-center hover:bg-surface-highlight transition-colors group text-slate-200"
                             >
-                                <MapPin className="w-8 h-8 text-teal-400 mb-4 group-hover:scale-110 transition-transform" />
+                                <MapPin className="w-8 h-8 text-primary-400 mb-4 group-hover:scale-110 transition-transform" />
                                 <h3 className="font-bold uppercase tracking-wider mb-1">Find Hospitals</h3>
                                 <p className="text-slate-500 text-xs">Find Nearby Hospitals</p>
                             </a>
@@ -385,19 +385,19 @@ export default function ReportAnalyzer() {
                         {/* Top Section: Patient & Vitals */}
                         <div className="space-y-6 min-w-0">
                             {/* Patient Info */}
-                            <div className="glass-card p-6 rounded-2xl border-l-4 border-l-teal-500">
+                            <div className="glass-card p-6 rounded-2xl border-l-4 border-l-primary-500">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <div className="w-10 h-10 bg-teal-500/20 rounded-full flex items-center justify-center">
-                                        <User className="w-5 h-5 text-teal-400" />
+                                    <div className="w-10 h-10 bg-primary-500/20 rounded-full flex items-center justify-center">
+                                        <User className="w-5 h-5 text-primary-400" />
                                     </div>
                                     <h3 className="text-lg font-serif text-slate-100">Patient Information</h3>
                                 </div>
                                 <div className="space-y-3 text-sm">
-                                    <div className="flex justify-between border-b border-white/5 pb-2">
+                                    <div className="flex justify-between border-b border-slate-800 pb-2">
                                         <span className="text-slate-500">Name</span>
                                         <span className="text-slate-200 font-medium">{result.patient_info.name}</span>
                                     </div>
-                                    <div className="flex justify-between border-b border-white/5 pb-2">
+                                    <div className="flex justify-between border-b border-slate-800 pb-2">
                                         <span className="text-slate-500">Age / Gender</span>
                                         <span className="text-slate-200">{result.patient_info.age} / {result.patient_info.gender}</span>
                                     </div>
@@ -453,11 +453,11 @@ export default function ReportAnalyzer() {
                             {/* AI Summary */}
                             <div className="glass-card p-8 rounded-2xl relative overflow-hidden">
                                 <div className="absolute top-0 right-0 p-4 opacity-5">
-                                    <FileText className="w-40 h-40 text-teal-500" />
+                                    <FileText className="w-40 h-40 text-primary-500" />
                                 </div>
 
                                 <div className="flex items-center gap-3 mb-6">
-                                    <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${result.triage_status.level === 'Emergency' ? 'bg-red-500 text-white border-red-400' : 'bg-teal-500 text-white border-teal-400'
+                                    <div className={`px-4 py-1 rounded-full text-xs font-bold uppercase tracking-widest border ${result.triage_status.level === 'Emergency' ? 'bg-red-500 text-white border-red-400' : 'bg-primary-500 text-white border-primary-400'
                                         }`}>
                                         {result.triage_status.level === 'Emergency' ? 'High Risk / Emergency' : result.triage_status.level}
                                     </div>
@@ -468,20 +468,20 @@ export default function ReportAnalyzer() {
                                     {result.ai_analysis.recommendations}
                                 </p>
 
-                                <div className="bg-surface-highlight/30 rounded-xl p-6 border border-white/5">
+                                <div className="bg-surface-highlight/30 rounded-xl p-6 border border-slate-800">
                                     <h4 className="text-sm font-bold uppercase tracking-wider text-slate-400 mb-3">Immediate Recommendations</h4>
                                     <ul className="space-y-2">
                                         {result.triage_status.level === 'Emergency' ? (
                                             <>
                                                 <li className="flex items-start gap-3 text-red-200"><AlertTriangle className="w-5 h-5 shrink-0" /> {result.triage_status.alert_message}</li>
                                                 {result.ai_analysis.warning_signs.map((sign, i) => (
-                                                    <li key={i} className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> {sign}</li>
+                                                    <li key={i} className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-primary-500" /> {sign}</li>
                                                 ))}
                                             </>
                                         ) : (
                                             <>
                                                 {result.ai_analysis.warning_signs.map((sign, i) => (
-                                                    <li key={i} className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-teal-500" /> {sign}</li>
+                                                    <li key={i} className="flex items-start gap-3 text-slate-300"><CheckCircle className="w-5 h-5 shrink-0 text-primary-500" /> {sign}</li>
                                                 ))}
                                             </>
                                         )}
@@ -496,7 +496,7 @@ export default function ReportAnalyzer() {
                                     {!showRemedies && (
                                         <button
                                             onClick={fetchRemedies}
-                                            className="text-sm text-teal-400 hover:text-teal-300 font-bold uppercase tracking-wider flex items-center gap-2"
+                                            className="text-sm text-primary-400 hover:text-primary-300 font-bold uppercase tracking-wider flex items-center gap-2"
                                         >
                                             Suggest Remedies <CheckCircle className="w-4 h-4" />
                                         </button>
@@ -510,9 +510,9 @@ export default function ReportAnalyzer() {
                                         className="grid grid-cols-1 gap-4"
                                     >
                                         {remedies.length > 0 ? remedies.map((remedy, i) => (
-                                            <div key={i} className="flex items-start gap-3 p-4 bg-teal-500/5 border border-teal-500/10 rounded-xl">
-                                                <div className="w-6 h-6 rounded-full bg-teal-500/20 flex items-center justify-center shrink-0 mt-0.5">
-                                                    <span className="text-xs font-bold text-teal-400">{i + 1}</span>
+                                            <div key={i} className="flex items-start gap-3 p-4 bg-primary-500/5 border border-primary-500/10 rounded-xl">
+                                                <div className="w-6 h-6 rounded-full bg-primary-500/20 flex items-center justify-center shrink-0 mt-0.5">
+                                                    <span className="text-xs font-bold text-primary-400">{i + 1}</span>
                                                 </div>
                                                 <p className="text-slate-300 text-sm">{remedy}</p>
                                             </div>
@@ -526,25 +526,25 @@ export default function ReportAnalyzer() {
                             </div>
 
                             {/* Security & Authenticity Section */}
-                            <div className="glass-card p-6 rounded-2xl border border-teal-500/20 bg-teal-900/5">
+                            <div className="glass-card p-6 rounded-2xl border border-primary-500/20 bg-primary-900/5">
                                 <div className="flex items-center gap-3 mb-4">
-                                    <Shield className="w-6 h-6 text-teal-400" />
+                                    <Shield className="w-6 h-6 text-primary-400" />
                                     <h3 className="text-lg font-serif text-slate-100">AI Blockchain Security Verification</h3>
                                 </div>
                                 <div className="space-y-3">
-                                    <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <div className="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
                                         <span className="text-slate-500">Status</span>
-                                        <span className="text-teal-400 font-bold flex items-center gap-2">
+                                        <span className="text-primary-400 font-bold flex items-center gap-2">
                                             <CheckCircle className="w-4 h-4" /> Verified Secure
                                         </span>
                                     </div>
-                                    <div className="flex justify-between items-center text-sm border-b border-white/5 pb-2">
+                                    <div className="flex justify-between items-center text-sm border-b border-slate-800 pb-2">
                                         <span className="text-slate-500">Encryption</span>
                                         <span className="text-slate-300 font-mono">AES-256-GCM</span>
                                     </div>
                                     <div className="flex flex-col gap-1 text-sm pt-1">
                                         <span className="text-slate-500">Blockchain Hash</span>
-                                        <span className="text-xs font-mono text-slate-400 break-all bg-black/20 p-2 rounded border border-white/5">
+                                        <span className="text-xs font-mono text-slate-400 break-all bg-black/20 p-2 rounded border border-slate-800">
                                             0x{Array.from({ length: 64 }, () => Math.floor(Math.random() * 16).toString(16)).join('')}
                                         </span>
                                     </div>

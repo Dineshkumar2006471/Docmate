@@ -309,7 +309,7 @@ export default function Chatbot() {
                 <div className="relative">
                     <button
                         onClick={() => setShowLangMenu(!showLangMenu)}
-                        className="flex items-center gap-2 bg-surface-highlight/40 backdrop-blur-md border border-white/10 px-4 py-2 rounded-full text-sm text-slate-300 hover:text-teal-300 transition-all hover:scale-105 shadow-lg"
+                        className="flex items-center gap-2 bg-surface-highlight/40 backdrop-blur-md border border-slate-800 px-4 py-2 rounded-full text-sm text-slate-300 hover:text-primary-300 transition-all hover:scale-105 shadow-lg"
                     >
                         <Globe className="w-4 h-4" />
                         {LANGUAGES.find(l => l.code === selectedLanguage)?.label || 'Language'}
@@ -321,7 +321,7 @@ export default function Chatbot() {
                                 initial={{ opacity: 0, y: -10, scale: 0.95 }}
                                 animate={{ opacity: 1, y: 0, scale: 1 }}
                                 exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                                className="absolute right-0 top-full mt-2 w-48 bg-surface/90 backdrop-blur-xl border border-white/10 rounded-xl shadow-2xl overflow-hidden z-30"
+                                className="absolute right-0 top-full mt-2 w-48 bg-surface/90 backdrop-blur-xl border border-slate-800 rounded-xl shadow-2xl overflow-hidden z-30"
                             >
                                 {LANGUAGES.map((lang) => (
                                     <button
@@ -330,7 +330,7 @@ export default function Chatbot() {
                                             setSelectedLanguage(lang.code);
                                             setShowLangMenu(false);
                                         }}
-                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-white/5 transition-colors border-b border-white/5 last:border-0 ${selectedLanguage === lang.code ? 'text-teal-400 bg-teal-500/10' : 'text-slate-300'
+                                        className={`w-full text-left px-4 py-3 text-sm hover:bg-surface-highlight transition-colors border-b border-white/5 last:border-0 ${selectedLanguage === lang.code ? 'text-primary-400 bg-primary-500/10' : 'text-slate-300'
                                             }`}
                                     >
                                         {lang.label} <span className="text-xs text-slate-500 ml-1">({lang.name})</span>
@@ -353,7 +353,7 @@ export default function Chatbot() {
                     >
                         <div className={`
               w-10 h-10 rounded-full flex items-center justify-center shrink-0 shadow-lg
-              ${msg.sender === 'ai' ? 'bg-gradient-to-br from-teal-500 to-teal-700 text-white' : 'bg-gradient-to-br from-slate-600 to-slate-800 text-slate-300'}
+              ${msg.sender === 'ai' ? 'bg-gradient-to-br from-primary-500 to-primary-700 text-white' : 'bg-gradient-to-br from-slate-600 to-slate-800 text-slate-300'}
             `}>
                             {msg.sender === 'ai' ? <Bot className="w-6 h-6" /> : <User className="w-6 h-6" />}
                         </div>
@@ -361,8 +361,8 @@ export default function Chatbot() {
                         <div className={`
               max-w-[80%] p-5 rounded-2xl text-sm leading-relaxed relative group transition-all duration-300 hover:scale-[1.01]
               ${msg.sender === 'ai'
-                                ? 'glass-card text-slate-200 rounded-tl-none border-l-4 border-l-teal-500'
-                                : 'bg-gradient-to-br from-teal-600 to-teal-800 text-white rounded-tr-none shadow-xl shadow-teal-900/20'}
+                                ? 'glass-card text-slate-200 rounded-tl-none border-l-4 border-l-primary-500'
+                                : 'bg-gradient-to-br from-primary-600 to-primary-800 text-white rounded-tr-none shadow-xl shadow-primary-900/20'}
             `}>
                             {msg.text}
 
@@ -376,7 +376,7 @@ export default function Chatbot() {
                                             playAudio(msg.text, msg.language, msg.id);
                                         }
                                     }}
-                                    className={`absolute -right-10 top-2 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 ${playingMessageId === msg.id ? 'text-teal-400 bg-teal-500/10 animate-pulse' : 'text-slate-500 hover:text-teal-300 hover:bg-white/5'
+                                    className={`absolute -right-10 top-2 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100 ${playingMessageId === msg.id ? 'text-primary-400 bg-primary-500/10 animate-pulse' : 'text-slate-500 hover:text-primary-300 hover:bg-surface-highlight'
                                         }`}
                                     title={playingMessageId === msg.id ? "Stop Speaking" : "Read Aloud"}
                                 >
@@ -384,7 +384,7 @@ export default function Chatbot() {
                                 </button>
                             )}
 
-                            <div className={`text-[10px] mt-2 opacity-50 font-medium ${msg.sender === 'ai' ? 'text-slate-400' : 'text-teal-100'}`}>
+                            <div className={`text-[10px] mt-2 opacity-50 font-medium ${msg.sender === 'ai' ? 'text-slate-400' : 'text-primary-100'}`}>
                                 {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                             </div>
                         </div>
@@ -397,11 +397,11 @@ export default function Chatbot() {
                         className="flex items-center gap-3 text-slate-500 text-xs ml-14"
                     >
                         <div className="flex gap-1">
-                            <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
-                            <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
-                            <span className="w-2 h-2 bg-teal-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
+                            <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></span>
+                            <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></span>
+                            <span className="w-2 h-2 bg-primary-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></span>
                         </div>
-                        <span className="text-teal-500/70 font-medium">Viraj is thinking...</span>
+                        <span className="text-primary-500/70 font-medium">Viraj is thinking...</span>
                     </motion.div>
                 )}
                 <div ref={messagesEndRef} />
@@ -416,7 +416,7 @@ export default function Chatbot() {
                             initial={{ opacity: 0, y: 20, scale: 0.9 }}
                             animate={{ opacity: 1, y: 0, scale: 1 }}
                             exit={{ opacity: 0, y: 20, scale: 0.9 }}
-                            className="absolute bottom-28 left-1/2 -translate-x-1/2 glass-panel px-8 py-4 rounded-full flex items-center gap-6 border-teal-500/30 shadow-[0_0_30px_-5px_rgba(20,184,166,0.3)]"
+                            className="absolute bottom-28 left-1/2 -translate-x-1/2 glass-panel px-8 py-4 rounded-full flex items-center gap-6 border-primary-500/30 shadow-[0_0_30px_-5px_rgba(163,230,53,0.3)]"
                         >
                             <div className="flex items-center gap-1.5 h-6">
                                 {[1, 2, 3, 4, 5, 6, 7].map((i) => (
@@ -424,11 +424,11 @@ export default function Chatbot() {
                                         key={i}
                                         animate={{ height: [4, 24, 4] }}
                                         transition={{ repeat: Infinity, duration: 0.5, delay: i * 0.1 }}
-                                        className="w-1.5 bg-gradient-to-t from-teal-500 to-teal-300 rounded-full"
+                                        className="w-1.5 bg-gradient-to-t from-primary-500 to-primary-300 rounded-full"
                                     />
                                 ))}
                             </div>
-                            <span className="text-teal-300 text-sm font-bold uppercase tracking-widest animate-pulse">Listening...</span>
+                            <span className="text-primary-300 text-sm font-bold uppercase tracking-widest animate-pulse">Listening...</span>
 
                             {/* Cancel Recording Button */}
                             <button
@@ -448,14 +448,14 @@ export default function Chatbot() {
                         onClick={isRecording ? stopRecording : startRecording}
                         className={`w-16 h-16 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 ${isRecording
                             ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                            : 'bg-teal-500 hover:bg-teal-400 hover:scale-110'
+                            : 'bg-primary-500 hover:bg-primary-400 hover:scale-110'
                             }`}
                     >
                         {isRecording ? <StopCircle className="w-8 h-8 text-white" /> : <Mic className="w-8 h-8 text-slate-900" />}
                     </button>
                 </div>
 
-                <form onSubmit={handleSend} className="relative flex items-center gap-2 glass-panel p-1.5 rounded-full shadow-2xl border-white/10">
+                <form onSubmit={handleSend} className="relative flex items-center gap-2 glass-panel p-1.5 rounded-full shadow-2xl border-slate-800">
                     <input
                         type="text"
                         value={input}
@@ -466,7 +466,7 @@ export default function Chatbot() {
                     <button
                         type="submit"
                         disabled={!input.trim() || isTyping}
-                        className="p-3 aspect-square flex items-center justify-center bg-slate-800 hover:bg-teal-500 text-slate-400 hover:text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
+                        className="p-3 aspect-square flex items-center justify-center bg-slate-800 hover:bg-primary-500 text-slate-400 hover:text-white rounded-full transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg"
                     >
                         <Send className="w-5 h-5" />
                     </button>

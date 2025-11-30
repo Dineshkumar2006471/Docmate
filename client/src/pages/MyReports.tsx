@@ -118,7 +118,7 @@ export default function MyReports() {
             case 'High': return 'text-red-400 bg-red-500/10 border-red-500/20';
             case 'Moderate':
             case 'Doctor Visit': return 'text-amber-400 bg-amber-500/10 border-amber-500/20';
-            default: return 'text-teal-400 bg-teal-500/10 border-teal-500/20';
+            default: return 'text-primary-400 bg-primary-500/10 border-primary-500/20';
         }
     };
 
@@ -129,7 +129,7 @@ export default function MyReports() {
             case 'High': return 'bg-red-500 text-white';
             case 'Moderate':
             case 'Doctor Visit': return 'bg-amber-500 text-slate-900';
-            default: return 'bg-teal-500 text-slate-900';
+            default: return 'bg-primary-500 text-slate-900';
         }
     };
 
@@ -138,7 +138,7 @@ export default function MyReports() {
             {/* 1. Aggregate Stats Header */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Total Assessments */}
-                <div className="glass-card p-6 rounded-2xl border border-white/5 flex items-center justify-between">
+                <div className="glass-card p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
                     <div>
                         <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Total Assessments</p>
                         <h3 className="text-4xl font-serif text-slate-100">{stats.total}</h3>
@@ -149,7 +149,7 @@ export default function MyReports() {
                 </div>
 
                 {/* Latest Assessment */}
-                <div className="glass-card p-6 rounded-2xl border border-white/5 flex items-center justify-between">
+                <div className="glass-card p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
                     <div>
                         <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Latest Activity</p>
                         <h3 className="text-4xl font-serif text-slate-100">{stats.latestDate}</h3>
@@ -160,23 +160,23 @@ export default function MyReports() {
                 </div>
 
                 {/* Avg Severity */}
-                <div className="glass-card p-6 rounded-2xl border border-white/5 flex items-center justify-between">
+                <div className="glass-card p-6 rounded-2xl border border-slate-800 flex items-center justify-between">
                     <div>
                         <p className="text-slate-400 text-xs font-bold uppercase tracking-wider mb-1">Avg. Severity</p>
                         <div className="flex items-baseline gap-2">
-                            <h3 className={`text-4xl font-serif ${stats.avgSeverity > 7 ? 'text-red-400' : stats.avgSeverity > 4 ? 'text-amber-400' : 'text-teal-400'}`}>
+                            <h3 className={`text-4xl font-serif ${stats.avgSeverity > 7 ? 'text-red-400' : stats.avgSeverity > 4 ? 'text-amber-400' : 'text-primary-400'}`}>
                                 {stats.avgSeverity}<span className="text-lg text-slate-500 font-sans">/10</span>
                             </h3>
                         </div>
                     </div>
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${stats.avgSeverity > 5 ? 'bg-red-500/10 border-red-500/20' : 'bg-teal-500/10 border-teal-500/20'}`}>
-                        <Activity className={`w-6 h-6 ${stats.avgSeverity > 5 ? 'text-red-400' : 'text-teal-400'}`} />
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center border ${stats.avgSeverity > 5 ? 'bg-red-500/10 border-red-500/20' : 'bg-primary-500/10 border-primary-500/20'}`}>
+                        <Activity className={`w-6 h-6 ${stats.avgSeverity > 5 ? 'text-red-400' : 'text-primary-400'}`} />
                     </div>
                 </div>
             </div>
 
             {/* Search & Filter */}
-            <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-white/10 pb-6">
+            <div className="flex flex-col md:flex-row justify-between items-end gap-4 border-b border-slate-800 pb-6">
                 <div>
                     <h2 className="text-2xl font-serif text-slate-100">Report Timeline</h2>
                     <p className="text-slate-400 text-sm">Longitudinal record of your health assessments.</p>
@@ -188,7 +188,7 @@ export default function MyReports() {
                         placeholder="Search by condition (e.g., 'Fever')..."
                         value={filter}
                         onChange={(e) => setFilter(e.target.value)}
-                        className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-200 focus:border-teal-500/50 outline-none transition-all focus:bg-surface-highlight/50"
+                        className="w-full bg-surface-highlight/30 border border-slate-800 rounded-xl py-3 pl-10 pr-4 text-sm text-slate-200 focus:border-primary-500/50 outline-none transition-all focus:bg-surface-highlight/50"
                     />
                 </div>
             </div>
@@ -201,10 +201,10 @@ export default function MyReports() {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: index * 0.05 }}
-                        className="glass-card rounded-2xl overflow-hidden border border-white/5 hover:border-teal-500/30 transition-all group"
+                        className="glass-card rounded-2xl overflow-hidden border border-slate-800 hover:border-primary-500/30 transition-all group"
                     >
                         {/* Assessment Card Header */}
-                        <div className="bg-white/5 px-6 py-4 flex items-center justify-between border-b border-white/5">
+                        <div className="bg-surface-highlight/30 px-6 py-4 flex items-center justify-between border-b border-slate-800">
                             <div className="flex items-center gap-3">
                                 <span className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest ${getRiskBadgeColor(report.risk_level)}`}>
                                     {report.risk_level}
@@ -229,7 +229,7 @@ export default function MyReports() {
                                             {report.top_condition || report.title}
                                         </h3>
                                         {report.probability && (
-                                            <span className="text-teal-400 font-mono text-sm font-bold bg-teal-500/10 px-2 py-0.5 rounded">
+                                            <span className="text-primary-400 font-mono text-sm font-bold bg-primary-500/10 px-2 py-0.5 rounded">
                                                 {report.probability} Probability
                                             </span>
                                         )}
@@ -262,8 +262,8 @@ export default function MyReports() {
                             </div>
 
                             {/* Actions / Footer */}
-                            <div className="md:col-span-4 flex flex-col justify-center items-end border-t md:border-t-0 md:border-l border-white/5 pt-4 md:pt-0 md:pl-6">
-                                <button className="w-full md:w-auto px-6 py-3 bg-surface-highlight hover:bg-teal-500 hover:text-slate-900 text-slate-300 rounded-xl font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-teal-500/20">
+                            <div className="md:col-span-4 flex flex-col justify-center items-end border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6">
+                                <button className="w-full md:w-auto px-6 py-3 bg-surface-highlight hover:bg-primary-500 hover:text-slate-900 text-slate-300 rounded-xl font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-primary-500/20">
                                     View Report <ChevronRight className="w-4 h-4" />
                                 </button>
                             </div>
@@ -273,7 +273,7 @@ export default function MyReports() {
             </div>
 
             {filteredReports.length === 0 && (
-                <div className="text-center py-20 border border-dashed border-white/10 rounded-2xl">
+                <div className="text-center py-20 border border-dashed border-slate-800 rounded-2xl">
                     <div className="w-16 h-16 bg-surface-highlight rounded-full flex items-center justify-center mx-auto mb-4 text-slate-600">
                         <Search className="w-8 h-8" />
                     </div>
