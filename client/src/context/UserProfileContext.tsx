@@ -90,49 +90,55 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                     ]);
 
                     const timeoutPromise = new Promise((_, reject) =>
-                        setTimeout(() => reject(new Error("Profile fetch timed out")), 8000)
+                        setTimeout(() => reject(new Error("Profile fetch timed out")), 15000)
                     );
 
-                    const [querySnapshot, userDocSnap] = await Promise.race([
-                        fetchPromise,
-                        timeoutPromise
-                    ]) as [any, any];
+                    try {
+                        const [querySnapshot, userDocSnap] = await Promise.race([
+                            fetchPromise,
+                            timeoutPromise
+                        ]) as [any, any];
 
-                    if (mounted) {
-                        // Handle Patient Profile
-                        if (!querySnapshot.empty) {
-                            // Handle potential duplicates by picking the most recently updated one
-                            const docs = querySnapshot.docs.sort((a: any, b: any) => {
-                                const aTime = a.data().updated_at?.toMillis() || 0;
-                                const bTime = b.data().updated_at?.toMillis() || 0;
-                                return bTime - aTime;
-                            });
+                        if (mounted) {
+                            // Handle Patient Profile
+                            if (!querySnapshot.empty) {
+                                // Handle potential duplicates by picking the most recently updated one
+                                const docs = querySnapshot.docs.sort((a: any, b: any) => {
+                                    const aTime = a.data().updated_at?.toMillis() || 0;
+                                    const bTime = b.data().updated_at?.toMillis() || 0;
+                                    return bTime - aTime;
+                                });
 
-                            const doc = docs[0];
-                            setDocId(doc.id); // Store docId for future updates
-                            const docData = doc.data();
-                            const { user_id, created_by, updated_at, ...profileData } = docData as any;
-                            setProfile(prev => ({ ...prev, ...profileData, photoURL: user.photoURL || '' }));
-                        } else {
-                            if (user.displayName) {
-                                setProfile(prev => ({ ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' }));
+                                const doc = docs[0];
+                                setDocId(doc.id); // Store docId for future updates
+                                const docData = doc.data();
+                                const { user_id, created_by, updated_at, ...profileData } = docData as any;
+                                setProfile(prev => ({ ...prev, ...profileData, photoURL: user.photoURL || '' }));
+                            } else {
+                                if (user.displayName) {
+                                    setProfile(prev => ({ ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' }));
+                                }
+                            }
+
+                            // Handle User Settings
+                            if (userDocSnap.exists()) {
+                                const userData = userDocSnap.data();
+                                if (userData.settings) {
+                                    setSettings(prev => ({ ...prev, ...userData.settings }));
+                                }
                             }
                         }
-
-                        // Handle User Settings
-                        if (userDocSnap.exists()) {
-                            const userData = userDocSnap.data();
-                            if (userData.settings) {
-                                setSettings(prev => ({ ...prev, ...userData.settings }));
-                            }
+                    } catch (fetchErr: any) {
+                        console.warn("Profile fetch warning:", fetchErr);
+                        // Don't set global error on timeout, allow user to proceed with empty/default profile
+                        if (mounted && fetchErr.message !== "Profile fetch timed out") {
+                            setError("Failed to load profile data. You can still edit and save.");
                         }
                     }
 
                 } catch (err: any) {
-                    console.error("Error fetching profile:", err);
-                    if (mounted && !err.message?.includes('offline')) {
-                        setError(err.message);
-                    }
+                    console.error("Error in profile setup:", err);
+                    if (mounted) setError(err.message);
                 } finally {
                     if (mounted) setLoading(false);
                 }
@@ -169,7 +175,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         setProfile(newProfile);
         setSettings(newSettings);
 
-        // 2. Background Persistence
+        // 2. Background Persistence with Timeout
         try {
             const { photoURL, ...profileDataToSave } = newProfile; // Don't save photoURL to Firestore
 
@@ -180,42 +186,57 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                 ...profileDataToSave
             };
 
-            let targetDocId = docId;
+            const performSave = async () => {
+                let targetDocId = docId;
 
-            // Double-check for existing document if we don't have an ID
-            if (!targetDocId) {
-                const patientsRef = collection(db, 'patients');
-                const q = query(patientsRef, where('user_id', '==', user.uid));
-                const querySnapshot = await getDocs(q);
+                // Double-check for existing document if we don't have an ID
+                if (!targetDocId) {
+                    const patientsRef = collection(db, 'patients');
+                    const q = query(patientsRef, where('user_id', '==', user.uid));
+                    const querySnapshot = await getDocs(q);
 
-                if (!querySnapshot.empty) {
-                    const docs = querySnapshot.docs.sort((a, b) => {
-                        const aTime = a.data().updated_at?.toMillis() || 0;
-                        const bTime = b.data().updated_at?.toMillis() || 0;
-                        return bTime - aTime;
-                    });
-                    targetDocId = docs[0].id;
-                    setDocId(targetDocId);
+                    if (!querySnapshot.empty) {
+                        const docs = querySnapshot.docs.sort((a, b) => {
+                            const aTime = a.data().updated_at?.toMillis() || 0;
+                            const bTime = b.data().updated_at?.toMillis() || 0;
+                            return bTime - aTime;
+                        });
+                        targetDocId = docs[0].id;
+                        setDocId(targetDocId);
+                    }
                 }
-            }
 
-            if (targetDocId) {
-                await setDoc(doc(db, 'patients', targetDocId), medicalData, { merge: true });
-            } else {
-                const newDocRef = doc(collection(db, 'patients'));
-                setDocId(newDocRef.id);
-                await setDoc(newDocRef, medicalData);
-            }
+                if (targetDocId) {
+                    await setDoc(doc(db, 'patients', targetDocId), medicalData, { merge: true });
+                } else {
+                    const newDocRef = doc(collection(db, 'patients'));
+                    setDocId(newDocRef.id);
+                    await setDoc(newDocRef, medicalData);
+                }
 
-            // Save Consent Data
-            const userDocRef = doc(db, 'users', user.uid);
-            await setDoc(userDocRef, {
-                email: user.email,
-                settings: newSettings,
-                updated_at: serverTimestamp()
-            }, { merge: true });
+                // Save Consent Data
+                const userDocRef = doc(db, 'users', user.uid);
+                await setDoc(userDocRef, {
+                    email: user.email,
+                    settings: newSettings,
+                    updated_at: serverTimestamp()
+                }, { merge: true });
+            };
+
+            // Race the save against a 5-second timeout
+            // If it times out, we assume it's an offline save and return success to the UI
+            const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error("Save timed out")), 5000)
+            );
+
+            await Promise.race([performSave(), timeoutPromise]);
 
         } catch (err: any) {
+            if (err.message === "Save timed out") {
+                console.warn("Save timed out - assuming background/offline sync.");
+                return true; // Treat as success for UI
+            }
+
             console.error("Background save failed - Reverting:", err);
             setProfile(previousProfile);
             setSettings(previousSettings);

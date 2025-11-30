@@ -36,10 +36,14 @@ export default function Profile() {
         if (e) e.preventDefault();
         setSaveStatus('saving');
         try {
-            await saveProfile(formData, formSettings);
-            setSaveStatus('success');
-            setIsEditing(false);
-            setTimeout(() => setSaveStatus('idle'), 3000);
+            const success = await saveProfile(formData, formSettings);
+            if (success) {
+                setSaveStatus('success');
+                setIsEditing(false);
+                setTimeout(() => setSaveStatus('idle'), 3000);
+            } else {
+                setSaveStatus('error');
+            }
         } catch (err) {
             console.error(err);
             setSaveStatus('error');
