@@ -127,7 +127,7 @@ export default function LandingPage() {
 
                         <h1 className="text-5xl md:text-7xl font-[Poppins] font-normal tracking-tight mb-8 text-slate-100 leading-tight text-glow min-h-[1.2em] break-words">
                             <TypewriterText text="Your Health," delay={0.5} speed={0.03} /> <br className="md:hidden" />
-                            <span className="text-gradient-premium italic block md:inline">
+                            <span className="text-gradient-premium block md:inline md:italic font-[Poppins] text-4xl md:text-7xl">
                                 <TypewriterText text="Intelligently Managed." delay={1} speed={0.03} />
                             </span>
                         </h1>
