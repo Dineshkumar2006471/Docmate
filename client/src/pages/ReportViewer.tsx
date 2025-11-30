@@ -76,17 +76,65 @@ export default function ReportViewer() {
     const handleDownloadPDF = () => {
         if (!report) return;
         const doc = new jsPDF();
-        doc.setFontSize(20);
-        doc.text(`Medical Report: ${report.ai_analysis.possible_conditions[0]?.name || 'Assessment'}`, 20, 20);
-        doc.setFontSize(12);
-        doc.text(`Date: ${new Date(report.created_date?.seconds * 1000).toLocaleDateString()}`, 20, 30);
-        doc.text(`Triage Level: ${report.triage_level}`, 20, 40);
-        doc.text(`Severity Score: ${report.severity_score}/10`, 20, 50);
+        let yPos = 20;
 
-        doc.text("Symptoms:", 20, 60);
+        // Header
+        doc.setFontSize(20);
+        doc.text(`Medical Report: ${report.ai_analysis.possible_conditions[0]?.name || 'Assessment'}`, 20, yPos);
+        yPos += 10;
+
+        doc.setFontSize(12);
+        doc.text(`Date: ${new Date(report.created_date?.seconds * 1000).toLocaleDateString()}`, 20, yPos);
+        yPos += 7;
+        doc.text(`Triage Level: ${report.triage_level}`, 20, yPos);
+        yPos += 7;
+        doc.text(`Severity Score: ${report.severity_score}/10`, 20, yPos);
+        yPos += 15;
+
+        // Symptoms
+        doc.setFontSize(14);
+        doc.text("Symptoms:", 20, yPos);
+        yPos += 7;
         doc.setFontSize(10);
         const splitSymptoms = doc.splitTextToSize(report.symptoms_description, 170);
-        doc.text(splitSymptoms, 20, 65);
+        doc.text(splitSymptoms, 20, yPos);
+        yPos += (splitSymptoms.length * 5) + 10;
+
+        // AI Analysis
+        doc.setFontSize(14);
+        doc.text("AI Analysis:", 20, yPos);
+        yPos += 7;
+        doc.setFontSize(10);
+        report.ai_analysis.possible_conditions.forEach(cond => {
+            doc.text(`- ${cond.name} (${cond.probability}%)`, 20, yPos);
+            yPos += 5;
+        });
+        yPos += 10;
+
+        // Recommendation
+        if (report.ai_analysis.recommendation) {
+            doc.setFontSize(14);
+            doc.text("Recommendation:", 20, yPos);
+            yPos += 7;
+            doc.setFontSize(10);
+            const splitRec = doc.splitTextToSize(report.ai_analysis.recommendation, 170);
+            doc.text(splitRec, 20, yPos);
+            yPos += (splitRec.length * 5) + 10;
+        }
+
+        // Warning Signs
+        if (report.red_flags && report.red_flags.length > 0) {
+            doc.setTextColor(220, 53, 69); // Red color
+            doc.setFontSize(14);
+            doc.text("Warning Signs:", 20, yPos);
+            yPos += 7;
+            doc.setFontSize(10);
+            report.red_flags.forEach(flag => {
+                doc.text(`- ${flag}`, 20, yPos);
+                yPos += 5;
+            });
+            doc.setTextColor(0, 0, 0); // Reset color
+        }
 
         doc.save(`report_${report.id}.pdf`);
     };
@@ -121,9 +169,10 @@ export default function ReportViewer() {
                     </button>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                    <div className="md:col-span-2 space-y-8">
-                        <div>
+                <div className="space-y-8">
+                    {/* Top Row: Symptoms & Severity */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+                        <div className="md:col-span-2">
                             <h3 className="text-lg font-bold text-slate-200 mb-3 flex items-center gap-2">
                                 <FileText className="w-5 h-5 text-primary-400" /> Symptoms
                             </h3>
@@ -133,48 +182,56 @@ export default function ReportViewer() {
                         </div>
 
                         <div>
-                            <h3 className="text-lg font-bold text-slate-200 mb-3 flex items-center gap-2">
-                                <Activity className="w-5 h-5 text-blue-400" /> AI Analysis
-                            </h3>
-                            <div className="space-y-4">
-                                {report.ai_analysis.possible_conditions.map((condition, idx) => (
-                                    <div key={idx} className="flex justify-between items-center p-4 bg-surface-highlight rounded-xl border border-slate-800">
-                                        <span className="text-slate-200 font-medium">{condition.name}</span>
-                                        <span className="text-primary-400 font-bold">{condition.probability}% Match</span>
+                            <div className="bg-surface-highlight/30 p-6 rounded-2xl border border-slate-800 text-center h-full flex flex-col justify-center">
+                                <div className="text-xs text-slate-500 uppercase font-bold mb-2">Severity Score</div>
+                                <div className="text-4xl font-serif text-slate-100 mb-2">{report.severity_score}/10</div>
+                                <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+                                    <div
+                                        className={`h-full ${report.severity_score > 7 ? 'bg-red-500' : report.severity_score > 4 ? 'bg-amber-500' : 'bg-primary-500'}`}
+                                        style={{ width: `${report.severity_score * 10}%` }}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* AI Analysis - Full Width */}
+                    <div>
+                        <h3 className="text-lg font-bold text-slate-200 mb-3 flex items-center gap-2">
+                            <Activity className="w-5 h-5 text-blue-400" /> AI Analysis
+                        </h3>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {report.ai_analysis.possible_conditions.map((condition, idx) => (
+                                <div key={idx} className="flex justify-between items-center p-4 bg-surface-highlight rounded-xl border border-slate-800">
+                                    <span className="text-slate-200 font-medium">{condition.name}</span>
+                                    <span className="text-primary-400 font-bold">{condition.probability}% Match</span>
+                                </div>
+                            ))}
+                        </div>
+                        {report.ai_analysis.recommendation && (
+                            <div className="mt-4 p-4 bg-surface-highlight/50 rounded-xl border border-slate-800">
+                                <h4 className="text-sm font-bold text-slate-400 uppercase mb-2">Recommendation</h4>
+                                <p className="text-slate-200">{report.ai_analysis.recommendation}</p>
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Warning Signs - Full Width Below */}
+                    {report.red_flags && report.red_flags.length > 0 && (
+                        <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/20 w-full">
+                            <h4 className="text-red-400 font-bold flex items-center gap-2 mb-4">
+                                <AlertTriangle className="w-5 h-5" /> Warning Signs
+                            </h4>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {report.red_flags.map((flag, i) => (
+                                    <div key={i} className="text-red-300 text-sm flex items-start gap-2 bg-red-500/5 p-3 rounded-lg">
+                                        <span className="mt-1.5 w-1.5 h-1.5 bg-red-400 rounded-full shrink-0" />
+                                        {flag}
                                     </div>
                                 ))}
                             </div>
                         </div>
-                    </div>
-
-                    <div className="space-y-6">
-                        <div className="bg-surface-highlight/30 p-6 rounded-2xl border border-slate-800 text-center">
-                            <div className="text-xs text-slate-500 uppercase font-bold mb-2">Severity Score</div>
-                            <div className="text-4xl font-serif text-slate-100 mb-2">{report.severity_score}/10</div>
-                            <div className="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
-                                <div
-                                    className={`h-full ${report.severity_score > 7 ? 'bg-red-500' : report.severity_score > 4 ? 'bg-amber-500' : 'bg-primary-500'}`}
-                                    style={{ width: `${report.severity_score * 10}%` }}
-                                />
-                            </div>
-                        </div>
-
-                        {report.red_flags && report.red_flags.length > 0 && (
-                            <div className="bg-red-500/10 p-6 rounded-2xl border border-red-500/20">
-                                <h4 className="text-red-400 font-bold flex items-center gap-2 mb-4">
-                                    <AlertTriangle className="w-5 h-5" /> Warning Signs
-                                </h4>
-                                <ul className="space-y-2">
-                                    {report.red_flags.map((flag, i) => (
-                                        <li key={i} className="text-red-300 text-sm flex items-start gap-2">
-                                            <span className="mt-1.5 w-1.5 h-1.5 bg-red-400 rounded-full shrink-0" />
-                                            {flag}
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
-                    </div>
+                    )}
                 </div>
             </div>
         </div>
