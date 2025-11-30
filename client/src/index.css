@@ -310,101 +310,52 @@
   --color-slate-200: var(--slate-200);
   --color-slate-300: var(--slate-300);
   --color-slate-400: var(--slate-400);
-  --color-slate-500: var(--slate-500);
-  --color-slate-800: var(--slate-800);
-  --color-slate-900: var(--slate-900);
+  box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
 }
 
-@layer base {
-  html {
-    scroll-behavior: smooth;
-  }
-
-  body {
-    @apply bg-background text-slate-100 font-sans antialiased selection:bg-primary-400/30 selection:text-primary-400;
-    overflow-x: hidden;
-  }
-
-  /* Noise Texture Overlay */
-  body::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 9999;
-    opacity: 0.05;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-  }
-
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
-    @apply font-serif font-normal tracking-wide text-slate-100;
-  }
+.glass-card:hover {
+  box-shadow: 0 10px 30px -10px rgba(204, 255, 0, 0.1);
+  transform: translateY(-5px);
+  border-color: rgba(204, 255, 0, 0.3);
 }
 
-@layer components {
+/* Buttons - Bioluminescent (Toned Down) */
+.btn-primary {
+  @apply bg-primary-500/90 backdrop-blur-sm text-black font-sans font-semibold py-2.5 px-6 rounded-sm uppercase tracking-widest text-xs transition-all duration-300 relative overflow-hidden;
+}
 
-  /* Glassmorphism - Dark & Moody */
-  .glass-panel {
-    @apply bg-surface/80 backdrop-blur-xl border border-slate-800 shadow-2xl;
-  }
+.btn-primary:hover {
+  @apply bg-primary-400;
+  box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+}
 
-  .glass-card {
-    @apply bg-surface border border-slate-800 transition-all duration-500;
-    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
-    box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
-  }
+.btn-primary:active {
+  transform: scale(0.95);
+}
 
-  .glass-card:hover {
-    box-shadow: 0 10px 30px -10px rgba(204, 255, 0, 0.1);
-    transform: translateY(-5px);
-    border-color: rgba(204, 255, 0, 0.3);
-  }
+/* Typography Gradients */
+.text-gradient {
+  @apply text-slate-100;
+}
 
-  /* Buttons - Bioluminescent (Toned Down) */
-  .btn-primary {
-    @apply bg-primary-500/90 backdrop-blur-sm text-black font-sans font-semibold py-2.5 px-6 rounded-sm uppercase tracking-widest text-xs transition-all duration-300 relative overflow-hidden;
-  }
+.text-gradient-accent {
+  @apply text-primary-400;
+  text-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
+}
 
-  .btn-primary:hover {
-    @apply bg-primary-400;
-    box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
-  }
+.text-gradient-premium {
+  background: linear-gradient(to right, #ccff00, #e6e6e6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(204, 255, 0, 0.2));
+}
 
-  .btn-primary:active {
-    transform: scale(0.95);
-  }
-
-  /* Typography Gradients */
-  .text-gradient {
-    @apply text-slate-100;
-  }
-
-  .text-gradient-accent {
-    @apply text-primary-400;
-    text-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
-  }
-
-  .text-gradient-premium {
-    background: linear-gradient(to right, #ccff00, #e6e6e6);
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-    filter: drop-shadow(0 0 10px rgba(204, 255, 0, 0.2));
-  }
-
-  /* Ambient Background */
-  .hero-gradient {
-    background: radial-gradient(circle at 50% 0%, rgba(204, 255, 0, 0.08) 0%, rgba(5, 5, 5, 0) 60%);
-    animation: breathe 8s ease-in-out infinite;
-  }
+/* Ambient Background */
+.hero-gradient {
+  background: radial-gradient(circle at 50% 0%, rgba(204, 255, 0, 0.08) 0%, rgba(5, 5, 5, 0) 60%);
+  animation: breathe 8s ease-in-out infinite;
+}
 }
 
 /* Animations */
@@ -521,6 +472,11 @@
 
 /* Print Overrides */
 @media print {
+  @page {
+    margin: 20mm;
+    size: auto;
+  }
+
   .no-print {
     display: none !important;
   }
@@ -534,31 +490,68 @@
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
   }
 
   #root {
     width: 100% !important;
+    overflow: visible !important;
+  }
+
+  /* Ensure Icons are Visible */
+  svg {
+    color: black !important;
+    fill: currentcolor !important;
+    display: inline-block !important;
+  }
+
+  /* Specific Icon Colors for Severity */
+  .text-red-400 svg,
+  .text-red-500 svg {
+    color: #ef4444 !important;
+  }
+
+  .text-amber-400 svg,
+  .text-amber-500 svg {
+    color: #f59e0b !important;
+  }
+
+  .text-emerald-400 svg,
+  .text-emerald-500 svg {
+    color: #10b981 !important;
+  }
+
+  .text-primary-400 svg,
+  .text-primary-500 svg {
+    color: #aacc00 !important;
   }
 
   .glass-card,
   .glass-panel {
     background: white !important;
-    border: 1px solid #ccc !important;
+    border: 1px solid #ddd !important;
     color: black !important;
     box-shadow: none !important;
-    break-inside: avoid;
+    break-inside: avoid !important;
+    margin-bottom: 20px !important;
+    page-break-inside: avoid !important;
   }
 
   .text-slate-100,
   .text-slate-200,
   .text-slate-300,
+  .text-slate-400,
   h1,
   h2,
   h3,
   h4,
   p,
-  li {
+  li,
+  span,
+  div {
     color: black !important;
+    text-shadow: none !important;
   }
 
   .bg-red-500 {
@@ -567,32 +560,26 @@
     border: 1px solid #991b1b !important;
   }
 
-  .text-teal-400,
-  .text-primary-400,
-  .text-emerald-400,
-  .text-amber-400,
-  .text-blue-400,
-  .text-red-400 {
-    color: #000 !important;
-    font-weight: bold !important;
+  /* Ensure Grid Layouts Print Correctly */
+  .grid {
+    display: grid !important;
+    break-inside: auto !important;
   }
 
+  /* Allow breaking inside long lists but not individual items if possible */
+  .space-y-6>* {
+    break-inside: avoid !important;
+  }
+
+  /* Hide background effects */
   .hero-gradient,
   body::before {
     display: none !important;
   }
 
-  /* Ensure full width for grid items in print */
-  .grid {
-    display: block !important;
-  }
-
-  .grid>* {
-    margin-bottom: 20px;
-  }
-
-  /* Specific fix for remedies section to ensure it prints */
-  .space-y-6>* {
-    break-inside: avoid;
+  /* Fix for Remedies Section Text */
+  .remedy-item {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
   }
 }

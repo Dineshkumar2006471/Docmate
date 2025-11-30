@@ -238,6 +238,8 @@ router.post('/suggest-remedies', async (req, res) => {
            - "Home Remedies": Simple things to do at home.
            - "Ayurvedic Remedies": Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.).
            - "Natural Remedies": General naturopathic suggestions.
+           
+           **CRITICAL**: For each remedy, provide a **detailed description (3-4 sentences)**. Explain **HOW** to use it and **WHY** it helps. Do NOT just list the name.
 
         Return a JSON object with this EXACT structure:
         {
@@ -247,9 +249,9 @@ router.post('/suggest-remedies', async (req, res) => {
             "blood_pressure": "String (Optional, advice if BP is abnormal)"
           },
           "remedies": {
-            "home": ["List 3-5 home remedies with brief details"],
-            "ayurvedic": ["List 3-5 Ayurvedic remedies with brief details"],
-            "natural": ["List 3-5 natural/naturopathic remedies with brief details"]
+            "home": ["Detailed string with remedy name, usage, and benefits (3-4 sentences)"],
+            "ayurvedic": ["Detailed string with remedy name, usage, and benefits (3-4 sentences)"],
+            "natural": ["Detailed string with remedy name, usage, and benefits (3-4 sentences)"]
           }
         }
         `;
@@ -375,6 +377,71 @@ router.post('/chat-audio', audioUpload.single('audio'), async (req: any, res: an
     } catch (error: any) {
         console.error('AI Audio Chat Error:', error);
         res.status(500).json({ error: 'Failed to process audio message', details: error.message });
+    }
+});
+
+
+// --- Route: Generate Health Insights (Health 360) ---
+router.post('/generate-health-insights', async (req, res) => {
+    try {
+        const { userProfile, recentReports, assessments } = req.body;
+
+        const model = getGenAI().getGenerativeModel({
+            model: "gemini-2.5-flash",
+            generationConfig: { responseMimeType: "application/json" }
+        });
+
+        const prompt = `
+        Act as a Chief Medical Officer and AI Health Strategist.
+        Analyze the following patient data to generate a "Health 360" predictive analysis and roadmap.
+
+        **Patient Profile**: ${JSON.stringify(userProfile)}
+        **Recent Medical Reports**: ${JSON.stringify(recentReports)}
+        **Symptom Assessments**: ${JSON.stringify(assessments)}
+
+        **Task**:
+        1. **Calculate Health Score**: 0-100 based on overall wellness, vitals, and risks.
+        2. **Generate Predictions**: Predict potential future health risks based on trends, history, and report findings.
+        3. **Create Roadmap**: A personalized, actionable health roadmap (Immediate, Short-term, Long-term).
+
+        **Output Format (JSON)**:
+        {
+          "score": number (0-100),
+          "riskLevel": "Low" | "Moderate" | "High",
+          "summary": "String (Executive summary of health status)",
+          "predictions": [
+            {
+              "condition": "String (e.g., Hypertension)",
+              "timeline": "String (e.g., 6-12 Months)",
+              "riskLevel": "Low" | "Moderate" | "High",
+              "reason": "String (Why this is a risk)",
+              "contributingFactors": ["String"]
+            }
+          ],
+          "actionPlan": [
+            {
+              "id": "String (unique)",
+              "task": "String (Actionable step)",
+              "category": "Immediate" | "Short-term" | "Long-term",
+              "completed": false
+            }
+          ]
+        }
+        `;
+
+        const result = await model.generateContent(prompt);
+        const response = await result.response;
+        const text = response.text();
+
+        try {
+            res.json(JSON.parse(text));
+        } catch (e) {
+            console.error("Failed to parse health insights JSON", text);
+            res.status(500).json({ error: "Failed to generate insights" });
+        }
+    } catch (error: any) {
+        console.error("Health Insights Error:", error);
+        res.status(500).json({ error: `Failed to generate insights: ${error.message}` });
     }
 });
 

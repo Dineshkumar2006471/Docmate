@@ -462,7 +462,7 @@ export default function ReportAnalyzer() {
                             {/* Vitals Grid */}
                             <div className="glass-card p-6 rounded-2xl">
                                 <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
-                                <div className="flex flex-wrap gap-4">
+                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                                     {result.vital_signs.map((vital, index) => {
                                         const isCriticalVital = vital.status === 'Critical';
                                         const isWarningVital = vital.status === 'Warning';
@@ -482,14 +482,14 @@ export default function ReportAnalyzer() {
                                         }
 
                                         return (
-                                            <div key={index} className={`flex-1 min-w-[30%] md:min-w-[150px] p-3 rounded-xl border flex flex-col items-center text-center transition-all ${bgClass}`}>
-                                                <div className={`text-[10px] uppercase font-bold mb-1 ${textClass}`}>
+                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center gap-2 transition-all hover:scale-[1.02] ${bgClass}`}>
+                                                <div className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${textClass} opacity-80 truncate w-full`}>
                                                     {vital.label}
                                                 </div>
-                                                <div className={`text-lg font-bold ${valueClass}`}>
+                                                <div className={`text-lg md:text-xl lg:text-2xl font-bold ${valueClass} break-words w-full`}>
                                                     {vital.value}
                                                 </div>
-                                                <div className={`text-[9px] uppercase tracking-widest mt-1 opacity-60 ${textClass}`}>
+                                                <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full`}>
                                                     {vital.status}
                                                 </div>
                                             </div>
@@ -591,21 +591,21 @@ export default function ReportAnalyzer() {
 
                                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                                     <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-4">
-                                                        <h4 className="text-primary-400 font-bold text-sm uppercase mb-2">Home Remedies</h4>
-                                                        <ul className="list-disc list-inside text-slate-300 text-sm space-y-2">
-                                                            {remedies.remedies.home?.map((r, i) => <li key={i}>{r}</li>)}
+                                                        <h4 className="text-primary-400 font-bold text-sm uppercase mb-3">Home Remedies</h4>
+                                                        <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
+                                                            {remedies.remedies.home?.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)}
                                                         </ul>
                                                     </div>
                                                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
-                                                        <h4 className="text-emerald-400 font-bold text-sm uppercase mb-2">Ayurvedic</h4>
-                                                        <ul className="list-disc list-inside text-slate-300 text-sm space-y-2">
-                                                            {remedies.remedies.ayurvedic?.map((r, i) => <li key={i}>{r}</li>)}
+                                                        <h4 className="text-emerald-400 font-bold text-sm uppercase mb-3">Ayurvedic</h4>
+                                                        <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
+                                                            {remedies.remedies.ayurvedic?.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)}
                                                         </ul>
                                                     </div>
                                                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
-                                                        <h4 className="text-amber-400 font-bold text-sm uppercase mb-2">Natural / Holistic</h4>
-                                                        <ul className="list-disc list-inside text-slate-300 text-sm space-y-2">
-                                                            {remedies.remedies.natural?.map((r, i) => <li key={i}>{r}</li>)}
+                                                        <h4 className="text-amber-400 font-bold text-sm uppercase mb-3">Natural / Holistic</h4>
+                                                        <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
+                                                            {remedies.remedies.natural?.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)}
                                                         </ul>
                                                     </div>
                                                 </div>
