@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Activity, Shield, MessageSquare, ChevronRight, HeartPulse, ArrowRight, CheckCircle, Globe, Users, Zap, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { TypewriterText } from '../components/TypewriterText';
+
 import { useTheme } from '../context/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
 
@@ -143,9 +143,9 @@ export default function LandingPage() {
                         </motion.span>
 
                         <h1 className="text-5xl md:text-7xl font-[Poppins] font-normal tracking-tight mb-8 text-slate-100 leading-tight text-glow min-h-[1.2em]">
-                            <TypewriterText text="Your Health," delay={0.5} speed={0.03} /> <br className="md:hidden" />
+                            Your Health, <br className="md:hidden" />
                             <span className="text-gradient-premium block md:inline md:italic font-[Poppins] text-3xl md:text-7xl leading-snug">
-                                <TypewriterText text="Intelligently Managed." delay={1} speed={0.03} />
+                                Intelligently Managed.
                             </span>
                         </h1>
 
