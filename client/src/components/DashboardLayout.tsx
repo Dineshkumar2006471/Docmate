@@ -59,7 +59,7 @@ export default function DashboardLayout() {
     }, [loading, profileLoading, isProfileComplete, location.pathname, navigate]);
     */
 
-    if (loading || profileLoading) {
+    if (loading) {
         return (
             <div className="min-h-screen bg-background flex items-center justify-center">
                 <div className="w-8 h-8 border-2 border-primary-400 border-t-transparent rounded-full animate-spin" />

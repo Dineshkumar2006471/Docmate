@@ -79,15 +79,30 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    // Fetch Patient Profile (Medical Data)
+                    // Parallel Fetch with Timeout
                     const patientsRef = collection(db, 'patients');
                     const q = query(patientsRef, where('user_id', '==', user.uid));
-                    const querySnapshot = await getDocs(q);
+                    const userDocRef = doc(db, 'users', user.uid);
+
+                    const fetchPromise = Promise.all([
+                        getDocs(q),
+                        getDoc(userDocRef)
+                    ]);
+
+                    const timeoutPromise = new Promise((_, reject) =>
+                        setTimeout(() => reject(new Error("Profile fetch timed out")), 8000)
+                    );
+
+                    const [querySnapshot, userDocSnap] = await Promise.race([
+                        fetchPromise,
+                        timeoutPromise
+                    ]) as [any, any];
 
                     if (mounted) {
+                        // Handle Patient Profile
                         if (!querySnapshot.empty) {
                             // Handle potential duplicates by picking the most recently updated one
-                            const docs = querySnapshot.docs.sort((a, b) => {
+                            const docs = querySnapshot.docs.sort((a: any, b: any) => {
                                 const aTime = a.data().updated_at?.toMillis() || 0;
                                 const bTime = b.data().updated_at?.toMillis() || 0;
                                 return bTime - aTime;
@@ -103,16 +118,13 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                                 setProfile(prev => ({ ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' }));
                             }
                         }
-                    }
 
-                    // Fetch User Settings (Consent Data)
-                    const userDocRef = doc(db, 'users', user.uid);
-                    const userDocSnap = await getDoc(userDocRef);
-
-                    if (mounted && userDocSnap.exists()) {
-                        const userData = userDocSnap.data();
-                        if (userData.settings) {
-                            setSettings(prev => ({ ...prev, ...userData.settings }));
+                        // Handle User Settings
+                        if (userDocSnap.exists()) {
+                            const userData = userDocSnap.data();
+                            if (userData.settings) {
+                                setSettings(prev => ({ ...prev, ...userData.settings }));
+                            }
                         }
                     }
 
