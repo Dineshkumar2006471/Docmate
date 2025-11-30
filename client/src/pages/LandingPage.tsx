@@ -125,20 +125,20 @@ export default function LandingPage() {
                             <Zap className="w-3 h-3" /> Next Generation AI Healthcare
                         </motion.span>
 
-                        <h1 className="text-4xl md:text-7xl font-[Poppins] font-normal tracking-tight mb-8 text-slate-100 leading-tight text-glow min-h-[1.2em]">
+                        <h1 className="text-5xl md:text-7xl font-[Poppins] font-normal tracking-tight mb-8 text-slate-100 leading-tight text-glow min-h-[1.2em] break-words">
                             <TypewriterText text="Your Health," delay={0.5} speed={0.03} /> <br className="md:hidden" />
-                            <span className="text-gradient-premium italic">
+                            <span className="text-gradient-premium italic block md:inline">
                                 <TypewriterText text="Intelligently Managed." delay={1} speed={0.03} />
                             </span>
                         </h1>
 
-                        <p className="mt-6 text-xl text-slate-400 max-w-2xl mx-auto mb-12 font-sans font-light leading-relaxed animate-in-fade-up stagger-2">
+                        <p className="mt-6 text-lg md:text-xl text-slate-400 w-full md:max-w-2xl mx-auto mb-12 font-sans font-light leading-relaxed animate-in-fade-up stagger-2 px-2">
                             Experience the future of personal medicine with advanced AI symptom analysis, real-time biometric monitoring, and blockchain-secured health records.
                         </p>
 
-                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-in-fade-up stagger-3">
-                            <Link to="/login">
-                                <button className="btn-primary text-sm px-10 py-4 flex items-center gap-3 text-base shadow-[0_0_30px_-5px_rgba(204,255,0,0.2)] hover:shadow-[0_0_40px_-5px_rgba(204,255,0,0.4)]">
+                        <div className="flex flex-col sm:flex-row gap-6 justify-center items-center animate-in-fade-up stagger-3 w-full px-4">
+                            <Link to="/login" className="w-full sm:w-auto">
+                                <button className="btn-primary text-sm px-10 py-4 flex items-center justify-center gap-3 text-base shadow-[0_0_30px_-5px_rgba(204,255,0,0.2)] hover:shadow-[0_0_40px_-5px_rgba(204,255,0,0.4)] w-full sm:w-auto">
                                     Start Free Assessment <ArrowRight className="w-5 h-5" />
                                 </button>
                             </Link>
