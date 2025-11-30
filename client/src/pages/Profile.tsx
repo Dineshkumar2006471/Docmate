@@ -220,6 +220,60 @@ export default function Profile() {
                                 className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
+
+                        <div className="pt-4 border-t border-white/5">
+                            <h4 className="text-sm font-bold text-slate-400 mb-4 uppercase tracking-wider">Lifestyle Factors</h4>
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Smoking Status</label>
+                                    <select
+                                        name="smokingStatus"
+                                        value={formData.smokingStatus}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+                                        className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
+                                    >
+                                        <option value="" className="bg-slate-800 text-slate-200">Select</option>
+                                        <option value="Never" className="bg-slate-800 text-slate-200">Never</option>
+                                        <option value="Former" className="bg-slate-800 text-slate-200">Former</option>
+                                        <option value="Current" className="bg-slate-800 text-slate-200">Current</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Alcohol</label>
+                                    <select
+                                        name="alcoholConsumption"
+                                        value={formData.alcoholConsumption}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+                                        className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
+                                    >
+                                        <option value="" className="bg-slate-800 text-slate-200">Select</option>
+                                        <option value="None" className="bg-slate-800 text-slate-200">None</option>
+                                        <option value="Occasional" className="bg-slate-800 text-slate-200">Occasional</option>
+                                        <option value="Moderate" className="bg-slate-800 text-slate-200">Moderate</option>
+                                        <option value="Heavy" className="bg-slate-800 text-slate-200">Heavy</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">Exercise</label>
+                                    <select
+                                        name="exerciseLevel"
+                                        value={formData.exerciseLevel}
+                                        onChange={handleChange}
+                                        disabled={!isEditing}
+                                        className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
+                                    >
+                                        <option value="" className="bg-slate-800 text-slate-200">Select</option>
+                                        <option value="Sedentary" className="bg-slate-800 text-slate-200">Sedentary</option>
+                                        <option value="Light" className="bg-slate-800 text-slate-200">Light</option>
+                                        <option value="Moderate" className="bg-slate-800 text-slate-200">Moderate</option>
+                                        <option value="Active" className="bg-slate-800 text-slate-200">Active</option>
+                                        <option value="Very Active" className="bg-slate-800 text-slate-200">Very Active</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
