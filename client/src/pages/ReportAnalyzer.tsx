@@ -167,7 +167,9 @@ export default function ReportAnalyzer() {
                 body: JSON.stringify({
                     diagnosis,
                     risk_level: result.triage_status.level,
-                    vital_signs: result.vital_signs
+                    vital_signs: result.vital_signs,
+                    warning_signs: result.ai_analysis.warning_signs,
+                    ai_recommendations: result.ai_analysis.recommendations
                 })
             });
 

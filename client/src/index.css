@@ -462,6 +462,202 @@
   animation-delay: 100ms;
 }
 
+opacity: 0;
+filter: blur(4px);
+}
+
+to {
+  transform: translateY(0);
+  opacity: 1;
+  filter: blur(0);
+}
+}
+
+/* Utility Classes for Staggered Animation */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-in-slide-left {
+  animation: slideInLeft 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-in-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+  /* Start hidden */
+}
+
+.stagger-1 {
+  animation-delay: 100ms;
+}
+
+.stagger-2 {
+  animation-delay: 200ms;
+  --color-secondary-800: var(--primary-800);
+  --color-secondary-900: var(--primary-900);
+
+  /* Burnt Terracotta (Error/Alert) */
+  --color-red-500: #cf4b2c;
+  --color-red-400: #e65c3b;
+
+  /* Text Colors Mapped to Variables */
+  --color-slate-100: var(--slate-100);
+  --color-slate-200: var(--slate-200);
+  --color-slate-300: var(--slate-300);
+  --color-slate-400: var(--slate-400);
+  box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
+}
+
+.glass-card:hover {
+  box-shadow: 0 10px 30px -10px rgba(204, 255, 0, 0.1);
+  transform: translateY(-5px);
+  border-color: rgba(204, 255, 0, 0.3);
+}
+
+/* Buttons - Bioluminescent (Toned Down) */
+.btn-primary {
+  @apply bg-primary-500/90 backdrop-blur-sm text-black font-sans font-semibold py-2.5 px-6 rounded-sm uppercase tracking-widest text-xs transition-all duration-300 relative overflow-hidden;
+}
+
+.btn-primary:hover {
+  @apply bg-primary-400;
+  box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+}
+
+.btn-primary:active {
+  transform: scale(0.95);
+}
+
+/* Typography Gradients */
+.text-gradient {
+  @apply text-slate-100;
+}
+
+.text-gradient-accent {
+  @apply text-primary-400;
+  text-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
+}
+
+.text-gradient-premium {
+  background: linear-gradient(to right, #ccff00, #e6e6e6);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  filter: drop-shadow(0 0 10px rgba(204, 255, 0, 0.2));
+}
+
+/* Ambient Background */
+.hero-gradient {
+  background: radial-gradient(circle at 50% 0%, rgba(204, 255, 0, 0.08) 0%, rgba(5, 5, 5, 0) 60%);
+  animation: breathe 8s ease-in-out infinite;
+}
+}
+
+/* Animations */
+@keyframes breathe {
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-20px);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+    filter: blur(4px);
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Utility Classes for Staggered Animation */
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-in-slide-left {
+  animation: slideInLeft 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+.animate-in-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+  /* Start hidden */
+}
+
+.stagger-1 {
+  animation-delay: 100ms;
+}
+
+.stagger-2 {
+  animation-delay: 200ms;
+}
+
+.stagger-3 {
+  animation-delay: 300ms;
+}
+
+.stagger-4 {
+  animation-delay: 400ms;
+}
+
+.stagger-5 {
+  animation-delay: 500ms;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
 .delay-200 {
   animation-delay: 200ms;
 }
@@ -473,30 +669,49 @@
 /* Print Overrides */
 @media print {
   @page {
-    margin: 20mm;
+    margin: 15mm;
     size: auto;
+  }
+
+  * {
+    visibility: visible !important;
   }
 
   .no-print {
     display: none !important;
   }
 
+  /* Reset Page Flow to Prevent Cutoff */
   html,
   body {
     background: white !important;
     color: black !important;
     overflow: visible !important;
     height: auto !important;
+    min-height: 100vh !important;
     width: 100% !important;
     margin: 0 !important;
     padding: 0 !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
   #root {
     width: 100% !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
     overflow: visible !important;
+  }
+
+  /* Override Screen Heights */
+  .min-h-screen,
+  .h-screen {
+    min-height: auto !important;
+    height: auto !important;
   }
 
   /* Ensure Icons are Visible */

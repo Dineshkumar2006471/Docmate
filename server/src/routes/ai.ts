@@ -213,7 +213,7 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
 // --- Route: Suggest Remedies ---
 router.post('/suggest-remedies', async (req, res) => {
     try {
-        const { diagnosis, risk_level, vital_signs } = req.body;
+        const { diagnosis, risk_level, vital_signs, warning_signs, ai_recommendations } = req.body;
 
         const model = getGenAI().getGenerativeModel({
             model: "gemini-2.5-flash",
@@ -222,24 +222,31 @@ router.post('/suggest-remedies', async (req, res) => {
 
         const prompt = `
         Act as an expert naturopath and holistic health specialist.
-        Patient Condition: ${diagnosis}
-        Risk Level: ${risk_level}
-        Vital Signs: ${JSON.stringify(vital_signs)}
+        **Patient Context (Real-Time Analysis):**
+        - Condition/Diagnosis: ${diagnosis}
+        - Risk Level: ${risk_level}
+        - Vital Signs: ${JSON.stringify(vital_signs)}
+        - Identified Warning Signs: ${JSON.stringify(warning_signs)}
+        - AI Medical Recommendations: ${ai_recommendations}
 
-        Generate a structured response for natural remedies.
-        
+        **Goal**: Generate **specific, real-time, and immediate** natural remedy suggestions tailored EXACTLY to this patient's current state.
+
         STRICT RULES:
         1. **Disclaimer**: Always include a disclaimer that these are supportive measures and not a substitute for professional medical advice.
         2. **Vital Specific Advice**: 
            - IF Temperature is > 38°C (100.4°F), provide specific "Temperature" advice (e.g., cool compresses, hydration).
            - IF Blood Pressure is abnormal (Systolic > 140 or < 90), provide specific "Blood Pressure" advice.
            - If vitals are normal, you can omit these specific sections or provide general wellness advice.
-        3. **Remedies**: Provide 3 distinct categories:
-           - "Home Remedies": Simple things to do at home.
-           - "Ayurvedic Remedies": Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.).
+        3. **Targeted Remedies**:
+           - Address the specific **Warning Signs** listed above.
+           - If the patient has "Chest Pain" or "High BP", suggest remedies that specifically help calm the cardiovascular system (e.g., deep breathing, specific teas), but emphasize medical attention first.
+           - Avoid generic advice. If the patient has a cough, suggest remedies for *cough*. If they have high sugar, suggest remedies for *diabetes*.
+        4. **Categories**:
+           - "Home Remedies": Simple things to do at home RIGHT NOW.
+           - "Ayurvedic Remedies": Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.) relevant to the condition.
            - "Natural Remedies": General naturopathic suggestions.
            
-           **CRITICAL**: For each remedy, provide a **detailed description (3-4 sentences)**. Explain **HOW** to use it and **WHY** it helps. Do NOT just list the name.
+           **CRITICAL**: For each remedy, provide a **detailed description (3-4 sentences)**. Explain **HOW** to use it and **WHY** it helps with the *specific* symptoms identified.
 
         Return a JSON object with this EXACT structure:
         {
