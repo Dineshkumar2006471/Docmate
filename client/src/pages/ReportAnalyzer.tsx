@@ -158,8 +158,8 @@ export default function ReportAnalyzer() {
         if (remedies) return; // Already fetched
 
         try {
-            // Get the most probable condition or the first one found
-            const diagnosis = result.ai_analysis.possible_conditions[0]?.condition || "General Health Check";
+            // Get all possible conditions for better context
+            const diagnosis = result.ai_analysis.possible_conditions.map(c => c.condition).join(', ') || "General Health Check";
 
             const response = await fetch(`${API_URL}/api/suggest-remedies`, {
                 method: 'POST',
@@ -474,7 +474,7 @@ export default function ReportAnalyzer() {
                                         let valueClass = 'text-slate-200';
 
                                         if (isCriticalVital) {
-                                            bgClass = 'bg-red-500/10 border-red-500/30 shadow-[0_0_15px_-5px_rgba(239,68,68,0.3)]';
+                                            bgClass = 'bg-red-500/25 border-red-500/50 shadow-[0_0_15px_-5px_rgba(239,68,68,0.5)]';
                                             textClass = 'text-red-400';
                                             valueClass = 'text-red-100';
                                         } else if (isWarningVital) {
