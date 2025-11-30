@@ -426,14 +426,14 @@ export default function ReportAnalyzer() {
                                         }
 
                                         return (
-                                            <div key={index} className={`flex-1 min-w-[45%] md:min-w-[200px] p-4 rounded-xl border flex flex-col items-center text-center transition-all ${bgClass}`}>
-                                                <div className={`text-xs uppercase font-bold mb-2 ${textClass}`}>
+                                            <div key={index} className={`flex-1 min-w-[30%] md:min-w-[150px] p-3 rounded-xl border flex flex-col items-center text-center transition-all ${bgClass}`}>
+                                                <div className={`text-[10px] uppercase font-bold mb-1 ${textClass}`}>
                                                     {vital.label}
                                                 </div>
-                                                <div className={`text-xl font-bold ${valueClass}`}>
+                                                <div className={`text-lg font-bold ${valueClass}`}>
                                                     {vital.value}
                                                 </div>
-                                                <div className={`text-[10px] uppercase tracking-widest mt-1 opacity-60 ${textClass}`}>
+                                                <div className={`text-[9px] uppercase tracking-widest mt-1 opacity-60 ${textClass}`}>
                                                     {vital.status}
                                                 </div>
                                             </div>

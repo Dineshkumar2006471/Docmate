@@ -84,9 +84,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
-                try {
-                    if (mounted) setLoading(true);
+                // OPTIMIZATION: Unblock UI immediately. Profile data will populate asynchronously.
+                if (mounted) setLoading(false);
 
+                try {
                     // Fetch Patient Profile (Medical Data)
                     const patientsRef = collection(db, 'patients');
                     const q = query(patientsRef, where('user_id', '==', user.uid));
@@ -118,9 +119,6 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                 } catch (err: any) {
                     console.error("Error fetching profile:", err);
                     if (mounted) setError(err.message);
-                } finally {
-                    if (mounted) setLoading(false);
-                    clearTimeout(safetyTimeout);
                 }
             } else {
                 if (mounted) {
