@@ -462,9 +462,10 @@ export default function ReportAnalyzer() {
                             </div>
 
                             {/* Vitals Grid */}
+                            {/* Vitals Grid */}
                             <div className="glass-card p-6 rounded-2xl">
                                 <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                     {result.vital_signs.map((vital, index) => {
                                         const isCriticalVital = vital.status === 'Critical';
                                         const isWarningVital = vital.status === 'Warning';
@@ -484,11 +485,11 @@ export default function ReportAnalyzer() {
                                         }
 
                                         return (
-                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center justify-between text-center gap-3 transition-all hover:scale-[1.02] min-h-[140px] h-full ${bgClass}`}>
-                                                <div className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${textClass} opacity-80 break-words w-full`}>
+                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center justify-between text-center gap-3 transition-all hover:scale-[1.02] min-h-[140px] h-full overflow-hidden ${bgClass}`}>
+                                                <div className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${textClass} opacity-80 break-words w-full px-1`}>
                                                     {vital.label}
                                                 </div>
-                                                <div className={`text-lg md:text-xl lg:text-2xl font-bold ${valueClass} break-words w-full leading-tight`}>
+                                                <div className={`text-lg md:text-xl font-bold ${valueClass} break-words w-full leading-tight px-1`}>
                                                     {vital.value}
                                                 </div>
                                                 <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full whitespace-nowrap`}>
