@@ -72,25 +72,35 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
+        let mounted = true;
+
+        // Safety timeout to prevent infinite loading
+        const safetyTimeout = setTimeout(() => {
+            if (mounted && loading) {
+                console.warn("Profile loading timed out - forcing completion");
+                setLoading(false);
+            }
+        }, 8000); // 8 seconds timeout
+
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    setLoading(true);
+                    if (mounted) setLoading(true);
 
                     // Fetch Patient Profile (Medical Data)
                     const patientsRef = collection(db, 'patients');
                     const q = query(patientsRef, where('user_id', '==', user.uid));
                     const querySnapshot = await getDocs(q);
 
-                    if (!querySnapshot.empty) {
-                        const docData = querySnapshot.docs[0].data();
-                        // Filter out non-profile fields to avoid overwriting with stale data if schema changes
-                        // But for now, simple spread is okay as long as we match UserProfile interface
-                        const { user_id, created_by, updated_at, ...profileData } = docData as any;
-                        setProfile(prev => ({ ...prev, ...profileData }));
-                    } else {
-                        if (user.displayName) {
-                            setProfile(prev => ({ ...prev, fullName: user.displayName || '' }));
+                    if (mounted) {
+                        if (!querySnapshot.empty) {
+                            const docData = querySnapshot.docs[0].data();
+                            const { user_id, created_by, updated_at, ...profileData } = docData as any;
+                            setProfile(prev => ({ ...prev, ...profileData }));
+                        } else {
+                            if (user.displayName) {
+                                setProfile(prev => ({ ...prev, fullName: user.displayName || '' }));
+                            }
                         }
                     }
 
@@ -98,7 +108,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                     const userDocRef = doc(db, 'users', user.uid);
                     const userDocSnap = await getDoc(userDocRef);
 
-                    if (userDocSnap.exists()) {
+                    if (mounted && userDocSnap.exists()) {
                         const userData = userDocSnap.data();
                         if (userData.settings) {
                             setSettings(prev => ({ ...prev, ...userData.settings }));
@@ -107,22 +117,30 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
                 } catch (err: any) {
                     console.error("Error fetching profile:", err);
-                    setError(err.message);
+                    if (mounted) setError(err.message);
                 } finally {
-                    setLoading(false);
+                    if (mounted) setLoading(false);
+                    clearTimeout(safetyTimeout);
                 }
             } else {
-                setLoading(false);
-                setProfile({
-                    fullName: '', age: '', gender: '', bloodType: '', weight: '', height: '',
-                    pastConditions: [], allergies: [], currentMedications: [],
-                    smokingStatus: '', alcoholConsumption: '', exerciseLevel: '',
-                    emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelationship: ''
-                });
+                if (mounted) {
+                    setLoading(false);
+                    setProfile({
+                        fullName: '', age: '', gender: '', bloodType: '', weight: '', height: '',
+                        pastConditions: [], allergies: [], currentMedications: [],
+                        smokingStatus: '', alcoholConsumption: '', exerciseLevel: '',
+                        emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelationship: ''
+                    });
+                }
+                clearTimeout(safetyTimeout);
             }
         });
 
-        return () => unsubscribe();
+        return () => {
+            mounted = false;
+            unsubscribe();
+            clearTimeout(safetyTimeout);
+        };
     }, []);
 
     const saveProfile = async (newProfile: UserProfile, newSettings: UserSettings) => {
