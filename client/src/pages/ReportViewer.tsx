@@ -95,7 +95,7 @@ export default function ReportViewer() {
     if (!report) return <div className="p-10 text-center text-slate-400">Report not found.</div>;
 
     return (
-        <div className="max-w-4xl mx-auto pb-20 relative min-w-0">
+        <div className="max-w-full mx-auto pb-20 relative min-w-0">
             <button onClick={() => navigate(-1)} className="mb-6 flex items-center gap-2 text-slate-400 hover:text-white transition-colors">
                 <ArrowLeft className="w-4 h-4" /> Back to Reports
             </button>
