@@ -75,16 +75,23 @@ export default function AIInsights() {
     useEffect(() => {
         if (!auth.currentUser) return;
 
+        // SIMPLIFIED QUERY: Remove orderBy/limit to avoid missing index issues causing infinite loading
         const q = query(
             collection(db, 'SymptomAssessment'),
-            where('patient_id', '==', auth.currentUser.uid),
-            orderBy('created_date', 'desc'),
-            limit(10)
+            where('patient_id', '==', auth.currentUser.uid)
         );
 
         const unsubscribe = onSnapshot(q, (snapshot) => {
             try {
-                const assessments = snapshot.docs.map(doc => doc.data());
+                // Client-side sort and limit
+                const allAssessments = snapshot.docs.map(doc => doc.data());
+                const assessments = allAssessments
+                    .sort((a, b) => {
+                        const dateA = a.created_date?.toMillis ? a.created_date.toMillis() : 0;
+                        const dateB = b.created_date?.toMillis ? b.created_date.toMillis() : 0;
+                        return dateB - dateA;
+                    })
+                    .slice(0, 10);
 
                 // --- Calculate Health Score ---
                 let baseScore = 90; // Start high
@@ -213,6 +220,9 @@ export default function AIInsights() {
                 console.error("Error generating insights", e);
                 setLoading(false);
             }
+        }, (error) => {
+            console.error("Firestore Snapshot Error:", error);
+            setLoading(false);
         });
 
         return () => unsubscribe();
