@@ -3,9 +3,12 @@ import { motion } from 'framer-motion';
 import { Activity, Shield, MessageSquare, ChevronRight, HeartPulse, ArrowRight, CheckCircle, Globe, Users, Zap, Menu, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { TypewriterText } from '../components/TypewriterText';
+import { useTheme } from '../context/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 export default function LandingPage() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
+    const { theme, toggleTheme } = useTheme();
     return (
         <div className="min-h-screen bg-background text-slate-200 selection:bg-primary-300/30 overflow-x-hidden">
             {/* Navigation */}
@@ -28,15 +31,29 @@ export default function LandingPage() {
                             </div>
                         </div>
                         <div className="hidden md:block">
-                            <Link to="/login">
-                                <button className="btn-primary group relative overflow-hidden">
-                                    <span className="relative z-10 flex items-center gap-2">
-                                        Login / Sign In <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                    </span>
+                            <div className="flex items-center gap-4">
+                                <button
+                                    onClick={toggleTheme}
+                                    className="p-2 text-slate-300 hover:text-white transition-colors rounded-full hover:bg-white/5"
+                                >
+                                    {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
                                 </button>
-                            </Link>
+                                <Link to="/login">
+                                    <button className="btn-primary group relative overflow-hidden">
+                                        <span className="relative z-10 flex items-center gap-2">
+                                            Login / Sign In <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                                        </span>
+                                    </button>
+                                </Link>
+                            </div>
                         </div>
-                        <div className="md:hidden">
+                        <div className="md:hidden flex items-center gap-2">
+                            <button
+                                onClick={toggleTheme}
+                                className="p-2 text-slate-300 hover:text-white transition-colors"
+                            >
+                                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                            </button>
                             <button
                                 onClick={() => setIsMenuOpen(!isMenuOpen)}
                                 className="text-slate-300 hover:text-white p-2"

@@ -49,7 +49,7 @@ export default function Sidebar({ mobileOpen = false, onClose }: SidebarProps) {
             {/* Header */}
             <div className="p-6 flex items-center justify-between">
                 <div className={`flex items-center gap-3 ${isCollapsed ? 'justify-center w-full' : ''}`}>
-                    <div className="bg-primary-500/10 p-2 rounded-lg border border-primary-500/20">
+                    <div className="bg-primary-500/10 p-2 rounded-lg border border-slate-800">
                         <HeartPulse className="w-6 h-6 text-primary-400" />
                     </div>
                     {(!isCollapsed || mobileOpen) && (
