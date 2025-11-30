@@ -44,10 +44,46 @@ export default function DashboardLayout() {
         }
     }, [loading, profileLoading, isProfileComplete, location.pathname, navigate]);
 
+    const [showDebug, setShowDebug] = useState(false);
+
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            setShowDebug(true);
+        }, 8000); // Show debug info if loading takes more than 8 seconds
+        return () => clearTimeout(timer);
+    }, []);
+
     if (loading || profileLoading) {
         return (
-            <div className="min-h-screen bg-background flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-teal-400 border-t-transparent rounded-full animate-spin" />
+            <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4 text-center">
+                <div className="w-12 h-12 border-4 border-teal-500 border-t-transparent rounded-full animate-spin mb-4" />
+                <h2 className="text-xl font-serif text-slate-100 mb-2">
+                    {loading ? 'Verifying Authentication...' : 'Loading User Profile...'}
+                </h2>
+                <p className="text-slate-400 text-sm animate-pulse">Please wait while we secure your connection.</p>
+
+                {showDebug && (
+                    <div className="mt-8 p-6 bg-red-500/10 border border-red-500/20 rounded-xl max-w-md animate-in fade-in slide-in-from-bottom-4">
+                        <h3 className="text-red-400 font-bold mb-2 flex items-center justify-center gap-2">
+                            ⚠️ Taking longer than expected?
+                        </h3>
+                        <p className="text-slate-300 text-sm mb-4">
+                            The connection to the server or database seems slow or blocked.
+                        </p>
+                        <div className="text-left bg-black/30 p-4 rounded-lg font-mono text-xs text-slate-400 space-y-2 overflow-x-auto">
+                            <div>API URL: {import.meta.env.VITE_API_URL || 'Not Set (Using Default)'}</div>
+                            <div>Firebase Key: {import.meta.env.VITE_FIREBASE_API_KEY ? 'Present ✅' : 'Missing ❌'}</div>
+                            <div>Auth Status: {loading ? 'Checking...' : 'Authenticated ✅'}</div>
+                            <div>Profile Status: {profileLoading ? 'Loading...' : 'Loaded ✅'}</div>
+                        </div>
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="mt-4 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm transition-colors"
+                        >
+                            Reload Page
+                        </button>
+                    </div>
+                )}
             </div>
         );
     }
