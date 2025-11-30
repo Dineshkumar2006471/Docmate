@@ -502,7 +502,7 @@ export default function ReportAnalyzer() {
                                     <motion.div
                                         initial={{ opacity: 0, height: 0 }}
                                         animate={{ opacity: 1, height: 'auto' }}
-                                        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                                        className="grid grid-cols-1 gap-4"
                                     >
                                         {remedies.length > 0 ? remedies.map((remedy, i) => (
                                             <div key={i} className="flex items-start gap-3 p-4 bg-teal-500/5 border border-teal-500/10 rounded-xl">
