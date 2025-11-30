@@ -486,13 +486,13 @@ export default function ReportAnalyzer() {
 
                                         return (
                                             <div key={index} className={`p-4 rounded-xl border flex flex-col items-center justify-between text-center gap-3 transition-all hover:scale-[1.02] min-h-[140px] h-full overflow-hidden ${bgClass}`}>
-                                                <div className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${textClass} opacity-80 break-words w-full px-1`}>
+                                                <div className={`text-xs md:text-sm font-bold uppercase tracking-wider ${textClass} opacity-80 break-words w-full px-1`}>
                                                     {vital.label}
                                                 </div>
-                                                <div className={`text-lg md:text-xl font-bold ${valueClass} break-words w-full leading-tight px-1`}>
+                                                <div className={`text-xl md:text-2xl font-bold ${valueClass} break-words w-full leading-tight px-1`}>
                                                     {vital.value}
                                                 </div>
-                                                <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full text-center leading-tight`}>
+                                                <div className={`text-[10px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full text-center leading-tight`}>
                                                     {vital.status}
                                                 </div>
                                             </div>
@@ -596,19 +596,31 @@ export default function ReportAnalyzer() {
                                                     <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-4">
                                                         <h4 className="text-primary-400 font-bold text-sm uppercase mb-3">Home Remedies</h4>
                                                         <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
-                                                            {remedies.remedies.home?.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)}
+                                                            {Array.isArray(remedies.remedies.home) && remedies.remedies.home.length > 0 ? (
+                                                                remedies.remedies.home.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)
+                                                            ) : (
+                                                                <li className="italic opacity-50">No specific home remedies suggestions available.</li>
+                                                            )}
                                                         </ul>
                                                     </div>
                                                     <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
                                                         <h4 className="text-emerald-400 font-bold text-sm uppercase mb-3">Ayurvedic</h4>
                                                         <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
-                                                            {remedies.remedies.ayurvedic?.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)}
+                                                            {Array.isArray(remedies.remedies.ayurvedic) && remedies.remedies.ayurvedic.length > 0 ? (
+                                                                remedies.remedies.ayurvedic.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)
+                                                            ) : (
+                                                                <li className="italic opacity-50">No specific ayurvedic suggestions available.</li>
+                                                            )}
                                                         </ul>
                                                     </div>
                                                     <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
                                                         <h4 className="text-amber-400 font-bold text-sm uppercase mb-3">Natural / Holistic</h4>
                                                         <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
-                                                            {remedies.remedies.natural?.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)}
+                                                            {Array.isArray(remedies.remedies.natural) && remedies.remedies.natural.length > 0 ? (
+                                                                remedies.remedies.natural.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)
+                                                            ) : (
+                                                                <li className="italic opacity-50">No specific natural suggestions available.</li>
+                                                            )}
                                                         </ul>
                                                     </div>
                                                 </div>
