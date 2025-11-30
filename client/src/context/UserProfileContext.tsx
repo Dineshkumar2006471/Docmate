@@ -119,7 +119,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
                 } catch (err: any) {
                     console.error("Error fetching profile:", err);
-                    if (mounted) setError(err.message);
+                    // Suppress offline errors to prevent user confusion
+                    if (mounted && !err.message?.includes('offline') && !err.message?.includes('Failed to get document')) {
+                        setError(err.message);
+                    }
                 } finally {
                     if (mounted) setLoading(false);
                 }

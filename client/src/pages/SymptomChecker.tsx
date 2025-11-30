@@ -57,14 +57,25 @@ export default function SymptomChecker() {
         });
     };
 
-    const saveToHistory = (data: AnalysisResult, symptomsText: string) => {
+    const saveToHistory = (data: AnalysisResult, symptomsText: string, vitalsData: any) => {
         const newReport = {
             id: Date.now().toString(),
-            title: `Symptom Check: ${symptomsText.substring(0, 20)}${symptomsText.length > 20 ? '...' : ''}`,
+            title: `Symptom Check: ${symptomsText.substring(0, 30)}${symptomsText.length > 30 ? '...' : ''}`,
             date: new Date().toISOString().split('T')[0],
             risk_level: data.risk_level,
+            severity_score: data.risk_score,
             summary: data.recommendation || (data.possible_conditions[0] ? `Possible: ${data.possible_conditions[0].name}` : 'Analysis Complete'),
-            type: 'Symptom Check'
+            type: 'Symptom Check' as const,
+            top_condition: data.possible_conditions[0]?.name || 'Unknown',
+            probability: data.possible_conditions[0] ? `${data.possible_conditions[0].probability}%` : 'N/A',
+            warning_signs: data.warning_signs || [],
+            // Full data for report viewing
+            fullData: {
+                symptoms: symptomsText,
+                vitals: vitalsData,
+                analysis: data,
+                timestamp: new Date().toISOString()
+            }
         };
 
         const existing = localStorage.getItem('docmate_reports');
@@ -107,7 +118,7 @@ export default function SymptomChecker() {
             }
 
             setResult(data);
-            saveToHistory(data, symptoms);
+            saveToHistory(data, symptoms, vitals);
         } catch (err: any) {
             console.error("Analysis Failed", err);
             setError(err.message || "Something went wrong. Please try again.");

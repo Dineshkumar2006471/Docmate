@@ -30,6 +30,33 @@ export default function ReportViewer() {
         const fetchReport = async () => {
             if (!id) return;
             try {
+                // First check sessionStorage for symptom check reports
+                const sessionReport = sessionStorage.getItem('selectedReport');
+                if (sessionReport) {
+                    const parsedReport = JSON.parse(sessionReport);
+                    // Convert to Assessment format
+                    setReport({
+                        id: parsedReport.id,
+                        created_date: { seconds: new Date(parsedReport.date).getTime() / 1000 },
+                        symptoms_description: parsedReport.fullData?.symptoms || parsedReport.summary,
+                        triage_level: parsedReport.risk_level,
+                        severity_score: parsedReport.severity_score || 5,
+                        ai_analysis: parsedReport.fullData?.analysis || {
+                            possible_conditions: parsedReport.top_condition ? [{
+                                name: parsedReport.top_condition,
+                                probability: parseInt(parsedReport.probability) || 0
+                            }] : [],
+                            recommendation: parsedReport.summary,
+                            warning_signs: parsedReport.warning_signs || []
+                        },
+                        red_flags: parsedReport.warning_signs,
+                        vitals: parsedReport.fullData?.vitals
+                    } as Assessment);
+                    setLoading(false);
+                    return;
+                }
+
+                // Fall back to Firestore
                 const docRef = doc(db, 'SymptomAssessment', id);
                 const docSnap = await getDoc(docRef);
                 if (docSnap.exists()) {

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 // DocMate Reports Dashboard
-import { FileText, Calendar, AlertTriangle, CheckCircle, ChevronRight, Download, Search, Activity, ArrowUpRight, TrendingUp, Clock } from 'lucide-react';
+import { FileText, Calendar, AlertTriangle, CheckCircle, ChevronRight, Download, Search, Activity, ArrowUpRight, TrendingUp, Clock, Trash2 } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { useNavigate } from 'react-router-dom';
 
 interface SavedReport {
     id: string;
@@ -14,9 +15,16 @@ interface SavedReport {
     warning_signs?: string[];
     top_condition?: string;
     probability?: string;
+    fullData?: {
+        symptoms?: string;
+        vitals?: any;
+        analysis?: any;
+        timestamp?: string;
+    };
 }
 
 export default function MyReports() {
+    const navigate = useNavigate();
     const [reports, setReports] = useState<SavedReport[]>([]);
     const [filter, setFilter] = useState('');
     const [stats, setStats] = useState({ total: 0, avgSeverity: 0, latestDate: 'N/A' });
@@ -104,6 +112,45 @@ export default function MyReports() {
         }
 
     }, []);
+
+    const calculateStats = (reportsList: SavedReport[]) => {
+        if (reportsList.length > 0) {
+            const total = reportsList.length;
+            const latest = reportsList[0].date;
+            const sumSeverity = reportsList.reduce((acc, curr) => {
+                let score = curr.severity_score;
+                if (score === undefined) {
+                    if (curr.risk_level === 'Critical' || curr.risk_level === 'Emergency') score = 9;
+                    else if (curr.risk_level === 'High') score = 7;
+                    else if (curr.risk_level === 'Moderate' || curr.risk_level === 'Doctor Visit') score = 5;
+                    else score = 2;
+                }
+                return acc + score;
+            }, 0);
+            setStats({
+                total,
+                latestDate: new Date(latest).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                avgSeverity: parseFloat((sumSeverity / total).toFixed(1))
+            });
+        } else {
+            setStats({ total: 0, avgSeverity: 0, latestDate: 'N/A' });
+        }
+    };
+
+    const handleDelete = (id: string) => {
+        if (confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+            const updatedReports = reports.filter(r => r.id !== id);
+            setReports(updatedReports);
+            localStorage.setItem('docmate_reports', JSON.stringify(updatedReports));
+            calculateStats(updatedReports);
+        }
+    };
+
+    const handleViewReport = (report: SavedReport) => {
+        // Save the selected report to sessionStorage for viewing
+        sessionStorage.setItem('selectedReport', JSON.stringify(report));
+        navigate(`/report-viewer/${report.id}`);
+    };
 
     const filteredReports = reports.filter(r =>
         r.title.toLowerCase().includes(filter.toLowerCase()) ||
@@ -262,9 +309,21 @@ export default function MyReports() {
                             </div>
 
                             {/* Actions / Footer */}
-                            <div className="md:col-span-4 flex flex-col justify-center items-end border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6">
-                                <button className="w-full md:w-auto px-6 py-3 bg-surface-highlight hover:bg-primary-500 hover:text-slate-900 text-slate-300 rounded-xl font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-primary-500/20">
+                            <div className="md:col-span-4 flex flex-col justify-center items-end gap-3 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6">
+                                <button
+                                    onClick={() => handleViewReport(report)}
+                                    className="w-full md:w-auto px-6 py-3 bg-surface-highlight hover:bg-primary-500 hover:text-slate-900 text-slate-300 rounded-xl font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2 group-hover:shadow-lg group-hover:shadow-primary-500/20"
+                                >
                                     View Report <ChevronRight className="w-4 h-4" />
+                                </button>
+                                <button
+                                    onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleDelete(report.id);
+                                    }}
+                                    className="w-full md:w-auto px-6 py-3 bg-red-500/10 hover:bg-red-500 hover:text-white text-red-400 rounded-xl font-bold text-sm uppercase tracking-wider transition-all flex items-center justify-center gap-2"
+                                >
+                                    <Trash2 className="w-4 h-4" /> Delete
                                 </button>
                             </div>
                         </div>
