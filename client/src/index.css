@@ -23,27 +23,29 @@
 }
 
 :root.light {
-  /* Light Mode Values */
-  --background: #ffffff;
+  /* Light Mode Values - Premium & Impressive */
+  --background: #f0f2f5;
+  /* Soft Gray-Blue tint for depth */
   --surface: #ffffff;
   /* Pure White for cards */
   --surface-highlight: #f8fafc;
   /* Very light gray for inputs/highlights */
 
-  --slate-100: #020617;
-  /* Almost Black (Main Text) */
+  --slate-100: #1e293b;
+  /* Deep Slate (Main Text) */
   --slate-200: #334155;
-  /* Dark Gray (Secondary) */
+  /* Dark Slate (Secondary) */
   --slate-300: #475569;
-  /* Medium Gray */
+  /* Medium Slate */
   --slate-400: #64748b;
-  /* Light Gray (Muted) */
+  /* Muted Slate */
   --slate-500: #94a3b8;
-  /* Lighter Gray */
-  --slate-800: #000000;
-  /* Black (Borders) */
-  --slate-900: #f1f5f9;
-  /* Light background for some elements */
+  /* Light Muted */
+
+  --slate-800: #e2e8f0;
+  /* Soft Border */
+  --slate-900: #cbd5e1;
+  /* Slightly darker border for emphasis */
 }
 
 @theme {

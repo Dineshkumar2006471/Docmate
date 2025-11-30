@@ -222,8 +222,8 @@ export default function FindDoctor() {
             {locationName && (
                 <div className="mb-6 flex items-center gap-3 text-slate-300 bg-white/5 w-fit pr-6 pl-2 py-2 rounded-full border border-slate-800">
                     <div className="w-8 h-8 rounded-full overflow-hidden border border-slate-700 bg-slate-800 flex items-center justify-center">
-                        {auth.currentUser?.photoURL ? (
-                            <img src={auth.currentUser.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                        {profile?.photoURL ? (
+                            <img src={profile.photoURL} alt="Profile" className="w-full h-full object-cover" />
                         ) : (
                             <User className="w-4 h-4 text-slate-400" />
                         )}
@@ -239,31 +239,15 @@ export default function FindDoctor() {
 
             {/* Search and Filter */}
             <div className="glass-card p-6 rounded-2xl mb-10 border border-slate-800">
-                <div className="flex flex-col md:flex-row gap-4">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
-                        <input
-                            type="text"
-                            placeholder="Search doctors, specialties, conditions..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-surface-highlight/30 border border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-all"
-                        />
-                    </div>
-                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 no-scrollbar">
-                        {specialties.map(spec => (
-                            <button
-                                key={spec}
-                                onClick={() => setSelectedSpecialty(spec)}
-                                className={`px-6 py-3 rounded-xl text-sm font-bold whitespace-nowrap transition-all border ${selectedSpecialty === spec
-                                    ? 'bg-primary-500 text-white border-primary-500'
-                                    : 'bg-surface-highlight/30 text-slate-400 border-slate-800 hover:border-white/20'
-                                    }`}
-                            >
-                                {spec}
-                            </button>
-                        ))}
-                    </div>
+                <div className="relative">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-500" />
+                    <input
+                        type="text"
+                        placeholder="Search doctors, specialties, conditions..."
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className="w-full bg-surface-highlight/30 border border-slate-800 rounded-xl py-4 pl-12 pr-4 text-slate-200 focus:border-primary-500/50 outline-none transition-all"
+                    />
                 </div>
             </div>
 

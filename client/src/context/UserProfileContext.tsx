@@ -11,6 +11,7 @@ export interface UserProfile {
     bloodType: string;
     weight: string;
     height: string;
+    photoURL?: string;
 
     // Medical History
     pastConditions: string[];
@@ -97,10 +98,10 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                             setDocId(doc.id); // Store docId for future updates
                             const docData = doc.data();
                             const { user_id, created_by, updated_at, ...profileData } = docData as any;
-                            setProfile(prev => ({ ...prev, ...profileData }));
+                            setProfile(prev => ({ ...prev, ...profileData, photoURL: user.photoURL || '' }));
                         } else {
                             if (user.displayName) {
-                                setProfile(prev => ({ ...prev, fullName: user.displayName || '' }));
+                                setProfile(prev => ({ ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' }));
                             }
                         }
                     }
