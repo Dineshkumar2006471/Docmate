@@ -1,128 +1,197 @@
 import React from 'react';
-import { Page, Text, View, Document, StyleSheet, Font } from '@react-pdf/renderer';
+import { Page, Text, View, Document, StyleSheet, Svg, Path } from '@react-pdf/renderer';
 
-// Register fonts (optional, using standard fonts for now)
-// Font.register({
-//   family: 'Roboto',
-//   src: 'https://cdnjs.cloudflare.com/ajax/libs/ink/3.1.10/fonts/Roboto/roboto-light-webfont.ttf'
-// });
+// --- Icons ---
+const IconUser = () => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00796B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+        <Path d="M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8" />
+    </Svg>
+);
 
+const IconPhone = () => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00796B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </Svg>
+);
+
+const IconActivity = () => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00796B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+    </Svg>
+);
+
+const IconFileText = () => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00796B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+        <Path d="M14 2v6h6" />
+        <Path d="M16 13H8" />
+        <Path d="M16 17H8" />
+        <Path d="M10 9H8" />
+    </Svg>
+);
+
+const IconAlert = () => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#DC2626" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
+        <Path d="M12 9v4" />
+        <Path d="M12 17h.01" />
+    </Svg>
+);
+
+const IconHeart = () => (
+    <Svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#00796B" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <Path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+    </Svg>
+);
+
+// --- Styles ---
 const styles = StyleSheet.create({
     page: {
-        padding: 30,
-        backgroundColor: '#FFFFFF',
+        padding: 20,
         fontFamily: 'Helvetica',
+        fontSize: 9,
+        color: '#1F2937',
+        backgroundColor: '#FFFFFF',
     },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 20,
+        marginBottom: 10,
         borderBottomWidth: 1,
         borderBottomColor: '#E5E7EB',
-        paddingBottom: 10,
+        paddingBottom: 8,
     },
     title: {
-        fontSize: 24,
-        color: '#00796B', // Teal
+        fontSize: 18,
+        color: '#00796B',
         fontWeight: 'bold',
     },
     meta: {
-        fontSize: 10,
+        fontSize: 8,
         color: '#6B7280',
         textAlign: 'right',
     },
     section: {
-        marginBottom: 15,
-        padding: 10,
+        marginBottom: 8,
+        padding: 8,
+        backgroundColor: '#F9FAFB',
+        borderRadius: 4,
+    },
+    sectionHeader: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginBottom: 6,
+        borderBottomWidth: 1,
+        borderBottomColor: '#E5E7EB',
+        paddingBottom: 4,
     },
     sectionTitle: {
-        fontSize: 16,
+        fontSize: 11,
         color: '#111827',
-        marginBottom: 10,
         fontWeight: 'bold',
-        borderBottomWidth: 1,
-        borderBottomColor: '#00796B',
-        paddingBottom: 5,
+        marginLeft: 6,
+        textTransform: 'uppercase',
     },
     row: {
         flexDirection: 'row',
-        marginBottom: 5,
+        marginBottom: 2,
+    },
+    col2: {
+        flexDirection: 'row',
+        gap: 10,
+    },
+    half: {
+        flex: 1,
     },
     label: {
-        width: 100,
-        fontSize: 10,
+        width: 70,
         color: '#4B5563',
         fontWeight: 'bold',
+        fontSize: 8,
     },
     value: {
         flex: 1,
-        fontSize: 10,
         color: '#1F2937',
+        fontSize: 8,
     },
-    vitalCard: {
-        backgroundColor: '#F3F4F6',
-        padding: 10,
-        marginBottom: 10,
+    grid: {
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+        gap: 6,
+    },
+    card: {
+        width: '48%',
+        backgroundColor: '#FFFFFF',
+        padding: 6,
         borderRadius: 4,
+        borderWidth: 1,
+        borderColor: '#E5E7EB',
     },
-    vitalHeader: {
+    cardHeader: {
         flexDirection: 'row',
         justifyContent: 'space-between',
-        marginBottom: 5,
+        marginBottom: 2,
     },
-    vitalLabel: {
-        fontSize: 12,
+    cardTitle: {
+        fontSize: 9,
         fontWeight: 'bold',
+        color: '#111827',
     },
-    vitalValue: {
-        fontSize: 12,
+    cardValue: {
+        fontSize: 9,
+        fontWeight: 'bold',
         color: '#00796B',
     },
-    statusCritical: {
-        color: '#DC2626',
-        fontWeight: 'bold',
-    },
-    statusNormal: {
-        color: '#059669',
+    statusText: {
+        fontSize: 8,
         fontWeight: 'bold',
     },
     analysisText: {
-        fontSize: 9,
-        color: '#4B5563',
-        marginTop: 5,
+        fontSize: 7,
+        color: '#6B7280',
         fontStyle: 'italic',
+        marginTop: 2,
     },
     aiBox: {
+        padding: 8,
+        backgroundColor: '#F0FDFA',
+        borderRadius: 4,
         borderWidth: 1,
         borderColor: '#00796B',
-        padding: 15,
-        borderRadius: 4,
-        backgroundColor: '#F0FDFA',
+        marginBottom: 6,
     },
     riskLevel: {
-        fontSize: 14,
+        fontSize: 12,
         fontWeight: 'bold',
         color: '#DC2626',
-        marginBottom: 5,
+        marginBottom: 2,
     },
-    remedyCard: {
-        marginBottom: 10,
-        padding: 10,
-        borderLeftWidth: 3,
-        borderLeftColor: '#00796B',
-        backgroundColor: '#F9FAFB',
+    remedyGroup: {
+        marginBottom: 6,
+    },
+    remedyTitle: {
+        fontSize: 9,
+        fontWeight: 'bold',
+        color: '#00796B',
+        marginBottom: 2,
+    },
+    bullet: {
+        fontSize: 8,
+        marginLeft: 8,
+        color: '#374151',
     },
     footer: {
         position: 'absolute',
-        bottom: 30,
-        left: 30,
-        right: 30,
+        bottom: 15,
+        left: 20,
+        right: 20,
         textAlign: 'center',
-        fontSize: 8,
+        fontSize: 7,
         color: '#9CA3AF',
         borderTopWidth: 1,
         borderTopColor: '#E5E7EB',
-        paddingTop: 10,
+        paddingTop: 5,
     },
 });
 
@@ -139,9 +208,9 @@ export interface DocMatePDFReportProps {
 
 export const DocMatePDFReport: React.FC<DocMatePDFReportProps> = ({ data }) => (
     <Document>
-        {/* Page 1: Patient Info & Vitals */}
-        <Page size="A4" style={styles.page}>
-            <View style={styles.header}>
+        <Page size="A4" style={styles.page} wrap>
+            {/* Header */}
+            <View style={styles.header} fixed>
                 <Text style={styles.title}>DocMate Medical Report</Text>
                 <View>
                     <Text style={styles.meta}>Date: {data.meta.date}</Text>
@@ -150,120 +219,119 @@ export const DocMatePDFReport: React.FC<DocMatePDFReportProps> = ({ data }) => (
                 </View>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Patient Information</Text>
-                <View style={styles.row}><Text style={styles.label}>Name:</Text><Text style={styles.value}>{data.patient.name}</Text></View>
-                <View style={styles.row}><Text style={styles.label}>Age/Gender:</Text><Text style={styles.value}>{data.patient.age} / {data.patient.gender}</Text></View>
-                <View style={styles.row}><Text style={styles.label}>Blood Type:</Text><Text style={styles.value}>{data.patient.bloodType}</Text></View>
-                <View style={styles.row}><Text style={styles.label}>Medical History:</Text><Text style={styles.value}>{data.patient.history}</Text></View>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Emergency Contact</Text>
-                <View style={styles.row}><Text style={styles.label}>Name:</Text><Text style={styles.value}>{data.emergency.contactName}</Text></View>
-                <View style={styles.row}><Text style={styles.label}>Relation:</Text><Text style={styles.value}>{data.emergency.relation}</Text></View>
-                <View style={styles.row}><Text style={styles.label}>Phone:</Text><Text style={styles.value}>{data.emergency.phone}</Text></View>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Vital Signs Analysis</Text>
-                {data.vitals.map((vital, index) => (
-                    <View key={index} style={styles.vitalCard}>
-                        <View style={styles.vitalHeader}>
-                            <Text style={styles.vitalLabel}>{vital.label}</Text>
-                            <Text style={styles.vitalValue}>{vital.value} {vital.unit}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Reference:</Text>
-                            <Text style={styles.value}>{vital.ref}</Text>
-                        </View>
-                        <View style={styles.row}>
-                            <Text style={styles.label}>Status:</Text>
-                            <Text style={vital.status === 'Critical' ? styles.statusCritical : styles.statusNormal}>{vital.status}</Text>
-                        </View>
-                        <Text style={styles.analysisText}>Analysis: {vital.analysis}</Text>
+            {/* Patient & Emergency Info (Side by Side) */}
+            <View style={styles.col2}>
+                <View style={[styles.section, styles.half]}>
+                    <View style={styles.sectionHeader}>
+                        <IconUser />
+                        <Text style={styles.sectionTitle}>Patient Information</Text>
                     </View>
-                ))}
-            </View>
-            <Text style={styles.footer}>Generated by DocMate AI • Page 1 of 5</Text>
-        </Page>
+                    <View style={styles.row}><Text style={styles.label}>Name:</Text><Text style={styles.value}>{data.patient.name}</Text></View>
+                    <View style={styles.row}><Text style={styles.label}>Age/Gender:</Text><Text style={styles.value}>{data.patient.age} / {data.patient.gender}</Text></View>
+                    <View style={styles.row}><Text style={styles.label}>Blood Type:</Text><Text style={styles.value}>{data.patient.bloodType}</Text></View>
+                    <View style={styles.row}><Text style={styles.label}>History:</Text><Text style={styles.value}>{data.patient.history}</Text></View>
+                </View>
 
-        {/* Page 2: AI Summary */}
-        <Page size="A4" style={styles.page}>
-            <View style={styles.header}>
-                <Text style={styles.title}>AI Health Assessment</Text>
+                <View style={[styles.section, styles.half]}>
+                    <View style={styles.sectionHeader}>
+                        <IconPhone />
+                        <Text style={styles.sectionTitle}>Emergency Contact</Text>
+                    </View>
+                    <View style={styles.row}><Text style={styles.label}>Name:</Text><Text style={styles.value}>{data.emergency.contactName}</Text></View>
+                    <View style={styles.row}><Text style={styles.label}>Relation:</Text><Text style={styles.value}>{data.emergency.relation}</Text></View>
+                    <View style={styles.row}><Text style={styles.label}>Phone:</Text><Text style={styles.value}>{data.emergency.phone}</Text></View>
+                </View>
             </View>
 
-            <View style={styles.section}>
+            {/* Vitals Grid */}
+            <View style={styles.section} wrap={false}>
+                <View style={styles.sectionHeader}>
+                    <IconActivity />
+                    <Text style={styles.sectionTitle}>Vital Signs Analysis</Text>
+                </View>
+                <View style={styles.grid}>
+                    {data.vitals.map((vital, index) => (
+                        <View key={index} style={styles.card}>
+                            <View style={styles.cardHeader}>
+                                <Text style={styles.cardTitle}>{vital.label}</Text>
+                                <Text style={styles.cardValue}>{vital.value} {vital.unit}</Text>
+                            </View>
+                            <View style={styles.row}>
+                                <Text style={{ fontSize: 7, color: '#6B7280', width: 40 }}>Ref:</Text>
+                                <Text style={{ fontSize: 7, color: '#374151' }}>{vital.ref}</Text>
+                            </View>
+                            <Text style={[styles.statusText, { color: vital.status === 'Critical' ? '#DC2626' : '#059669' }]}>
+                                {vital.status}
+                            </Text>
+                            <Text style={styles.analysisText}>{vital.analysis}</Text>
+                        </View>
+                    ))}
+                </View>
+            </View>
+
+            {/* AI Summary */}
+            <View style={styles.section} wrap={false}>
+                <View style={styles.sectionHeader}>
+                    <IconFileText />
+                    <Text style={styles.sectionTitle}>AI Health Assessment</Text>
+                </View>
+
                 <View style={styles.aiBox}>
-                    <Text style={styles.sectionTitle}>Risk Assessment</Text>
-                    <Text style={styles.riskLevel}>{data.aiSummary.riskLevel}</Text>
-                    <Text style={{ fontSize: 10, marginTop: 10 }}>{data.aiSummary.reasoning}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 4 }}>
+                        <IconAlert />
+                        <Text style={[styles.riskLevel, { marginLeft: 6, marginBottom: 0 }]}>Risk Level: {data.aiSummary.riskLevel}</Text>
+                    </View>
+                    <Text style={{ fontSize: 8, color: '#374151' }}>{data.aiSummary.reasoning}</Text>
                 </View>
+
+                <Text style={{ fontSize: 9, fontWeight: 'bold', marginTop: 4, marginBottom: 2 }}>Clinical Reasoning:</Text>
+                <Text style={{ fontSize: 8, lineHeight: 1.4, color: '#374151' }}>{data.aiSummary.overall}</Text>
+
+                <Text style={{ fontSize: 9, fontWeight: 'bold', marginTop: 6, marginBottom: 2 }}>Recommendations:</Text>
+                <Text style={{ fontSize: 8, lineHeight: 1.4, color: '#374151' }}>{data.aiSummary.recommendation}</Text>
             </View>
 
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Clinical Reasoning</Text>
-                <Text style={{ fontSize: 10, lineHeight: 1.5 }}>{data.aiSummary.overall}</Text>
-            </View>
-            <Text style={styles.footer}>Generated by DocMate AI • Page 2 of 5</Text>
-        </Page>
-
-        {/* Page 3: Recommendations */}
-        <Page size="A4" style={styles.page}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Recommendations</Text>
-            </View>
-
-            <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Immediate Actions</Text>
-                <Text style={{ fontSize: 10, lineHeight: 1.5 }}>{data.aiSummary.recommendation}</Text>
-            </View>
-            <Text style={styles.footer}>Generated by DocMate AI • Page 3 of 5</Text>
-        </Page>
-
-        {/* Page 4: Remedies */}
-        <Page size="A4" style={styles.page}>
-            <View style={styles.header}>
-                <Text style={styles.title}>Suggested Remedies</Text>
-            </View>
-
-            {data.remedies.map((item, index) => (
-                <View key={index} style={styles.section}>
-                    <Text style={{ fontSize: 12, fontWeight: 'bold', marginBottom: 5 }}>Condition: {item.condition}</Text>
-
-                    <View style={styles.remedyCard}>
-                        <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#00796B' }}>Home Remedies:</Text>
-                        {item.home.map((r, i) => <Text key={i} style={{ fontSize: 10, marginLeft: 10 }}>• {r}</Text>)}
+            {/* Remedies */}
+            {data.remedies.length > 0 && (
+                <View style={styles.section} wrap={false}>
+                    <View style={styles.sectionHeader}>
+                        <IconHeart />
+                        <Text style={styles.sectionTitle}>Suggested Remedies</Text>
                     </View>
-
-                    <View style={styles.remedyCard}>
-                        <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#00796B' }}>Ayurvedic:</Text>
-                        {item.ayurvedic.map((r, i) => <Text key={i} style={{ fontSize: 10, marginLeft: 10 }}>• {r}</Text>)}
-                    </View>
-
-                    <View style={styles.remedyCard}>
-                        <Text style={{ fontSize: 10, fontWeight: 'bold', color: '#00796B' }}>Natural/Holistic:</Text>
-                        {item.natural.map((r, i) => <Text key={i} style={{ fontSize: 10, marginLeft: 10 }}>• {r}</Text>)}
-                    </View>
+                    {data.remedies.map((item, index) => (
+                        <View key={index}>
+                            <Text style={{ fontSize: 9, fontWeight: 'bold', marginBottom: 4 }}>Condition: {item.condition}</Text>
+                            <View style={styles.col2}>
+                                <View style={[styles.remedyGroup, styles.half]}>
+                                    <Text style={styles.remedyTitle}>Home Remedies</Text>
+                                    {item.home.map((r, i) => <Text key={i} style={styles.bullet}>• {r}</Text>)}
+                                </View>
+                                <View style={[styles.remedyGroup, styles.half]}>
+                                    <Text style={styles.remedyTitle}>Ayurvedic</Text>
+                                    {item.ayurvedic.map((r, i) => <Text key={i} style={styles.bullet}>• {r}</Text>)}
+                                </View>
+                            </View>
+                            <View style={styles.remedyGroup}>
+                                <Text style={styles.remedyTitle}>Natural / Holistic</Text>
+                                {item.natural.map((r, i) => <Text key={i} style={styles.bullet}>• {r}</Text>)}
+                            </View>
+                        </View>
+                    ))}
                 </View>
-            ))}
-            <Text style={styles.footer}>Generated by DocMate AI • Page 4 of 5</Text>
-        </Page>
+            )}
 
-        {/* Page 5: Disclaimer */}
-        <Page size="A4" style={styles.page}>
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-                <Text style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 20 }}>Medical Disclaimer</Text>
-                <Text style={{ fontSize: 10, textAlign: 'center', lineHeight: 1.5 }}>
-                    This report is generated by an AI system (DocMate) and is intended for informational purposes only.
-                    It does not constitute professional medical advice, diagnosis, or treatment.
+            {/* Disclaimer */}
+            <View style={{ marginTop: 10, padding: 10, borderTopWidth: 1, borderTopColor: '#E5E7EB' }} wrap={false}>
+                <Text style={{ fontSize: 8, fontWeight: 'bold', textAlign: 'center', marginBottom: 4 }}>Medical Disclaimer</Text>
+                <Text style={{ fontSize: 6, textAlign: 'center', color: '#9CA3AF', lineHeight: 1.3 }}>
+                    This report is generated by DocMate AI for informational purposes only. It is not a substitute for professional medical advice, diagnosis, or treatment.
                     Always seek the advice of your physician or other qualified health provider with any questions you may have regarding a medical condition.
-                    Never disregard professional medical advice or delay in seeking it because of something you have read in this report.
-                    If you think you may have a medical emergency, call your doctor or emergency services immediately.
                 </Text>
             </View>
-            <Text style={styles.footer}>Generated by DocMate AI • Page 5 of 5</Text>
+
+            <Text style={styles.footer} render={({ pageNumber, totalPages }) => (
+                `Generated by DocMate AI • Page ${pageNumber} of ${totalPages}`
+            )} fixed />
         </Page>
     </Document>
 );
