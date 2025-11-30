@@ -1,39 +1,57 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=JetBrains+Mono:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
 
 @import "tailwindcss";
 
 @theme {
-  --font-sans: "Plus Jakarta Sans", sans-serif;
-  --font-serif: "Poppins", sans-serif;
+  --font-sans: "JetBrains Mono", monospace;
+  --font-serif: "Playfair Display", serif;
+  --font-display: "Poppins", sans-serif;
 
-  --color-background: #050a0a;
-  /* Very dark teal/black */
-  --color-surface: #0a1414;
-  --color-surface-highlight: #112222;
+  --color-background: #050505;
+  /* Deep Void */
+  --color-surface: #0f1012;
+  /* Panel Black */
+  --color-surface-highlight: #1a1b1e;
 
+  /* Bioluminescent Lime (Primary Accent) */
   --color-primary-50: #f7fee7;
   --color-primary-100: #ecfccb;
   --color-primary-200: #d9f99d;
   --color-primary-300: #bef264;
-  /* Lime accent */
-  --color-primary-400: #a3e635;
-  --color-primary-500: #84cc16;
-  --color-primary-600: #65a30d;
-  --color-primary-700: #4d7c0f;
-  --color-primary-800: #3f6212;
-  --color-primary-900: #365314;
+  --color-primary-400: #ccff00;
+  /* Main Accent */
+  --color-primary-500: #aacc00;
+  --color-primary-600: #88aa00;
+  --color-primary-700: #668000;
+  --color-primary-800: #445500;
+  --color-primary-900: #222b00;
 
-  --color-secondary-50: #f0fdfa;
-  --color-secondary-100: #ccfbf1;
-  --color-secondary-200: #99f6e4;
-  --color-secondary-300: #5eead4;
-  --color-secondary-400: #2dd4bf;
-  --color-secondary-500: #14b8a6;
-  /* Teal */
-  --color-secondary-600: #0d9488;
-  --color-secondary-700: #0f766e;
-  --color-secondary-800: #115e59;
-  --color-secondary-900: #134e4a;
+  /* Map Secondary to Primary for consistency */
+  --color-secondary-50: #f7fee7;
+  --color-secondary-100: #ecfccb;
+  --color-secondary-200: #d9f99d;
+  --color-secondary-300: #bef264;
+  --color-secondary-400: #ccff00;
+  --color-secondary-500: #aacc00;
+  --color-secondary-600: #88aa00;
+  --color-secondary-700: #668000;
+  --color-secondary-800: #445500;
+  --color-secondary-900: #222b00;
+
+  /* Burnt Terracotta (Error/Alert) */
+  --color-red-500: #cf4b2c;
+  --color-red-400: #e65c3b;
+
+  /* Text Colors */
+  --color-slate-100: #e6e6e6;
+  /* Raw Silk */
+  --color-slate-200: #cccccc;
+  --color-slate-300: #aaaaaa;
+  --color-slate-400: #888888;
+  /* Ash Grey */
+  --color-slate-500: #666666;
+  --color-slate-800: #161618;
+  --color-slate-900: #0a0a0c;
 }
 
 @layer base {
@@ -42,8 +60,22 @@
   }
 
   body {
-    @apply bg-background text-slate-200 font-sans antialiased selection:bg-primary-300/30 selection:text-primary-300;
-    /* Removed heavy SVG noise filter for better scroll performance */
+    @apply bg-background text-slate-100 font-sans antialiased selection:bg-primary-400/30 selection:text-primary-400;
+    overflow-x: hidden;
+  }
+
+  /* Noise Texture Overlay */
+  body::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 
   h1,
@@ -52,93 +84,181 @@
   h4,
   h5,
   h6 {
-    @apply font-serif font-light tracking-tight;
+    @apply font-serif font-normal tracking-wide text-slate-100;
   }
 }
 
 @layer components {
+
+  /* Glassmorphism - Dark & Moody */
   .glass-panel {
-    @apply bg-surface/40 backdrop-blur-md border border-white/5 shadow-2xl transform-gpu;
+    @apply bg-[#0f1012]/80 backdrop-blur-xl border border-white/5 shadow-2xl;
   }
 
   .glass-card {
-    @apply bg-surface-highlight/30 backdrop-blur-sm border border-white/5 hover:border-primary-300/30 transition-colors duration-300 transform-gpu;
+    @apply bg-[#0f1012] border border-white/5 transition-all duration-500;
+    transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+    box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
   }
 
+  .glass-card:hover {
+    box-shadow: 0 10px 30px -10px rgba(204, 255, 0, 0.1);
+    transform: translateY(-5px);
+    border-color: rgba(204, 255, 0, 0.3);
+  }
+
+  /* Buttons - Bioluminescent (Toned Down) */
   .btn-primary {
-    @apply bg-primary-300 text-primary-900 font-sans font-semibold py-3 px-6 rounded-none uppercase tracking-wider text-xs hover:bg-primary-400 transition-all duration-300;
-    box-shadow: 0 0 20px -5px rgba(190, 242, 100, 0.3);
+    @apply bg-primary-500/90 backdrop-blur-sm text-black font-sans font-semibold py-2.5 px-6 rounded-sm uppercase tracking-widest text-xs transition-all duration-300 relative overflow-hidden;
   }
 
+  .btn-primary:hover {
+    @apply bg-primary-400;
+    box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+  }
+
+  .btn-primary:active {
+    transform: scale(0.95);
+  }
+
+  /* Typography Gradients */
   .text-gradient {
-    @apply bg-gradient-to-r from-slate-100 via-slate-300 to-slate-400 text-transparent bg-clip-text;
+    @apply text-slate-100;
   }
 
   .text-gradient-accent {
-    @apply bg-gradient-to-r from-primary-200 to-primary-400 text-transparent bg-clip-text;
+    @apply text-primary-400;
+    text-shadow: 0 0 20px rgba(204, 255, 0, 0.3);
   }
 
   .text-gradient-premium {
-    background: linear-gradient(to right, #5eead4, #ecfccb, #2dd4bf);
+    background: linear-gradient(to right, #ccff00, #e6e6e6);
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    filter: drop-shadow(0 0 15px rgba(45, 212, 191, 0.3));
+    filter: drop-shadow(0 0 10px rgba(204, 255, 0, 0.2));
   }
 
-  .text-glow {
-    text-shadow: 0 0 20px rgba(190, 242, 100, 0.3);
-  }
-
-  .box-glow {
-    box-shadow: 0 0 40px -10px rgba(20, 184, 166, 0.2);
-  }
-
+  /* Ambient Background */
   .hero-gradient {
-    background: radial-gradient(circle at 50% 50%, rgba(20, 184, 166, 0.15) 0%, rgba(5, 10, 10, 0) 50%);
+    background: radial-gradient(circle at 50% 0%, rgba(204, 255, 0, 0.08) 0%, rgba(5, 5, 5, 0) 60%);
+    animation: breathe 8s ease-in-out infinite;
+  }
+}
+
+/* Animations */
+@keyframes breathe {
+
+  0%,
+  100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
   }
 }
 
 @keyframes float {
-  0% {
-    transform: translateY(0px);
+
+  0%,
+  100% {
+    transform: translateY(0);
   }
 
   50% {
     transform: translateY(-20px);
   }
+}
 
-  100% {
-    transform: translateY(0px);
+@keyframes slideDown {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
   }
 }
 
+@keyframes slideInLeft {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeUp {
+  from {
+    transform: translateY(20px);
+    opacity: 0;
+    filter: blur(4px);
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+    filter: blur(0);
+  }
+}
+
+/* Utility Classes for Staggered Animation */
 .animate-float {
   animation: float 6s ease-in-out infinite;
 }
 
-@keyframes blob {
-  0% {
-    transform: translate(0px, 0px) scale(1);
-  }
-
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
-  }
-
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
-  }
-
-  100% {
-    transform: translate(0px, 0px) scale(1);
-  }
+.animate-in-slide-left {
+  animation: slideInLeft 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
+.animate-in-fade-up {
+  animation: fadeUp 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+  opacity: 0;
+  /* Start hidden */
 }
 
+.stagger-1 {
+  animation-delay: 100ms;
+}
+
+.stagger-2 {
+  animation-delay: 200ms;
+}
+
+.stagger-3 {
+  animation-delay: 300ms;
+}
+
+.stagger-4 {
+  animation-delay: 400ms;
+}
+
+.stagger-5 {
+  animation-delay: 500ms;
+}
+
+.delay-100 {
+  animation-delay: 100ms;
+}
+
+.delay-200 {
+  animation-delay: 200ms;
+}
+
+.delay-300 {
+  animation-delay: 300ms;
+}
+
+/* Print Overrides */
 @media print {
   .no-print {
     display: none !important;
@@ -147,92 +267,35 @@
   body {
     background: white !important;
     color: black !important;
-    overflow: visible !important;
   }
 
-  #root {
-    width: 100%;
-    overflow: visible !important;
-  }
-
-  /* Reset layout for print */
-  .flex,
-  .h-screen,
-  .overflow-hidden {
-    display: block !important;
-    height: auto !important;
-    overflow: visible !important;
-  }
-
-  /* Ensure the report content is visible and takes full width */
-  main {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 100% !important;
-    overflow: visible !important;
-  }
-
-  /* Reset dark mode styles for print */
   .glass-card,
   .glass-panel {
     background: white !important;
     border: 1px solid #ccc !important;
     color: black !important;
     box-shadow: none !important;
-    backdrop-filter: none !important;
   }
 
-  /* Typography overrides */
   .text-slate-100,
-  .text-slate-200,
-  .text-slate-300,
-  .text-slate-400,
-  .text-slate-500 {
-    color: #333 !important;
-  }
-
   h1,
   h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h3 {
+    color: black !important;
+  }
+
+  .bg-red-500 {
+    background-color: #fee2e2 !important;
+    color: #991b1b !important;
+  }
+
+  .text-teal-400,
+  .text-primary-400 {
     color: #000 !important;
   }
 
-  /* Critical Alerts */
-  .bg-red-500 {
-    background-color: #fee2e2 !important;
-    /* light red bg */
-    color: #991b1b !important;
-    /* dark red text */
-    border: 1px solid #ef4444 !important;
-  }
-
-  .text-red-100,
-  .text-red-200 {
-    color: #7f1d1d !important;
-  }
-
-  /* Teal Accents */
-  .text-teal-400,
-  .text-teal-500 {
-    color: #0f766e !important;
-  }
-
-  .bg-teal-500\/5,
-  .bg-teal-500\/10,
-  .bg-teal-500\/20 {
-    background-color: #f0fdfa !important;
-    border: 1px solid #ccfbf1 !important;
-  }
-
-  /* Hide background gradients/noise */
   .hero-gradient,
-  .absolute {
+  body::before {
     display: none !important;
   }
-
-  /* Re-enable absolute for specific elements if needed, but generally avoid in print */
-  /* Exception for layout elements that might be absolute */
 }

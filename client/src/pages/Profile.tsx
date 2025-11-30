@@ -58,7 +58,7 @@ export default function Profile() {
                 <button
                     onClick={() => isEditing ? handleSubmit() : setIsEditing(true)}
                     disabled={saveStatus === 'saving'}
-                    className={`btn-primary flex items-center gap-2 ${isEditing ? 'bg-teal-500 hover:bg-teal-400' : 'bg-surface-highlight hover:bg-white/10 border border-white/10'}`}
+                    className={`btn-primary flex items-center gap-2 ${isEditing ? 'bg-primary-500 hover:bg-primary-400' : 'bg-primary-500/10 hover:bg-primary-500/20 border border-primary-500/20 text-primary-300'}`}
                 >
                     {saveStatus === 'saving' ? (
                         <Activity className="w-4 h-4 animate-spin" />
@@ -72,13 +72,13 @@ export default function Profile() {
             </div>
 
             {saveStatus === 'success' && (
-                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 bg-teal-500/10 border border-teal-500/20 rounded-xl flex items-center gap-3 text-teal-300">
+                <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="mb-6 p-4 bg-primary-500/10 border border-primary-500/20 rounded-sm flex items-center gap-3 text-primary-300">
                     <CheckCircle className="w-5 h-5" /> Profile updated successfully!
                 </motion.div>
             )}
 
             {error && (
-                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-300">
+                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-sm flex items-center gap-3 text-red-300">
                     <AlertCircle className="w-5 h-5" /> {error}
                 </div>
             )}
@@ -86,9 +86,9 @@ export default function Profile() {
             <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-8">
 
                 {/* Personal Information */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-6">
-                    <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2 border-b border-white/5 pb-4">
-                        <User className="w-5 h-5 text-teal-400" /> Personal Information
+                <div className="glass-panel p-6 rounded-sm border border-white/10 space-y-6">
+                    <h3 className="text-lg font-serif font-bold text-slate-100 flex items-center gap-2 border-b border-white/5 pb-4">
+                        <User className="w-5 h-5 text-primary-400" /> Personal Information
                     </h3>
 
                     <div className="grid grid-cols-2 gap-4">
@@ -100,7 +100,7 @@ export default function Profile() {
                                 value={formData.fullName}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -111,7 +111,7 @@ export default function Profile() {
                                 value={formData.age}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -121,7 +121,7 @@ export default function Profile() {
                                 value={formData.gender}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             >
                                 <option value="">Select</option>
                                 <option value="Male">Male</option>
@@ -137,7 +137,7 @@ export default function Profile() {
                                 value={formData.height}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -148,7 +148,7 @@ export default function Profile() {
                                 value={formData.weight}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div className="col-span-2">
@@ -158,7 +158,7 @@ export default function Profile() {
                                 value={formData.bloodType}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             >
                                 <option value="">Select</option>
                                 <option value="A+">A+</option>
@@ -175,8 +175,8 @@ export default function Profile() {
                 </div>
 
                 {/* Medical History */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-6">
-                    <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2 border-b border-white/5 pb-4">
+                <div className="glass-panel p-6 rounded-sm border border-white/10 space-y-6">
+                    <h3 className="text-lg font-serif font-bold text-slate-100 flex items-center gap-2 border-b border-white/5 pb-4">
                         <Activity className="w-5 h-5 text-red-400" /> Medical History
                     </h3>
 
@@ -189,7 +189,7 @@ export default function Profile() {
                                 onChange={(e) => handleArrayChange(e, 'allergies')}
                                 disabled={!isEditing}
                                 placeholder="e.g. Peanuts, Penicillin"
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -200,7 +200,7 @@ export default function Profile() {
                                 onChange={(e) => handleArrayChange(e, 'pastConditions')}
                                 disabled={!isEditing}
                                 placeholder="e.g. Asthma, Diabetes"
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -211,16 +211,16 @@ export default function Profile() {
                                 onChange={(e) => handleArrayChange(e, 'currentMedications')}
                                 disabled={!isEditing}
                                 placeholder="e.g. Ibuprofen"
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* Emergency Contact */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-6">
-                    <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2 border-b border-white/5 pb-4">
-                        <Phone className="w-5 h-5 text-amber-400" /> Emergency Contact
+                <div className="glass-panel p-6 rounded-sm border border-white/10 space-y-6">
+                    <h3 className="text-lg font-serif font-bold text-slate-100 flex items-center gap-2 border-b border-white/5 pb-4">
+                        <Phone className="w-5 h-5 text-red-400" /> Emergency Contact
                     </h3>
 
                     <div className="space-y-4">
@@ -232,7 +232,7 @@ export default function Profile() {
                                 value={formData.emergencyContactName}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -243,7 +243,7 @@ export default function Profile() {
                                 value={formData.emergencyContactRelationship}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                         <div>
@@ -254,22 +254,22 @@ export default function Profile() {
                                 value={formData.emergencyContactPhone}
                                 onChange={handleChange}
                                 disabled={!isEditing}
-                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-xl px-4 py-3 text-slate-200 focus:border-teal-500/50 outline-none disabled:opacity-50"
+                                className="w-full bg-surface-highlight/30 border border-white/10 rounded-sm px-4 py-3 text-slate-100 focus:border-primary-500/50 outline-none disabled:opacity-50 font-mono"
                             />
                         </div>
                     </div>
                 </div>
 
                 {/* Settings & Consent */}
-                <div className="glass-panel p-6 rounded-2xl border border-white/10 space-y-6">
-                    <h3 className="text-lg font-bold text-slate-200 flex items-center gap-2 border-b border-white/5 pb-4">
-                        <Shield className="w-5 h-5 text-blue-400" /> Privacy & Settings
+                <div className="glass-panel p-6 rounded-sm border border-white/10 space-y-6">
+                    <h3 className="text-lg font-serif font-bold text-slate-100 flex items-center gap-2 border-b border-white/5 pb-4">
+                        <Shield className="w-5 h-5 text-primary-300" /> Privacy & Settings
                     </h3>
 
                     <div className="space-y-4">
-                        <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl border border-white/5">
+                        <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-sm border border-white/5">
                             <div>
-                                <h4 className="text-slate-200 font-medium text-sm">Location Sharing</h4>
+                                <h4 className="text-slate-100 font-medium text-sm">Location Sharing</h4>
                                 <p className="text-slate-500 text-xs mt-1">Allow sharing location with emergency services.</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -281,13 +281,13 @@ export default function Profile() {
                                     disabled={!isEditing}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
+                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                             </label>
                         </div>
 
-                        <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-xl border border-white/5">
+                        <div className="flex items-center justify-between p-4 bg-surface-highlight/30 rounded-sm border border-white/5">
                             <div>
-                                <h4 className="text-slate-200 font-medium text-sm">Auto-Trigger Alerts</h4>
+                                <h4 className="text-slate-100 font-medium text-sm">Auto-Trigger Alerts</h4>
                                 <p className="text-slate-500 text-xs mt-1">Automatically notify contacts if critical vitals detected.</p>
                             </div>
                             <label className="relative inline-flex items-center cursor-pointer">
@@ -299,7 +299,7 @@ export default function Profile() {
                                     disabled={!isEditing}
                                     className="sr-only peer"
                                 />
-                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-teal-500"></div>
+                                <div className="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary-500"></div>
                             </label>
                         </div>
                     </div>
