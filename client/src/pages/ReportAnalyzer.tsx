@@ -484,14 +484,14 @@ export default function ReportAnalyzer() {
                                         }
 
                                         return (
-                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center justify-center text-center gap-2 transition-all hover:scale-[1.02] ${bgClass}`}>
-                                                <div className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${textClass} opacity-80 truncate w-full`}>
+                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center justify-between text-center gap-3 transition-all hover:scale-[1.02] min-h-[140px] h-full ${bgClass}`}>
+                                                <div className={`text-[10px] md:text-xs font-bold uppercase tracking-wider ${textClass} opacity-80 break-words w-full`}>
                                                     {vital.label}
                                                 </div>
-                                                <div className={`text-lg md:text-xl lg:text-2xl font-bold ${valueClass} break-words w-full`}>
+                                                <div className={`text-lg md:text-xl lg:text-2xl font-bold ${valueClass} break-words w-full leading-tight`}>
                                                     {vital.value}
                                                 </div>
-                                                <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full`}>
+                                                <div className={`text-[9px] font-semibold uppercase tracking-widest opacity-70 ${textClass} border border-current px-2 py-0.5 rounded-full whitespace-nowrap`}>
                                                     {vital.status}
                                                 </div>
                                             </div>

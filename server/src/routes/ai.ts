@@ -242,9 +242,9 @@ router.post('/suggest-remedies', async (req, res) => {
            - If the patient has "Chest Pain" or "High BP", suggest remedies that specifically help calm the cardiovascular system (e.g., deep breathing, specific teas), but emphasize medical attention first.
            - Avoid generic advice. If the patient has a cough, suggest remedies for *cough*. If they have high sugar, suggest remedies for *diabetes*.
         4. **Categories**:
-           - "Home Remedies": Simple things to do at home RIGHT NOW.
-           - "Ayurvedic Remedies": Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.) relevant to the condition.
-           - "Natural Remedies": General naturopathic suggestions.
+           - "Home Remedies": Provide **at least 5** distinct, simple things to do at home RIGHT NOW.
+           - "Ayurvedic Remedies": Provide **at least 5** distinct Traditional Indian remedies (Tulsi, Ginger, Ashwagandha, etc.) relevant to the condition.
+           - "Natural Remedies": Provide **at least 5** distinct General naturopathic suggestions.
            
            **CRITICAL**: For each remedy, provide a **detailed description (3-4 sentences)**. Explain **HOW** to use it and **WHY** it helps with the *specific* symptoms identified.
 
@@ -256,9 +256,9 @@ router.post('/suggest-remedies', async (req, res) => {
             "blood_pressure": "String (Optional, advice if BP is abnormal)"
           },
           "remedies": {
-            "home": ["Detailed string with remedy name, usage, and benefits (3-4 sentences)"],
-            "ayurvedic": ["Detailed string with remedy name, usage, and benefits (3-4 sentences)"],
-            "natural": ["Detailed string with remedy name, usage, and benefits (3-4 sentences)"]
+            "home": ["Detailed string 1", "Detailed string 2", "Detailed string 3", "Detailed string 4", "Detailed string 5"],
+            "ayurvedic": ["Detailed string 1", "Detailed string 2", "Detailed string 3", "Detailed string 4", "Detailed string 5"],
+            "natural": ["Detailed string 1", "Detailed string 2", "Detailed string 3", "Detailed string 4", "Detailed string 5"]
           }
         }
         `;
