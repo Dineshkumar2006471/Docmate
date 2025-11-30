@@ -3,7 +3,9 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { ArrowLeft, Calendar, FileText, Activity, AlertTriangle, Download } from 'lucide-react';
-import { jsPDF } from 'jspdf';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { DocMatePDFReport } from '../components/DocMatePDFReport';
+import { useUserProfile } from '../context/UserProfileContext';
 
 interface Assessment {
     id: string;
@@ -23,6 +25,7 @@ interface Assessment {
 export default function ReportViewer() {
     const { id } = useParams();
     const navigate = useNavigate();
+    const { profile } = useUserProfile();
     const [report, setReport] = useState<Assessment | null>(null);
     const [loading, setLoading] = useState(true);
 
@@ -73,74 +76,42 @@ export default function ReportViewer() {
         fetchReport();
     }, [id]);
 
-    const handleDownloadPDF = () => {
-        if (!report) return;
-        const doc = new jsPDF();
-        let yPos = 20;
-
-        // Header
-        doc.setFontSize(20);
-        doc.text(`Medical Report: ${report.ai_analysis.possible_conditions[0]?.name || 'Assessment'}`, 20, yPos);
-        yPos += 10;
-
-        doc.setFontSize(12);
-        doc.text(`Date: ${new Date(report.created_date?.seconds * 1000).toLocaleDateString()}`, 20, yPos);
-        yPos += 7;
-        doc.text(`Triage Level: ${report.triage_level}`, 20, yPos);
-        yPos += 7;
-        doc.text(`Severity Score: ${report.severity_score}/10`, 20, yPos);
-        yPos += 15;
-
-        // Symptoms
-        doc.setFontSize(14);
-        doc.text("Symptoms:", 20, yPos);
-        yPos += 7;
-        doc.setFontSize(10);
-        const splitSymptoms = doc.splitTextToSize(report.symptoms_description, 170);
-        doc.text(splitSymptoms, 20, yPos);
-        yPos += (splitSymptoms.length * 5) + 10;
-
-        // AI Analysis
-        doc.setFontSize(14);
-        doc.text("AI Analysis:", 20, yPos);
-        yPos += 7;
-        doc.setFontSize(10);
-        report.ai_analysis.possible_conditions.forEach(cond => {
-            doc.text(`- ${cond.name} (${cond.probability}%)`, 20, yPos);
-            yPos += 5;
-        });
-        yPos += 10;
-
-        // Recommendation
-        if (report.ai_analysis.recommendation) {
-            doc.setFontSize(14);
-            doc.text("Recommendation:", 20, yPos);
-            yPos += 7;
-            doc.setFontSize(10);
-            const splitRec = doc.splitTextToSize(report.ai_analysis.recommendation, 170);
-            doc.text(splitRec, 20, yPos);
-            yPos += (splitRec.length * 5) + 10;
-        }
-
-        // Warning Signs
-        if (report.red_flags && report.red_flags.length > 0) {
-            doc.setTextColor(220, 53, 69); // Red color
-            doc.setFontSize(14);
-            doc.text("Warning Signs:", 20, yPos);
-            yPos += 7;
-            doc.setFontSize(10);
-            report.red_flags.forEach(flag => {
-                doc.text(`- ${flag}`, 20, yPos);
-                yPos += 5;
-            });
-            doc.setTextColor(0, 0, 0); // Reset color
-        }
-
-        doc.save(`report_${report.id}.pdf`);
-    };
-
     if (loading) return <div className="p-10 text-center text-slate-400">Loading report...</div>;
     if (!report) return <div className="p-10 text-center text-slate-400">Report not found.</div>;
+
+    // Prepare data for PDF
+    const pdfData = {
+        meta: {
+            date: new Date(report.created_date?.seconds * 1000).toLocaleDateString(),
+            time: new Date(report.created_date?.seconds * 1000).toLocaleTimeString(),
+            id: report.id
+        },
+        patient: {
+            name: profile.fullName || 'Guest',
+            age: parseInt(profile.age) || 0,
+            gender: profile.gender || 'Unknown',
+            bloodType: profile.bloodType || 'Unknown',
+            history: profile.pastConditions.join(', ') || 'None'
+        },
+        emergency: {
+            contactName: profile.emergencyContactName || 'None',
+            relation: profile.emergencyContactRelationship || 'N/A',
+            phone: profile.emergencyContactPhone || 'N/A'
+        },
+        vitals: report.vitals ? [
+            { label: 'Temperature', value: report.vitals.temp || '-', unit: '°F', ref: '97-99', status: 'Normal', analysis: 'Normal range' },
+            { label: 'Heart Rate', value: report.vitals.hr || '-', unit: 'bpm', ref: '60-100', status: 'Normal', analysis: 'Normal range' },
+            { label: 'Blood Pressure', value: `${report.vitals.bpSys}/${report.vitals.bpDia}` || '-', unit: 'mmHg', ref: '120/80', status: 'Normal', analysis: 'Normal range' },
+            { label: 'SpO2', value: report.vitals.spo2 || '-', unit: '%', ref: '>95', status: 'Normal', analysis: 'Normal range' }
+        ] : [],
+        aiSummary: {
+            riskLevel: report.triage_level,
+            reasoning: report.ai_analysis.recommendation || 'No detailed reasoning available.',
+            overall: report.symptoms_description,
+            recommendation: report.ai_analysis.recommendation || 'No specific recommendation.'
+        },
+        remedies: [] // Placeholder as remedies are not yet saved in report data
+    };
 
     return (
         <div className="max-w-full mx-auto pb-20 relative min-w-0">
@@ -164,9 +135,14 @@ export default function ReportViewer() {
                             </span>
                         </div>
                     </div>
-                    <button onClick={handleDownloadPDF} className="btn-primary flex items-center gap-2">
-                        <Download className="w-4 h-4" /> Download PDF
-                    </button>
+
+                    <PDFDownloadLink document={<DocMatePDFReport data={pdfData} />} fileName={`report_${report.id}.pdf`}>
+                        {({ loading }) => (
+                            <button className="btn-primary flex items-center gap-2" disabled={loading}>
+                                <Download className="w-4 h-4" /> {loading ? 'Generating PDF...' : 'Download PDF'}
+                            </button>
+                        )}
+                    </PDFDownloadLink>
                 </div>
 
                 <div className="space-y-8">
