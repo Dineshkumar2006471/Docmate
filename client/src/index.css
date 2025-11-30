@@ -35,38 +35,42 @@
 }
 
 :root.light {
-  /* Light Mode Values - Premium & Impressive */
-  --background: #f0f2f5;
-  /* Soft Gray-Blue tint for depth */
-  --surface: #ffffff;
-  /* Pure White for cards */
-  --surface-highlight: #f8fafc;
-  /* Very light gray for inputs/highlights */
+  /* THE PORCELAIN LAB - Hyper-Clean Light Mode */
 
-  --slate-100: #1e293b;
-  /* Deep Slate (Main Text) */
-  --slate-200: #334155;
-  /* Dark Slate (Secondary) */
+  /* Backgrounds: Ceramic & Alabaster */
+  --background: #f4f5f7;
+  /* Ceramic White */
+  --surface: #ffffff;
+  /* Pure White */
+  --surface-highlight: #f9fafb;
+  /* Warm Alabaster */
+
+  /* Text: Midnight Navy & Slate */
+  --slate-100: #0b1120;
+  /* Midnight Navy - Primary Text */
+  --slate-200: #1e293b;
+  /* Deep Slate */
   --slate-300: #475569;
   /* Medium Slate */
   --slate-400: #64748b;
-  /* Muted Slate */
+  /* Slate - Secondary Text */
   --slate-500: #94a3b8;
   /* Light Muted */
 
-  --slate-800: #000000;
-  /* Black Border for distinct separation */
-  --slate-900: #111111;
-  /* Darker border for emphasis */
+  /* Borders: Extremely subtle, relying on shadows */
+  --slate-800: rgba(0, 0, 0, 0.04);
+  /* Almost invisible structure */
+  --slate-900: rgba(0, 0, 0, 0.08);
+  /* Slightly clearer division */
 
-  /* Primary Color - Medical Blue (Light Mode - No Green) */
+  /* Primary Color - International Klein Blue */
   --primary-50: #eff6ff;
   --primary-100: #dbeafe;
   --primary-200: #bfdbfe;
   --primary-300: #93c5fd;
   --primary-400: #60a5fa;
-  --primary-500: #3b82f6;
-  /* Royal Blue */
+  --primary-500: #0055ff;
+  /* International Klein Blue */
   --primary-600: #2563eb;
   --primary-700: #1d4ed8;
   --primary-800: #1e40af;
@@ -144,6 +148,11 @@
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
 
+  :root.light body::before {
+    opacity: 0.3;
+    mix-blend-mode: multiply;
+  }
+
   h1,
   h2,
   h3,
@@ -161,16 +170,35 @@
     @apply bg-surface/80 backdrop-blur-xl border border-slate-800 shadow-2xl;
   }
 
+  :root.light .glass-panel {
+    @apply border-none shadow-none;
+    box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.05);
+    /* Soft diffuse shadow */
+  }
+
   .glass-card {
     @apply bg-surface border border-slate-800 transition-all duration-500;
     transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
     box-shadow: 0 4px 20px -10px rgba(0, 0, 0, 0.5);
   }
 
+  :root.light .glass-card {
+    @apply border-none;
+    box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.05);
+    /* Soft diffuse shadow */
+  }
+
   .glass-card:hover {
     box-shadow: 0 10px 30px -10px rgba(204, 255, 0, 0.1);
     transform: translateY(-5px);
     border-color: rgba(204, 255, 0, 0.3);
+  }
+
+  :root.light .glass-card:hover {
+    transform: translateY(-3px);
+    /* Subtle lift */
+    box-shadow: 0 20px 40px -10px rgba(0, 85, 255, 0.15);
+    /* Colored shadow on hover */
   }
 
   /* Buttons - Bioluminescent (Toned Down) */
@@ -181,6 +209,16 @@
   .btn-primary:hover {
     @apply bg-primary-400;
     box-shadow: 0 0 25px rgba(204, 255, 0, 0.4);
+  }
+
+  :root.light .btn-primary {
+    box-shadow: 0 4px 15px rgba(0, 85, 255, 0.2);
+  }
+
+  :root.light .btn-primary:hover {
+    box-shadow: 0 10px 25px rgba(0, 85, 255, 0.3);
+    /* Lift effect */
+    transform: translateY(-2px);
   }
 
   .btn-primary:active {
