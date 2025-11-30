@@ -151,53 +151,59 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
             throw new Error("User not authenticated");
         }
 
-        try {
-            // 1. Save Medical Data to 'patients' collection
-            const medicalData = {
-                user_id: user.uid,
-                created_by: user.email,
-                updated_at: serverTimestamp(),
-                ...newProfile
-            };
+        // 1. Optimistic Update (Instant UI Feedback)
+        const previousProfile = profile;
+        const previousSettings = settings;
 
-            if (docId) {
-                // Update existing document directly using ID (No read required)
-                await setDoc(doc(db, 'patients', docId), medicalData, { merge: true });
-            } else {
-                // Fallback: Query if docId is missing (rare case)
-                const patientsRef = collection(db, 'patients');
-                const q = query(patientsRef, where('user_id', '==', user.uid));
-                const querySnapshot = await getDocs(q);
+        setProfile(newProfile);
+        setSettings(newSettings);
 
-                if (!querySnapshot.empty) {
-                    const existingDocId = querySnapshot.docs[0].id;
-                    setDocId(existingDocId);
-                    await setDoc(doc(db, 'patients', existingDocId), medicalData, { merge: true });
+        // 2. Background Sync (Fire and Forget)
+        (async () => {
+            try {
+                // Save Medical Data to 'patients' collection
+                const medicalData = {
+                    user_id: user.uid,
+                    created_by: user.email,
+                    updated_at: serverTimestamp(),
+                    ...newProfile
+                };
+
+                if (docId) {
+                    await setDoc(doc(db, 'patients', docId), medicalData, { merge: true });
                 } else {
-                    // Create new document
-                    const newDocRef = doc(collection(db, 'patients'));
-                    setDocId(newDocRef.id);
-                    await setDoc(newDocRef, medicalData);
+                    const patientsRef = collection(db, 'patients');
+                    const q = query(patientsRef, where('user_id', '==', user.uid));
+                    const querySnapshot = await getDocs(q);
+
+                    if (!querySnapshot.empty) {
+                        const existingDocId = querySnapshot.docs[0].id;
+                        setDocId(existingDocId);
+                        await setDoc(doc(db, 'patients', existingDocId), medicalData, { merge: true });
+                    } else {
+                        const newDocRef = doc(collection(db, 'patients'));
+                        setDocId(newDocRef.id);
+                        await setDoc(newDocRef, medicalData);
+                    }
                 }
+
+                // Save Consent Data to 'users' collection
+                const userDocRef = doc(db, 'users', user.uid);
+                await setDoc(userDocRef, {
+                    email: user.email,
+                    settings: newSettings,
+                    updated_at: serverTimestamp()
+                }, { merge: true });
+
+            } catch (err: any) {
+                console.error("Background save failed - Reverting:", err);
+                setProfile(previousProfile);
+                setSettings(previousSettings);
+                setError("Failed to save changes. Please check your connection.");
             }
+        })();
 
-            // 2. Save Consent Data to 'users' collection
-            const userDocRef = doc(db, 'users', user.uid);
-            await setDoc(userDocRef, {
-                email: user.email,
-                settings: newSettings,
-                updated_at: serverTimestamp()
-            }, { merge: true });
-
-            // Update local state
-            setProfile(newProfile);
-            setSettings(newSettings);
-
-            return true;
-        } catch (err: any) {
-            console.error("Error saving profile:", err);
-            throw err;
-        }
+        return true; // Return immediately to unblock UI
     };
 
     const isProfileComplete = Boolean(
