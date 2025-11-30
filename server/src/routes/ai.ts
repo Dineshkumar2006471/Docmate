@@ -143,12 +143,12 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
            - Heart Rate: < 50 or > 110
            - Temperature: > 39.5°C (103°F) or < 35°C (95°F)
            - SpO2: < 94%
-           - Keywords: "Chest pain", "Unconscious", "Severe breathing difficulty", "Massive bleeding", "Critical", "Emergency".
+           - Keywords: "Chest pain", "Unconscious", "Severe breathing difficulty", "Massive bleeding", "Critical", "Emergency", "Positive" (for serious infections).
          - **DOCTOR VISIT (Orange)**:
            - Temperature: 38°C - 39.5°C
            - Pain Score: 4-7
-           - Abnormal Lab Values (e.g., High Glucose, Low Hemoglobin).
-           - Keywords: "Abdominal pain", "Persistent fever", "Infection".
+           - Abnormal Lab Values (e.g., High Glucose, Low Hemoglobin, High Cholesterol).
+           - Keywords: "Abdominal pain", "Persistent fever", "Infection", "Anemia".
          - **LOW RISK (Green)**:
            - ONLY if ALL vitals are strictly within standard normal ranges.
       
@@ -175,7 +175,7 @@ router.post('/analyze-report', upload.single('report'), async (req, res) => {
           }
         ],
         "ai_analysis": {
-          "warning_signs": ["List of specific abnormalities found"],
+          "warning_signs": ["List of specific abnormalities found (Report Critics)"],
           "possible_conditions": [
             {
               "condition": "String",
@@ -226,10 +226,10 @@ router.post('/suggest-remedies', async (req, res) => {
         - Condition/Diagnosis: ${diagnosis}
         - Risk Level: ${risk_level}
         - Vital Signs: ${JSON.stringify(vital_signs)}
-        - Identified Warning Signs: ${JSON.stringify(warning_signs)}
+        - Identified Warning Signs (Report Critics): ${JSON.stringify(warning_signs)}
         - AI Medical Recommendations: ${ai_recommendations}
 
-        **Goal**: Generate **specific, real-time, and immediate** natural remedy suggestions tailored EXACTLY to this patient's current state.
+        **Goal**: Generate **specific, real-time, and immediate** natural remedy suggestions tailored EXACTLY to this patient's current state and the identified "Report Critics" (Abnormalities).
 
         STRICT RULES:
         1. **Disclaimer**: Always include a disclaimer that these are supportive measures and not a substitute for professional medical advice.
@@ -247,9 +247,9 @@ router.post('/suggest-remedies', async (req, res) => {
            - "Natural Remedies": Provide **at least 5** distinct General naturopathic suggestions.
            
            **REQUIRED OUTPUT FORMAT**: 
-           - **Structure**: "Remedy Name: Detailed description (3-4 sentences)."
-           - **Example**: "Ginger Tea: Brew fresh ginger slices in boiling water for 10 minutes. Ginger contains gingerol, which has powerful anti-inflammatory and antioxidant properties. This helps improve circulation and can naturally lower blood pressure by relaxing blood vessels."
-           - **Detail Level**: Single sentence descriptions are **UNACCEPTABLE**. You must explain the *how* and *why*.
+           - **Structure**: "Remedy Name: Description."
+           - **Example**: "Ginger Tea: Brew fresh ginger slices. It has anti-inflammatory properties that help improve circulation and relax blood vessels."
+           - **Detail Level**: Keep it **CONCISE** and **MEDIUM LENGTH** (1-2 sentences, max 30 words). Avoid overly long paragraphs.
            
            **CONTENT RULE**: 
            - If specific vitals are abnormal (e.g., Low BP), you MUST include remedies for that specific issue within these lists.
@@ -263,9 +263,9 @@ router.post('/suggest-remedies', async (req, res) => {
             "blood_pressure": "String (Optional, specific advice if BP is abnormal)"
           },
           "remedies": {
-            "home": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description..."],
-            "ayurvedic": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description..."],
-            "natural": ["Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description...", "Remedy Name: Detailed description..."]
+            "home": ["Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description..."],
+            "ayurvedic": ["Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description..."],
+            "natural": ["Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description...", "Remedy Name: Description..."]
           }
         }
         `;

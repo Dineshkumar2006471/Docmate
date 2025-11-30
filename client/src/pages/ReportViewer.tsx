@@ -248,6 +248,50 @@ export default function ReportViewer() {
                             </div>
                         </div>
                     )}
+                    {/* Remedies Section - Full Width Stacked */}
+                    {report.remedies && (
+                        <div className="space-y-6 pt-4 border-t border-slate-800">
+                            <h3 className="text-lg font-bold text-slate-200 mb-2 flex items-center gap-2">
+                                <Activity className="w-5 h-5 text-emerald-400" /> Suggested Remedies
+                            </h3>
+
+                            {/* Home Remedies */}
+                            {report.remedies.home && report.remedies.home.length > 0 && (
+                                <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-6 w-full">
+                                    <h4 className="text-primary-400 font-bold text-lg uppercase mb-4">Home Remedies</h4>
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 list-disc list-inside text-slate-300 text-sm">
+                                        {report.remedies.home.map((r, i) => (
+                                            <li key={i} className="leading-relaxed pl-2 marker:text-primary-500">{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Ayurvedic Remedies */}
+                            {report.remedies.ayurvedic && report.remedies.ayurvedic.length > 0 && (
+                                <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-6 w-full">
+                                    <h4 className="text-emerald-400 font-bold text-lg uppercase mb-4">Ayurvedic Remedies</h4>
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 list-disc list-inside text-slate-300 text-sm">
+                                        {report.remedies.ayurvedic.map((r, i) => (
+                                            <li key={i} className="leading-relaxed pl-2 marker:text-emerald-500">{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+
+                            {/* Natural Remedies */}
+                            {report.remedies.natural && report.remedies.natural.length > 0 && (
+                                <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-6 w-full">
+                                    <h4 className="text-amber-400 font-bold text-lg uppercase mb-4">Natural / Holistic</h4>
+                                    <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 list-disc list-inside text-slate-300 text-sm">
+                                        {report.remedies.natural.map((r, i) => (
+                                            <li key={i} className="leading-relaxed pl-2 marker:text-amber-500">{r}</li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
+                        </div>
+                    )}
                 </div>
             </div>
         </div>

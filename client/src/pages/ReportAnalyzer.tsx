@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Upload, FileText, AlertTriangle, Phone, MapPin, CheckCircle, Download, Calendar, Share2, Loader2, Check, Shield, User } from 'lucide-react';
 import { API_URL } from '../config';
+import { PDFDownloadLink } from '@react-pdf/renderer';
+import { DocMatePDFReport } from '../components/DocMatePDFReport';
+import { useUserProfile } from '../context/UserProfileContext';
 
 // --- Types ---
 interface ReportAnalysis {
@@ -61,6 +64,7 @@ export default function ReportAnalyzer() {
     const [remedies, setRemedies] = useState<Remedies | null>(null);
     const [showRemedies, setShowRemedies] = useState(false);
     const [currentReportId, setCurrentReportId] = useState<string | null>(null);
+    const { profile } = useUserProfile();
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files[0]) {
@@ -112,12 +116,15 @@ export default function ReportAnalyzer() {
             }
 
             // Ensure the progress UX completes before showing results
-            setTimeout(() => {
+            setTimeout(async () => {
                 clearInterval(stepInterval);
                 setResult(data as ReportAnalysis);
                 setIsProcessing(false);
                 const id = saveReportToHistory(data as ReportAnalysis, reportTitle, reportDate);
                 setCurrentReportId(id);
+
+                // Automatically fetch remedies
+                await fetchRemedies(data as ReportAnalysis, id);
             }, 1500 * 4); // align with steps timing
 
         } catch (error) {
@@ -152,24 +159,24 @@ export default function ReportAnalyzer() {
         return id;
     };
 
-    const fetchRemedies = async () => {
-        if (!result) return;
+    const fetchRemedies = async (analysisData: ReportAnalysis | null = result, reportId: string | null = currentReportId) => {
+        if (!analysisData) return;
         setShowRemedies(true);
-        if (remedies) return; // Already fetched
+        // if (remedies) return; // Force refresh if called explicitly or new analysis
 
         try {
             // Get all possible conditions for better context
-            const diagnosis = result.ai_analysis.possible_conditions.map(c => c.condition).join(', ') || "General Health Check";
+            const diagnosis = analysisData.ai_analysis.possible_conditions.map(c => c.condition).join(', ') || "General Health Check";
 
             const response = await fetch(`${API_URL}/api/suggest-remedies`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     diagnosis,
-                    risk_level: result.triage_status.level,
-                    vital_signs: result.vital_signs,
-                    warning_signs: result.ai_analysis.warning_signs,
-                    ai_recommendations: result.ai_analysis.recommendations
+                    risk_level: analysisData.triage_status.level,
+                    vital_signs: analysisData.vital_signs,
+                    warning_signs: analysisData.ai_analysis.warning_signs,
+                    ai_recommendations: analysisData.ai_analysis.recommendations
                 })
             });
 
@@ -179,12 +186,12 @@ export default function ReportAnalyzer() {
                 setRemedies(data);
 
                 // Update the report in localStorage with remedies
-                if (currentReportId) {
+                if (reportId) {
                     const existing = localStorage.getItem('docmate_reports');
                     if (existing) {
                         const reports = JSON.parse(existing);
                         const updatedReports = reports.map((r: any) => {
-                            if (r.id === currentReportId) {
+                            if (r.id === reportId) {
                                 return {
                                     ...r,
                                     fullData: {
@@ -215,8 +222,49 @@ export default function ReportAnalyzer() {
         }
     };
 
-    const handleDownloadPDF = () => {
-        window.print();
+    // Prepare PDF Data
+    const getPdfData = () => {
+        if (!result) return null;
+
+        return {
+            meta: {
+                date: reportDate || new Date().toLocaleDateString(),
+                time: new Date().toLocaleTimeString(),
+                id: currentReportId || 'N/A'
+            },
+            patient: {
+                name: result.patient_info.name !== 'Unknown' ? result.patient_info.name : (profile.fullName || 'Guest'),
+                age: result.patient_info.age || parseInt(profile.age) || 0,
+                gender: result.patient_info.gender !== 'Unknown' ? result.patient_info.gender : (profile.gender || 'Unknown'),
+                bloodType: result.patient_info.blood_type !== 'Unknown' ? result.patient_info.blood_type : (profile.bloodType || 'Unknown'),
+                history: profile.pastConditions.join(', ') || 'None'
+            },
+            emergency: {
+                contactName: profile.emergencyContactName || 'None',
+                relation: profile.emergencyContactRelationship || 'N/A',
+                phone: profile.emergencyContactPhone || 'N/A'
+            },
+            vitals: result.vital_signs.map(v => ({
+                label: v.label,
+                value: v.value,
+                unit: '', // Extracted in value usually
+                ref: 'Standard',
+                status: v.status,
+                analysis: v.status === 'Normal' ? 'Within range' : 'Attention required'
+            })),
+            aiSummary: {
+                riskLevel: result.triage_status.level,
+                reasoning: result.triage_status.alert_message || result.ai_analysis.recommendations,
+                overall: result.ai_analysis.recommendations,
+                recommendation: result.ai_analysis.recommendations
+            },
+            remedies: remedies ? [{
+                condition: result.ai_analysis.possible_conditions[0]?.condition || 'General Health',
+                home: remedies.remedies.home || [],
+                ayurvedic: remedies.remedies.ayurvedic || [],
+                natural: remedies.remedies.natural || []
+            }] : []
+        };
     };
 
     const reset = () => {
@@ -547,14 +595,8 @@ export default function ReportAnalyzer() {
                             <div className="glass-card p-6 rounded-2xl">
                                 <div className="flex items-center justify-between mb-6">
                                     <h3 className="text-lg font-serif text-slate-100">Natural & Home Remedies (AI-Suggested)</h3>
-                                    {!showRemedies && (
-                                        <button
-                                            onClick={fetchRemedies}
-                                            className="text-sm text-primary-400 hover:text-primary-300 font-bold uppercase tracking-wider flex items-center gap-2"
-                                        >
-                                            Suggest Remedies <CheckCircle className="w-4 h-4" />
-                                        </button>
-                                    )}
+                                    <h3 className="text-lg font-serif text-slate-100">Natural & Home Remedies (AI-Suggested)</h3>
+                                    {/* Remedies are now automatic, but we can keep a refresh button if needed, or just remove the button */}
                                 </div>
 
                                 {showRemedies && (
@@ -592,34 +634,48 @@ export default function ReportAnalyzer() {
                                                     </div>
                                                 )}
 
-                                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                                    <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-4">
-                                                        <h4 className="text-primary-400 font-bold text-sm uppercase mb-3">Home Remedies</h4>
-                                                        <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
+                                                <div className="space-y-6">
+                                                    {/* Home Remedies - Full Width */}
+                                                    <div className="bg-primary-500/5 border border-primary-500/10 rounded-xl p-6 w-full">
+                                                        <h4 className="text-primary-400 font-bold text-lg uppercase mb-4 flex items-center gap-2">
+                                                            <span className="p-1.5 bg-primary-500/20 rounded-lg"><CheckCircle className="w-4 h-4" /></span>
+                                                            Home Remedies
+                                                        </h4>
+                                                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 list-disc list-inside text-slate-300 text-sm">
                                                             {Array.isArray(remedies.remedies.home) && remedies.remedies.home.length > 0 ? (
-                                                                remedies.remedies.home.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)
+                                                                remedies.remedies.home.map((r, i) => <li key={i} className="leading-relaxed pl-2 marker:text-primary-500">{r}</li>)
                                                             ) : (
-                                                                <li className="italic opacity-50">No specific home remedies suggestions available.</li>
+                                                                <li className="italic opacity-50 col-span-full">No specific home remedies suggestions available.</li>
                                                             )}
                                                         </ul>
                                                     </div>
-                                                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-4">
-                                                        <h4 className="text-emerald-400 font-bold text-sm uppercase mb-3">Ayurvedic</h4>
-                                                        <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
+
+                                                    {/* Ayurvedic Remedies - Full Width */}
+                                                    <div className="bg-emerald-500/5 border border-emerald-500/10 rounded-xl p-6 w-full">
+                                                        <h4 className="text-emerald-400 font-bold text-lg uppercase mb-4 flex items-center gap-2">
+                                                            <span className="p-1.5 bg-emerald-500/20 rounded-lg"><CheckCircle className="w-4 h-4" /></span>
+                                                            Ayurvedic Remedies
+                                                        </h4>
+                                                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 list-disc list-inside text-slate-300 text-sm">
                                                             {Array.isArray(remedies.remedies.ayurvedic) && remedies.remedies.ayurvedic.length > 0 ? (
-                                                                remedies.remedies.ayurvedic.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)
+                                                                remedies.remedies.ayurvedic.map((r, i) => <li key={i} className="leading-relaxed pl-2 marker:text-emerald-500">{r}</li>)
                                                             ) : (
-                                                                <li className="italic opacity-50">No specific ayurvedic suggestions available.</li>
+                                                                <li className="italic opacity-50 col-span-full">No specific ayurvedic suggestions available.</li>
                                                             )}
                                                         </ul>
                                                     </div>
-                                                    <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-4">
-                                                        <h4 className="text-amber-400 font-bold text-sm uppercase mb-3">Natural / Holistic</h4>
-                                                        <ul className="list-disc list-outside ml-4 text-slate-300 text-sm space-y-3">
+
+                                                    {/* Natural Remedies - Full Width */}
+                                                    <div className="bg-amber-500/5 border border-amber-500/10 rounded-xl p-6 w-full">
+                                                        <h4 className="text-amber-400 font-bold text-lg uppercase mb-4 flex items-center gap-2">
+                                                            <span className="p-1.5 bg-amber-500/20 rounded-lg"><CheckCircle className="w-4 h-4" /></span>
+                                                            Natural / Holistic
+                                                        </h4>
+                                                        <ul className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4 list-disc list-inside text-slate-300 text-sm">
                                                             {Array.isArray(remedies.remedies.natural) && remedies.remedies.natural.length > 0 ? (
-                                                                remedies.remedies.natural.map((r, i) => <li key={i} className="leading-relaxed pl-1">{r}</li>)
+                                                                remedies.remedies.natural.map((r, i) => <li key={i} className="leading-relaxed pl-2 marker:text-amber-500">{r}</li>)
                                                             ) : (
-                                                                <li className="italic opacity-50">No specific natural suggestions available.</li>
+                                                                <li className="italic opacity-50 col-span-full">No specific natural suggestions available.</li>
                                                             )}
                                                         </ul>
                                                     </div>
@@ -669,11 +725,24 @@ export default function ReportAnalyzer() {
                                     Analyze Another Report
                                 </button>
                                 <button
-                                    onClick={handleDownloadPDF}
-                                    className="bg-white text-slate-900 hover:bg-slate-200 px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg transition-colors no-print"
+                                    onClick={reset}
+                                    className="mr-6 text-slate-500 hover:text-slate-300 transition-colors text-sm font-bold uppercase tracking-wider no-print"
                                 >
-                                    <Download className="w-4 h-4" /> Print / Save as PDF
+                                    Analyze Another Report
                                 </button>
+
+                                {result && (
+                                    <PDFDownloadLink document={<DocMatePDFReport data={getPdfData()!} />} fileName={`report_${currentReportId || 'analysis'}.pdf`}>
+                                        {({ loading }) => (
+                                            <button
+                                                disabled={loading}
+                                                className="bg-white text-slate-900 hover:bg-slate-200 px-6 py-3 rounded-xl font-bold uppercase tracking-widest flex items-center gap-2 shadow-lg transition-colors no-print"
+                                            >
+                                                <Download className="w-4 h-4" /> {loading ? 'Generating PDF...' : 'Download PDF'}
+                                            </button>
+                                        )}
+                                    </PDFDownloadLink>
+                                )}
                             </div>
                         </div>
                     </div>
