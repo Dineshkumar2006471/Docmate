@@ -406,7 +406,7 @@ export default function ReportAnalyzer() {
                             {/* Vitals Grid */}
                             <div className="glass-card p-6 rounded-2xl">
                                 <h3 className="text-lg font-serif text-slate-100 mb-4">Key Findings</h3>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div className="flex flex-wrap gap-4">
                                     {result.vital_signs.map((vital, index) => {
                                         const isCriticalVital = vital.status === 'Critical';
                                         const isWarningVital = vital.status === 'Warning';
@@ -426,7 +426,7 @@ export default function ReportAnalyzer() {
                                         }
 
                                         return (
-                                            <div key={index} className={`p-4 rounded-xl border flex flex-col items-center text-center transition-all ${bgClass}`}>
+                                            <div key={index} className={`flex-1 min-w-[45%] md:min-w-[200px] p-4 rounded-xl border flex flex-col items-center text-center transition-all ${bgClass}`}>
                                                 <div className={`text-xs uppercase font-bold mb-2 ${textClass}`}>
                                                     {vital.label}
                                                 </div>
