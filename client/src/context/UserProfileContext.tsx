@@ -94,7 +94,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
                     if (mounted) {
                         if (!querySnapshot.empty) {
-                            const doc = querySnapshot.docs[0];
+                            // Handle potential duplicates by picking the most recently updated one
+                            const docs = querySnapshot.docs.sort((a, b) => {
+                                const aTime = a.data().updated_at?.toMillis() || 0;
+                                const bTime = b.data().updated_at?.toMillis() || 0;
+                                return bTime - aTime;
+                            });
+
+                            const doc = docs[0];
                             setDocId(doc.id); // Store docId for future updates
                             const docData = doc.data();
                             const { user_id, created_by, updated_at, ...profileData } = docData as any;
@@ -180,7 +187,13 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                     const querySnapshot = await getDocs(q);
 
                     if (!querySnapshot.empty) {
-                        targetDocId = querySnapshot.docs[0].id;
+                        // Handle potential duplicates by picking the most recently updated one
+                        const docs = querySnapshot.docs.sort((a, b) => {
+                            const aTime = a.data().updated_at?.toMillis() || 0;
+                            const bTime = b.data().updated_at?.toMillis() || 0;
+                            return bTime - aTime;
+                        });
+                        targetDocId = docs[0].id;
                         setDocId(targetDocId);
                     }
                 }
