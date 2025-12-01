@@ -93,8 +93,8 @@ export default function MyReports() {
 
             // Calculate Average Severity
             const sumSeverity = loadedReports.reduce((acc, curr) => {
-                let score = curr.severity_score;
-                if (score === undefined) {
+                let score = curr.severity_score !== undefined ? Number(curr.severity_score) : undefined;
+                if (score === undefined || isNaN(score)) {
                     // Map risk to score if missing
                     if (curr.risk_level === 'Critical' || curr.risk_level === 'Emergency') score = 9;
                     else if (curr.risk_level === 'High') score = 7;
@@ -118,8 +118,8 @@ export default function MyReports() {
             const total = reportsList.length;
             const latest = reportsList[0].date;
             const sumSeverity = reportsList.reduce((acc, curr) => {
-                let score = curr.severity_score;
-                if (score === undefined) {
+                let score = curr.severity_score !== undefined ? Number(curr.severity_score) : undefined;
+                if (score === undefined || isNaN(score)) {
                     if (curr.risk_level === 'Critical' || curr.risk_level === 'Emergency') score = 9;
                     else if (curr.risk_level === 'High') score = 7;
                     else if (curr.risk_level === 'Moderate' || curr.risk_level === 'Doctor Visit') score = 5;

@@ -46,27 +46,40 @@ interface UserProfileContextType {
 const UserProfileContext = createContext<UserProfileContextType | undefined>(undefined);
 
 export function UserProfileProvider({ children }: { children: React.ReactNode }) {
-    const [profile, setProfile] = useState<UserProfile>({
-        fullName: '',
-        age: '',
-        gender: '',
-        bloodType: '',
-        weight: '',
-        height: '',
-        pastConditions: [],
-        allergies: [],
-        currentMedications: [],
-        smokingStatus: '',
-        alcoholConsumption: '',
-        exerciseLevel: '',
-        emergencyContactName: '',
-        emergencyContactPhone: '',
-        emergencyContactRelationship: ''
+    const [profile, setProfile] = useState<UserProfile>(() => {
+        // Initialize from LocalStorage if available
+        try {
+            const saved = localStorage.getItem('docmate_user_profile');
+            if (saved) return JSON.parse(saved);
+        } catch (e) { }
+        return {
+            fullName: '',
+            age: '',
+            gender: '',
+            bloodType: '',
+            weight: '',
+            height: '',
+            pastConditions: [],
+            allergies: [],
+            currentMedications: [],
+            smokingStatus: '',
+            alcoholConsumption: '',
+            exerciseLevel: '',
+            emergencyContactName: '',
+            emergencyContactPhone: '',
+            emergencyContactRelationship: ''
+        };
     });
 
-    const [settings, setSettings] = useState<UserSettings>({
-        locationSharingConsent: false,
-        autoTriggerConsent: false
+    const [settings, setSettings] = useState<UserSettings>(() => {
+        try {
+            const saved = localStorage.getItem('docmate_user_settings');
+            if (saved) return JSON.parse(saved);
+        } catch (e) { }
+        return {
+            locationSharingConsent: false,
+            autoTriggerConsent: false
+        };
     });
 
     const [loading, setLoading] = useState(true);
@@ -113,10 +126,17 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                                 setDocId(doc.id); // Store docId for future updates
                                 const docData = doc.data();
                                 const { user_id, created_by, updated_at, ...profileData } = docData as any;
-                                setProfile(prev => ({ ...prev, ...profileData, photoURL: user.photoURL || '' }));
+
+                                const mergedProfile = { ...profile, ...profileData, photoURL: user.photoURL || '' };
+                                setProfile(mergedProfile);
+                                localStorage.setItem('docmate_user_profile', JSON.stringify(mergedProfile));
                             } else {
                                 if (user.displayName) {
-                                    setProfile(prev => ({ ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' }));
+                                    setProfile(prev => {
+                                        const updated = { ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' };
+                                        localStorage.setItem('docmate_user_profile', JSON.stringify(updated));
+                                        return updated;
+                                    });
                                 }
                             }
 
@@ -124,7 +144,11 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                             if (userDocSnap.exists()) {
                                 const userData = userDocSnap.data();
                                 if (userData.settings) {
-                                    setSettings(prev => ({ ...prev, ...userData.settings }));
+                                    setSettings(prev => {
+                                        const updated = { ...prev, ...userData.settings };
+                                        localStorage.setItem('docmate_user_settings', JSON.stringify(updated));
+                                        return updated;
+                                    });
                                 }
                             }
                         }
@@ -146,12 +170,16 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                 if (mounted) {
                     setLoading(false);
                     setDocId(null);
-                    setProfile({
+                    // Clear profile on logout
+                    const emptyProfile = {
                         fullName: '', age: '', gender: '', bloodType: '', weight: '', height: '',
                         pastConditions: [], allergies: [], currentMedications: [],
                         smokingStatus: '', alcoholConsumption: '', exerciseLevel: '',
                         emergencyContactName: '', emergencyContactPhone: '', emergencyContactRelationship: ''
-                    });
+                    };
+                    setProfile(emptyProfile);
+                    localStorage.removeItem('docmate_user_profile');
+                    localStorage.removeItem('docmate_user_settings');
                 }
             }
         });
@@ -168,12 +196,16 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
             throw new Error("User not authenticated");
         }
 
-        // 1. Optimistic Update
+        // 1. Optimistic Update & Local Persistence
         const previousProfile = profile;
         const previousSettings = settings;
 
         setProfile(newProfile);
         setSettings(newSettings);
+
+        // Save to LocalStorage immediately
+        localStorage.setItem('docmate_user_profile', JSON.stringify(newProfile));
+        localStorage.setItem('docmate_user_settings', JSON.stringify(newSettings));
 
         // 2. Background Persistence with Timeout
         try {
@@ -238,9 +270,9 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
             }
 
             console.error("Background save failed - Reverting:", err);
-            setProfile(previousProfile);
-            setSettings(previousSettings);
-            setError("Failed to save changes. Please check your connection.");
+            // We do NOT revert LocalStorage/State here because the user's intent was to save.
+            // We just warn them.
+            setError("Failed to sync with server. Your changes are saved locally.");
             return false;
         }
 

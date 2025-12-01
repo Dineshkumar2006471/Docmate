@@ -114,6 +114,22 @@ export default function AIInsights() {
         if (!profile || !rawAssessments) return;
 
         const fetchAIInsights = async () => {
+            // Try to load from cache first
+            const cacheKey = `docmate_insights_${auth.currentUser?.uid}`;
+            try {
+                const cached = localStorage.getItem(cacheKey);
+                if (cached) {
+                    const parsedCache = JSON.parse(cached);
+                    // Only use cache if it's less than 24 hours old or if we are just loading
+                    if (Date.now() - parsedCache.timestamp < 24 * 60 * 60 * 1000) {
+                        setInsights(parsedCache.data);
+                        setLoading(false); // Show cached data immediately
+                    }
+                }
+            } catch (e) {
+                console.error("Cache read error", e);
+            }
+
             try {
                 // Get recent reports from local storage
                 let recentReports = [];
@@ -168,7 +184,7 @@ export default function AIInsights() {
                     completed: savedCompletedIds.includes(item.id)
                 }));
 
-                setInsights({
+                const finalInsights = {
                     score,
                     riskLevel: data.riskLevel,
                     color,
@@ -177,13 +193,21 @@ export default function AIInsights() {
                     predictions: data.predictions,
                     actionPlan,
                     history
-                });
+                };
+
+                setInsights(finalInsights);
+
+                // Update Cache
+                localStorage.setItem(cacheKey, JSON.stringify({
+                    timestamp: Date.now(),
+                    data: finalInsights
+                }));
 
                 setLoading(false);
 
             } catch (e) {
                 console.error("Error generating AI insights", e);
-                // Fallback to basic calculation if API fails
+                // If we have cached data, we are fine, otherwise stop loading
                 setLoading(false);
             }
         };
