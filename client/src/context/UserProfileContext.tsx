@@ -92,14 +92,20 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
         const unsubscribe = onAuthStateChanged(auth, async (user) => {
             if (user) {
                 try {
-                    // Parallel Fetch with Timeout
+                    // Parallel Fetch with Timeout and individual error handling
                     const patientsRef = collection(db, 'patients');
                     const q = query(patientsRef, where('user_id', '==', user.uid));
                     const userDocRef = doc(db, 'users', user.uid);
 
                     const fetchPromise = Promise.all([
-                        getDocs(q),
-                        getDoc(userDocRef)
+                        getDocs(q).catch(e => {
+                            console.warn("Patients fetch failed:", e);
+                            return null;
+                        }),
+                        getDoc(userDocRef).catch(e => {
+                            console.warn("User settings fetch failed:", e);
+                            return null;
+                        })
                     ]);
 
                     const timeoutPromise = new Promise((_, reject) =>
@@ -114,7 +120,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
 
                         if (mounted) {
                             // Handle Patient Profile
-                            if (!querySnapshot.empty) {
+                            if (querySnapshot && !querySnapshot.empty) {
                                 // Handle potential duplicates by picking the most recently updated one
                                 const docs = querySnapshot.docs.sort((a: any, b: any) => {
                                     const aTime = a.data().updated_at?.toMillis() || 0;
@@ -130,7 +136,8 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                                 const mergedProfile = { ...profile, ...profileData, photoURL: user.photoURL || '' };
                                 setProfile(mergedProfile);
                                 localStorage.setItem('docmate_user_profile', JSON.stringify(mergedProfile));
-                            } else {
+                            } else if (querySnapshot) {
+                                // Query succeeded but empty - use user info if available
                                 if (user.displayName) {
                                     setProfile(prev => {
                                         const updated = { ...prev, fullName: user.displayName || '', photoURL: user.photoURL || '' };
@@ -141,7 +148,7 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                             }
 
                             // Handle User Settings
-                            if (userDocSnap.exists()) {
+                            if (userDocSnap && userDocSnap.exists()) {
                                 const userData = userDocSnap.data();
                                 if (userData.settings) {
                                     setSettings(prev => {
@@ -154,15 +161,14 @@ export function UserProfileProvider({ children }: { children: React.ReactNode })
                         }
                     } catch (fetchErr: any) {
                         console.warn("Profile fetch warning:", fetchErr);
-                        // Don't set global error on timeout, allow user to proceed with empty/default profile
-                        if (mounted && fetchErr.message !== "Profile fetch timed out") {
-                            setError("Failed to load profile data. You can still edit and save.");
-                        }
+                        // Suppress user-facing error for fetch failures as we have local fallback
+                        // and the user can still edit/save.
                     }
 
                 } catch (err: any) {
                     console.error("Error in profile setup:", err);
-                    if (mounted) setError(err.message);
+                    // Only set error if it's a critical setup error, not a fetch error
+                    // if (mounted) setError(err.message); 
                 } finally {
                     if (mounted) setLoading(false);
                 }
